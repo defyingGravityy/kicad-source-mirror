@@ -67,6 +67,11 @@ global
 global_label
 group
 gseim_solve_block
+solve_type
+initial_sol
+output_file
+parameter
+output_var
 hatch
 header
 hide

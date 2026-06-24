@@ -2782,6 +2782,9 @@ void SCH_IO_KICAD_SEXPR_PARSER::ParseSchematic( SCH_SHEET* aSheet, bool aIsCopya
 
     wxCHECK( screen != nullptr, /* void */ );
 
+    if( SCHEMATIC* schematic = screen->Schematic() )
+        schematic->GetGseimSolveBlocks().clear();
+
     if( SCHEMATIC* schematic = dynamic_cast<SCHEMATIC*>( screen->GetParent() ) )
         m_maxError = schematic->Settings().m_MaxError;
 
@@ -2928,19 +2931,74 @@ void SCH_IO_KICAD_SEXPR_PARSER::ParseSchematic( SCH_SHEET* aSheet, bool aIsCopya
         }
 
 
+        // case T_gseim_solve_block:
+        // {
+        //     token = NextTok();
+
+        //     if( token != T_STRING )
+        //         Expecting( "quoted string" );
+
+        //     wxString solveBlock = FromUTF8();
+
+        //     if( SCHEMATIC* schematic = screen->Schematic() )
+        //         schematic->SetGseimSolveBlock( solveBlock );
+
+        //     NeedRIGHT();
+
+        //     break;
+        // }
+
         case T_gseim_solve_block:
         {
-            token = NextTok();
+            GSEIM_SOLVE_BLOCK blk;
 
-            if( token != T_STRING )
-                Expecting( "quoted string" );
+            for( T tok = NextTok(); tok != T_RIGHT; tok = NextTok() )
+            {
+                if( tok == T_LEFT )
+                    tok = NextTok();
 
-            wxString solveBlock = FromUTF8();
+                if( tok == T_solve_type )
+                {
+                    NeedSYMBOLorNUMBER();
+                    blk.solveType = FromUTF8();
+                    NeedRIGHT();
+                }
+                else if( tok == T_initial_sol )
+                {
+                    NeedSYMBOLorNUMBER();
+                    blk.initialSol = FromUTF8();
+                    NeedRIGHT();
+                }
+                else if( tok == T_output_file )
+                {
+                    NeedSYMBOLorNUMBER();
+                    blk.outputFile = FromUTF8();
+                    NeedRIGHT();
+                }
+                else if( tok == T_parameter )
+                {
+                    NeedSYMBOLorNUMBER();
+                    wxString key = FromUTF8();
+
+                    NeedSYMBOLorNUMBER();
+                    wxString value = FromUTF8();
+
+                    blk.parameters[key] = value;
+
+                    NeedRIGHT();
+                }
+                else if( tok == T_output_var )
+                {
+                    NeedSYMBOLorNUMBER();
+                    blk.outputVars.push_back(
+                        FromUTF8() );
+
+                    NeedRIGHT();
+                }
+            }
 
             if( SCHEMATIC* schematic = screen->Schematic() )
-                schematic->SetGseimSolveBlock( solveBlock );
-
-            NeedRIGHT();
+                schematic->GetGseimSolveBlocks().push_back( blk );
 
             break;
         }

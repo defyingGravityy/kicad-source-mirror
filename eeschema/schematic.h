@@ -29,7 +29,7 @@
 #include <project.h>
 #include <unordered_set>
 #include <gseim_outvar.h>
-
+#include <netlist_exporters/gseim_solve_block.h>
 
 struct HISTORY_FILE_DATA;
 class BUS_ALIAS;
@@ -534,6 +534,22 @@ public:
 
     std::vector<GSEIM_OUTVAR> m_gseimExplicitOutvars;
 
+    std::vector<GSEIM_SOLVE_BLOCK>& GetGseimSolveBlocks()
+    {
+        return m_GseimSolveBlocks;
+    }
+
+    const std::vector<GSEIM_SOLVE_BLOCK>& GetGseimSolveBlocks() const
+    {
+        return m_GseimSolveBlocks;
+    }
+
+    void SetGseimSolveBlocks(
+        const std::vector<GSEIM_SOLVE_BLOCK>& aBlocks )
+    {
+        m_GseimSolveBlocks = aBlocks;
+    }
+
     /**
      * This is a throw away method for variant testing.
      *
@@ -620,6 +636,8 @@ private:
 
     std::vector<wxString> m_gseimOutvars;
     std::unordered_set<wxString> m_gseimCheckedOutvars;
+
+    std::vector<GSEIM_SOLVE_BLOCK> m_GseimSolveBlocks;
 
     /**
      * Simulation operating points for text variable substitution.

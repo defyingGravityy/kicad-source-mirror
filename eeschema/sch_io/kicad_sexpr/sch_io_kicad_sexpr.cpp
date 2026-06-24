@@ -459,12 +459,46 @@ void SCH_IO_KICAD_SEXPR::Format( SCH_SHEET* aSheet )
 
     KICAD_FORMAT::FormatUuid( m_out, screen->m_uuid );
 
-    if( !m_schematic->GetGseimSolveBlock().IsEmpty() )
+    // if( !m_schematic->GetGseimSolveBlock().IsEmpty() )
+    // {
+    //     m_out->Print(
+    //         "(gseim_solve_block %s)",
+    //         m_out->Quotew(
+    //             m_schematic->GetGseimSolveBlock() ).c_str() );
+    // }
+
+    for( const GSEIM_SOLVE_BLOCK& blk : m_schematic->GetGseimSolveBlocks() )
     {
+        m_out->Print( "(gseim_solve_block" );
+
         m_out->Print(
-            "(gseim_solve_block %s)",
-            m_out->Quotew(
-                m_schematic->GetGseimSolveBlock() ).c_str() );
+            " (solve_type %s)",
+            m_out->Quotew( blk.solveType ).c_str() );
+
+        m_out->Print(
+            " (initial_sol %s)",
+            m_out->Quotew( blk.initialSol ).c_str() );
+
+        m_out->Print(
+            " (output_file %s)",
+            m_out->Quotew( blk.outputFile ).c_str() );
+
+        for( const auto& [key,value] : blk.parameters )
+        {
+            m_out->Print(
+                " (parameter %s %s)",
+                m_out->Quotew( key ).c_str(),
+                m_out->Quotew( value ).c_str() );
+        }
+
+        for( const wxString& var : blk.outputVars )
+        {
+            m_out->Print(
+                " (output_var %s)",
+                m_out->Quotew( var ).c_str() );
+        }
+
+        m_out->Print( ")" );
     }
 
     screen->GetPageSettings().Format( m_out );

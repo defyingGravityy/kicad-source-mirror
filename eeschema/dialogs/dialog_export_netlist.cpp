@@ -976,8 +976,26 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimCopyBlockBtn->Bind(    wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimCopyBlock,      this );
     pg->m_GseimPasteBlockBtn->Bind(   wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimPasteBlock,     this );
 
-    m_GseimSelectedBlock = -1;
+    m_GseimSolveBlocks = m_editFrame->Schematic().GetGseimSolveBlocks();
+
+    for( size_t i = 0; i < m_GseimSolveBlocks.size(); ++i )
+    {
+        wxLogMessage(
+            "Loaded block %zu type=%s",
+            i,
+            m_GseimSolveBlocks[i].solveType );
+    }
+    if( !m_GseimSolveBlocks.empty() )
+        m_GseimSelectedBlock = 0;
+    else
+        m_GseimSelectedBlock = -1;
+
+
     RefreshGseimBlockList();
+
+    if( m_GseimSelectedBlock >= 0 )
+        PopulateGseimControls( m_GseimSelectedBlock );
+    
     UpdateGseimControls();
 }
 
@@ -1109,11 +1127,16 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddParameter( wxCommandEvent& event )
 
 void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
 {   
-    if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
-    return;
-
     EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
     const GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[index];
+
+    wxLogMessage(
+        "Populate block %d solveType=%s",
+        index,
+        blk.solveType );
+
+    if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
+    return;
 
     BindGseimChangeHandlers( false );
 
@@ -1195,23 +1218,17 @@ void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
             blk.outputVars.push_back( ovGrid->GetCellValue( i, 1 ) );
     }
 
-    // // Merge checked state back into the persistent set.
-    // // Rule: (stored - visible) union (currently checked visible)
-    // std::unordered_set<wxString>& stored =
-    //     m_editFrame->Schematic().GetGseimCheckedOutvars();
-
-    // for( int i = 0; i < ovGrid->GetNumberRows(); ++i )
-    // {
-    //     wxString var = ovGrid->GetCellValue( i, 1 );
-    //     if( ovGrid->GetCellValue( i, 0 ) == "1" )
-    //         stored.insert( var );
-    //     else
-    //         stored.erase( var );
-    // }
+    m_editFrame->Schematic().SetGseimSolveBlocks( m_GseimSolveBlocks );
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimControlChanged( wxCommandEvent& event )
-{
+{   
+    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
+
+    wxLogMessage(
+        "OnGseimControlChanged solveType=%s",
+        pg->m_GseimSolveTypeCtrl->GetStringSelection() );
+
     if( m_GseimSelectedBlock >= 0 )
     {
         CommitGseimControls( m_GseimSelectedBlock );
@@ -1328,12 +1345,18 @@ void DIALOG_EXPORT_NETLIST::OnGseimRemoveBlock( wxCommandEvent& event )
 
     RefreshGseimBlockList();
     PopulateGseimControls( m_GseimSelectedBlock );
-
+    m_editFrame->Schematic().SetGseimSolveBlocks( m_GseimSolveBlocks );
     UpdateGseimBlockEditor();
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged( wxCommandEvent& event )
 {
+    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
+
+    wxLogMessage(
+        "OnGseimSolveTypeChanged %s",
+        pg->m_GseimSolveTypeCtrl->GetStringSelection() );
+        
     if( m_GseimSelectedBlock < 0 )
         return;
 
