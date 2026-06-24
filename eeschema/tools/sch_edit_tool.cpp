@@ -76,6 +76,9 @@
 #include <project/net_settings.h>
 #include <tools/sch_tool_utils.h>
 
+#include <netlist_exporters/netlist_exporter_gseim.h>
+#include <gseim_ebe_parser.h>
+#include "../gseim/gseim_component_db.h"
 
 class SYMBOL_UNIT_MENU : public ACTION_MENU
 {
@@ -644,6 +647,15 @@ bool SCH_EDIT_TOOL::Init()
                 }
             };
 
+    auto isGseimSymbol = []( const SELECTION& sel ) {
+        if( sel.Size() != 1 )
+            return false;
+        SCH_SYMBOL* sym = dynamic_cast<SCH_SYMBOL*>( sel.Front() );
+        if( !sym )
+            return false;
+        return sym->GetField( wxT( "Gseim.Type" ) ) != nullptr;
+    };
+
     auto autoplaceCondition =
             []( const SELECTION& aSel )
             {
@@ -857,6 +869,7 @@ bool SCH_EDIT_TOOL::Init()
     moveMenu.AddItem( SCH_ACTIONS::swap,              swapSelectionCondition, 200 );
     moveMenu.AddItem( SCH_ACTIONS::properties,        propertiesCondition, 200 );
     moveMenu.AddMenu( makeEditFieldsMenu(),           S_C::SingleSymbol, 200 );
+    moveMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
 
     moveMenu.AddSeparator();
     moveMenu.AddItem( ACTIONS::cut,                   S_C::IdleSelection );
@@ -883,6 +896,7 @@ bool SCH_EDIT_TOOL::Init()
     drawMenu.AddMenu( makeAttributesMenu(),           S_C::HasTypes( attribTypes ), 200 );
     drawMenu.AddItem( SCH_ACTIONS::properties,        propertiesCondition, 200 );
     drawMenu.AddMenu( makeEditFieldsMenu(),           S_C::SingleSymbol, 200 );
+    drawMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::autoplaceFields,   autoplaceCondition, 200 );
 
     drawMenu.AddItem( SCH_ACTIONS::editWithLibEdit,   S_C::SingleSymbolOrPower && S_C::Idle, 200 );
@@ -908,6 +922,7 @@ bool SCH_EDIT_TOOL::Init()
     selToolMenu.AddItem( SCH_ACTIONS::swap,            swapSelectionCondition, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::properties,      propertiesCondition, 200 );
     selToolMenu.AddMenu( makeEditFieldsMenu(),         S_C::SingleSymbol, 200 );
+    selToolMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );  // add this
     selToolMenu.AddItem( SCH_ACTIONS::autoplaceFields, autoplaceCondition, 200 );
 
     selToolMenu.AddItem( SCH_ACTIONS::editWithLibEdit, S_C::SingleSymbolOrPower && S_C::Idle, 200 );
@@ -3799,6 +3814,141 @@ int SCH_EDIT_TOOL::modifyLockSelected( MODIFY_MODE aMode )
     return 0;
 }
 
+int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
+{
+    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SYMBOL_T } );
+    if( selection.Empty() )
+        return 0;
+
+    SCH_SYMBOL* symbol = dynamic_cast<SCH_SYMBOL*>( selection.Front() );
+    if( !symbol )
+        return 0;
+
+    SCH_FIELD* typeField = symbol->GetField( wxT( "Gseim.Type" ) );
+    if( !typeField )
+        return 0;
+
+    wxString gseimType = typeField->GetText();
+
+    GSEIM_COMPONENT_DATABASE::Instance().Load(
+        "/home/arsalan/Projects/jupyter_gseim/gseim_aux/ebe" );
+
+    const GSEIM_COMPONENT_INFO* info =
+        GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+
+    if( !info )
+    {
+        wxMessageBox( wxString::Format( _( "No GSEIM component info found for type '%s'." ),
+                                        gseimType ),
+                      _( "GSEIM" ), wxOK | wxICON_WARNING );
+        return 0;
+    }
+
+    // Build the list of available output variables for this symbol
+    const SCH_SHEET_PATH& sheet = m_frame->GetCurrentSheet();
+    std::unordered_set<wxString> groundNets;  // simplified: not filtering ground here
+
+    std::vector<wxString> available;
+
+    // Voltage vars from pins
+    for( SCH_PIN* pin : symbol->GetPins( &sheet ) )
+    {
+        SCH_CONNECTION* conn = pin->Connection( &sheet );
+        if( !conn )
+            continue;
+        wxString net = conn->GetNetName();
+        if( net.StartsWith( "/" ) )
+            net = net.Mid( 1 );
+        if( net.IsEmpty() )
+            continue;
+
+        wxString varName = net.Upper();
+        for( size_t i = 0; i < varName.Length(); ++i )
+        {
+            wxChar c = varName[i];
+            if( !( wxIsalnum( c ) || c == '_' ) )
+                varName[i] = '_';
+        }
+        wxString vVar = "V" + varName;
+        // deduplicate
+        if( std::find( available.begin(), available.end(), vVar ) == available.end() )
+            available.push_back( vVar );
+    }
+
+    // Device outparms
+    wxString refName = symbol->GetRef( &sheet );
+    for( const wxString& outparm : info->outparms )
+        available.push_back( refName + "_" + outparm );
+
+    if( available.empty() )
+    {
+        wxMessageBox( _( "No output variables available for this component." ),
+                      _( "GSEIM" ), wxOK | wxICON_INFORMATION );
+        return 0;
+    }
+
+    // Read currently stored selection from Gseim.OutVars field
+    wxArrayString availableArr;
+    for( const wxString& v : available )
+        availableArr.Add( v );
+
+    wxString stored;
+    SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
+    if( outVarsField )
+        stored = outVarsField->GetText();
+
+    std::unordered_set<wxString> storedSet;
+    wxStringTokenizer tok( stored, " " );
+    while( tok.HasMoreTokens() )
+        storedSet.insert( tok.GetNextToken() );
+
+    // Show checklist dialog
+    wxMultiChoiceDialog dlg( m_frame,
+                             wxString::Format( _( "Select output variables for %s:" ), refName ),
+                             _( "GSEIM Output Variables" ),
+                             availableArr );
+
+    // Pre-check previously selected items
+    wxArrayInt selections;
+    for( size_t i = 0; i < available.size(); ++i )
+    {
+        if( storedSet.count( available[i] ) )
+            selections.Add( i );
+    }
+    dlg.SetSelections( selections );
+
+    if( dlg.ShowModal() != wxID_OK )
+        return 0;
+
+    // Build new stored string from user selection
+    wxArrayInt chosen = dlg.GetSelections();
+    wxString newStored;
+    for( size_t i = 0; i < chosen.size(); ++i )
+    {
+        if( i > 0 ) newStored += " ";
+        newStored += available[ chosen[i] ];
+    }
+
+    // Write back to Gseim.OutVars field, creating it if needed
+    SCH_COMMIT commit( m_toolMgr );
+    commit.Modify( symbol, m_frame->GetScreen() );
+
+    if( outVarsField )
+    {
+        outVarsField->SetText( newStored );
+    }
+    else
+    {
+        SCH_FIELD newField( symbol, FIELD_T::USER, wxT( "Gseim.OutVars" ) );
+        newField.SetText( newStored );
+        newField.SetVisible( false );
+        symbol->AddField( newField );
+    }
+
+    commit.Push( _( "Set GSEIM Output Variables" ) );
+
+    return 0;
+}
 
 void SCH_EDIT_TOOL::setTransitions()
 {
@@ -3823,6 +3973,9 @@ void SCH_EDIT_TOOL::setTransitions()
 
     Go( &SCH_EDIT_TOOL::Properties,         SCH_ACTIONS::properties.MakeEvent() );
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editReference.MakeEvent() );
+
+    Go( &SCH_EDIT_TOOL::SelectGseimOutvars, SCH_ACTIONS::selectGseimOutvars.MakeEvent() );
+
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editValue.MakeEvent() );
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editFootprint.MakeEvent() );
     Go( &SCH_EDIT_TOOL::AutoplaceFields,    SCH_ACTIONS::autoplaceFields.MakeEvent() );

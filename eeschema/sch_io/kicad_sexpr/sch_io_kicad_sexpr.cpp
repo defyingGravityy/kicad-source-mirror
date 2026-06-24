@@ -459,6 +459,14 @@ void SCH_IO_KICAD_SEXPR::Format( SCH_SHEET* aSheet )
 
     KICAD_FORMAT::FormatUuid( m_out, screen->m_uuid );
 
+    if( !m_schematic->GetGseimSolveBlock().IsEmpty() )
+    {
+        m_out->Print(
+            "(gseim_solve_block %s)",
+            m_out->Quotew(
+                m_schematic->GetGseimSolveBlock() ).c_str() );
+    }
+
     screen->GetPageSettings().Format( m_out );
     screen->GetTitleBlock().Format( m_out );
 

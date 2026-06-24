@@ -27,6 +27,8 @@
 #include <sch_sheet_path.h>
 #include <schematic_settings.h>
 #include <project.h>
+#include <unordered_set>
+#include <gseim_outvar.h>
 
 
 struct HISTORY_FILE_DATA;
@@ -518,6 +520,20 @@ public:
      */
     void SetVariantDescription( const wxString& aVariantName, const wxString& aDescription );
 
+    const wxString& GetGseimSolveBlock() const { return m_gseimSolveBlock; }
+
+    void SetGseimSolveBlock( const wxString& aText ) { m_gseimSolveBlock = aText; }
+
+    const std::vector<wxString>& GetGseimOutvars() const { return m_gseimOutvars; }
+    void SetGseimOutvars( const std::vector<wxString>& v ) { m_gseimOutvars = v; }
+
+    std::unordered_set<wxString>& GetGseimCheckedOutvars() { return m_gseimCheckedOutvars; }
+
+    const std::vector<GSEIM_OUTVAR>& GetGseimExplicitOutvars() const { return m_gseimExplicitOutvars; }
+    void SetGseimExplicitOutvars( const std::vector<GSEIM_OUTVAR>& v ) { m_gseimExplicitOutvars = v; }
+
+    std::vector<GSEIM_OUTVAR> m_gseimExplicitOutvars;
+
     /**
      * This is a throw away method for variant testing.
      *
@@ -596,6 +612,14 @@ private:
      * Properties for text variable substitution (and perhaps other uses in future).
      */
     std::map<wxString, wxString>      m_properties;
+
+    /**
+    * GSEIM solve block stored in .kicad_sch
+    */
+    wxString                          m_gseimSolveBlock;
+
+    std::vector<wxString> m_gseimOutvars;
+    std::unordered_set<wxString> m_gseimCheckedOutvars;
 
     /**
      * Simulation operating points for text variable substitution.

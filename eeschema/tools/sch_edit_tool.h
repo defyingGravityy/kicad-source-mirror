@@ -94,6 +94,8 @@ public:
     wxString FixERCErrorMenuText( const std::shared_ptr<RC_ITEM>& aERCItem );
     void FixERCError( const std::shared_ptr<RC_ITEM>& aERCItem );
 
+    int SelectGseimOutvars( const TOOL_EVENT& aEvent );
+
 private:
     void editFieldText( SCH_FIELD* aField );
 

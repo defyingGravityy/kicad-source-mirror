@@ -137,6 +137,9 @@ public:
     static TOOL_ACTION editReference;
     static TOOL_ACTION editValue;
     static TOOL_ACTION editFootprint;
+
+    static TOOL_ACTION selectGseimOutvars;
+
     static TOOL_ACTION autoplaceFields;
     static TOOL_ACTION cycleBodyStyle;
     static TOOL_ACTION editSymbolUnit;

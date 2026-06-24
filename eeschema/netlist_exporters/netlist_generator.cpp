@@ -47,6 +47,9 @@
 #include <netlist_exporter_xml.h>
 
 
+#include <netlist_exporter_gseim.h>
+#include "gseim_outvar.h"
+
 bool SCH_EDIT_FRAME::WriteNetListFile( int aFormat, const wxString& aFullFileName,
                                        unsigned aNetlistOptions, REPORTER* aReporter )
 {
@@ -86,6 +89,21 @@ bool SCH_EDIT_FRAME::WriteNetListFile( int aFormat, const wxString& aFullFileNam
     case NET_TYPE_SPICE:
         helper = new NETLIST_EXPORTER_SPICE( sch );
         break;
+
+    case NET_TYPE_GSEIM:
+    {
+        auto* gseim = new NETLIST_EXPORTER_GSEIM( sch );
+
+        wxString solveBlock = sch->GetGseimSolveBlock();
+        gseim->SetSolveBlock( solveBlock );
+
+        const std::vector<GSEIM_OUTVAR>& explicitOutvars = sch->GetGseimExplicitOutvars();
+        if( !explicitOutvars.empty() )
+            gseim->SetExplicitOutvars( explicitOutvars );
+
+        helper = gseim;
+        break;
+    }
 
     case NET_TYPE_SPICE_MODEL:
         helper = new NETLIST_EXPORTER_SPICE_MODEL( sch );

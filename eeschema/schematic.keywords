@@ -66,6 +66,7 @@ generator_version
 global
 global_label
 group
+gseim_solve_block
 hatch
 header
 hide

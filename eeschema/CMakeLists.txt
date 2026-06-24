@@ -483,8 +483,16 @@ set( EESCHEMA_SRCS
     netlist_exporters/netlist_exporter_orcadpcb2.cpp
     netlist_exporters/netlist_exporter_spice.cpp
     netlist_exporters/netlist_exporter_spice_model.cpp
+    netlist_exporters/netlist_exporter_gseim.cpp
     netlist_exporters/netlist_exporter_xml.cpp
     netlist_exporters/netlist_generator.cpp
+    netlist_exporters/gseim_ebe_parser.cpp
+    netlist_exporters/gseim_ebe_parser.h
+    netlist_exporters/netlist_exporter_gseim.cpp
+    netlist_exporters/gseim_solver_parameter_database.cpp
+    netlist_exporters/gseim_solver_parameter_database.h
+    gseim/gseim_component_db.h
+    gseim/gseim_component_db.cpp
 
     tools/assign_footprints.cpp
     tools/backannotate.cpp

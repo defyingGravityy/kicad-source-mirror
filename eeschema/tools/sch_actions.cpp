@@ -936,6 +936,12 @@ TOOL_ACTION SCH_ACTIONS::editFootprint( TOOL_ACTION_ARGS()
         .FriendlyName( _( "Edit Footprint..." ) )
         .Icon( BITMAPS::edit_comp_footprint ) );
 
+TOOL_ACTION SCH_ACTIONS::selectGseimOutvars( TOOL_ACTION_ARGS()
+        .Name( "eeschema.InteractiveEdit.selectGseimOutvars" )
+        .Scope( AS_CONTEXT )
+        .FriendlyName( _( "Select GSEIM Output Variables..." ) )
+        .Icon( BITMAPS::sim_add_signal ) );
+
 TOOL_ACTION SCH_ACTIONS::autoplaceFields( TOOL_ACTION_ARGS()
         .Name( "eeschema.InteractiveEdit.autoplaceFields" )
         .Scope( AS_GLOBAL )

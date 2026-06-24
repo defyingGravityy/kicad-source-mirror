@@ -2842,6 +2842,7 @@ void SCH_IO_KICAD_SEXPR_PARSER::ParseSchematic( SCH_SHEET* aSheet, bool aIsCopya
         if( !aIsCopyableOnly && token == T_page && m_requiredVersion <= 20200506 )
             token = T_paper;
 
+        // wxLogMessage("TOKEN = %d", token);
         switch( token )
         {
         case T_group:
@@ -2923,6 +2924,24 @@ void SCH_IO_KICAD_SEXPR_PARSER::ParseSchematic( SCH_SHEET* aSheet, bool aIsCopya
             TITLE_BLOCK tb;
             parseTITLE_BLOCK( tb );
             screen->SetTitleBlock( tb );
+            break;
+        }
+
+
+        case T_gseim_solve_block:
+        {
+            token = NextTok();
+
+            if( token != T_STRING )
+                Expecting( "quoted string" );
+
+            wxString solveBlock = FromUTF8();
+
+            if( SCHEMATIC* schematic = screen->Schematic() )
+                schematic->SetGseimSolveBlock( solveBlock );
+
+            NeedRIGHT();
+
             break;
         }
 

@@ -25,8 +25,14 @@
 
 #pragma once
 
+#include <optional>
+#include <map>
+#include <vector>
 #include <dialogs/dialog_export_netlist_base.h>
 #include <netlist.h>
+#include "netlist_exporters/gseim_solve_block.h"
+#include <netlist_exporters/gseim_solver_parameter_database.h>
+#include <netlist_exporters/gseim_outvar.h>
 
 class SCH_EDIT_FRAME;
 class EXPORT_NETLIST_PAGE;
@@ -45,7 +51,39 @@ private:
     EXPORT_NETLIST_PAGE* AddOneCustomPage( const wxString& aTitle, const wxString& aCommandString,
                                            NETLIST_TYPE_ID aNetTypeId );
     void                 InstallPageSpice();
+    void                 InstallPageGseim();
     void                 InstallPageSpiceModel();
+
+    void OnGseimSolveTypeChanged( wxCommandEvent& event );
+    void UpdateGseimControls();
+
+    std::vector<GSEIM_SOLVE_BLOCK>  m_GseimSolveBlocks;
+    std::optional<GSEIM_SOLVE_BLOCK> m_GseimClipboard;
+    int                              m_GseimSelectedBlock = -1;
+
+    GSEIM_SOLVER_PARAMETER_DATABASE m_GseimParameterDb;
+
+    void OnGseimBlockSelected( wxCommandEvent& event );
+    void OnGseimAddBlock( wxCommandEvent& event );
+    void OnGseimRemoveBlock( wxCommandEvent& event );
+    void PopulateGseimControls( int index );   // block → widgets
+    void CommitGseimControls( int index );     // widgets → block
+    void RefreshGseimBlockList();
+    void OnGseimControlChanged( wxCommandEvent& event );
+    void OnGseimAddParameter( wxCommandEvent& event );
+    void PopulateGseimParameterGrid( const GSEIM_SOLVE_BLOCK& blk );
+    void ApplySolveTypePolicy( GSEIM_SOLVE_BLOCK& blk );
+
+    void OnGseimCopyBlock( wxCommandEvent& event );
+    void OnGseimPasteBlock( wxCommandEvent& event );
+
+    void BindGseimChangeHandlers( bool bind );
+
+    void PopulateGseimOutvars();
+    std::vector<GSEIM_OUTVAR> m_GseimAllOutvars;
+
+    bool m_GseimUpdating = false;
+
 
     bool TransferDataFromWindow() override;
 

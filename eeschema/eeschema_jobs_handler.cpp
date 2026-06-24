@@ -71,6 +71,7 @@
 #include <netlist_exporter_xml.h>
 #include <netlist_exporter_pads.h>
 #include <netlist_exporter_allegro.h>
+#include <netlist_exporter_gseim.h>
 
 #include <fields_data_model.h>
 
