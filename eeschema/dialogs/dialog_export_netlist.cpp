@@ -976,12 +976,8 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimCopyBlockBtn->Bind(    wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimCopyBlock,      this );
     pg->m_GseimPasteBlockBtn->Bind(   wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimPasteBlock,     this );
 
-    // Seed with one default solve block
-    m_GseimSolveBlocks.emplace_back();
-    ApplySolveTypePolicy( m_GseimSolveBlocks.back() );
-    m_GseimSelectedBlock = 0;
+    m_GseimSelectedBlock = -1;
     RefreshGseimBlockList();
-    PopulateGseimControls( 0 );
     UpdateGseimControls();
 }
 
@@ -1112,7 +1108,10 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddParameter( wxCommandEvent& event )
 }
 
 void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
-{
+{   
+    if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
+    return;
+
     EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
     const GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[index];
 
@@ -1166,6 +1165,9 @@ void DIALOG_EXPORT_NETLIST::BindGseimChangeHandlers( bool bind )
 
 void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
 {
+    if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
+        return;
+
     EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
     GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[index];
 
@@ -1233,10 +1235,13 @@ void DIALOG_EXPORT_NETLIST::RefreshGseimBlockList()
     for( size_t i = 0; i < m_GseimSolveBlocks.size(); ++i )
         choice->Append( m_GseimSolveBlocks[i].solveType.Upper() );
 
-    if( m_GseimSelectedBlock >= 0
-            && m_GseimSelectedBlock < (int) m_GseimSolveBlocks.size() )
+    if( m_GseimSelectedBlock >= 0 && m_GseimSelectedBlock < (int)m_GseimSolveBlocks.size() )
     {
         choice->SetSelection( m_GseimSelectedBlock );
+    }
+    else
+    {
+        choice->SetSelection( wxNOT_FOUND );
     }
 
     wxGrid* grid = pg->m_GseimBlockGrid;
@@ -1259,9 +1264,10 @@ void DIALOG_EXPORT_NETLIST::RefreshGseimBlockList()
     }
 
     pg->m_GseimRemoveBlockBtn->Enable(
-        m_GseimSolveBlocks.size() > 1 );
+        m_GseimSolveBlocks.size() > 0 );
 
     m_GseimUpdating = false;
+    UpdateGseimBlockEditor();
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimBlockSelected( wxCommandEvent& event )
@@ -1282,6 +1288,8 @@ void DIALOG_EXPORT_NETLIST::OnGseimBlockSelected( wxCommandEvent& event )
 
     m_GseimSelectedBlock = newSel;
     PopulateGseimControls( m_GseimSelectedBlock );
+
+    UpdateGseimBlockEditor();
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimAddBlock( wxCommandEvent& event )
@@ -1298,21 +1306,30 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddBlock( wxCommandEvent& event )
 
     RefreshGseimBlockList();
     PopulateGseimControls( m_GseimSelectedBlock );
+
+    UpdateGseimBlockEditor();
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimRemoveBlock( wxCommandEvent& event )
 {
-    if( m_GseimSolveBlocks.size() <= 1 )
-        return;  // button should already be disabled, but guard anyway
+    if( m_GseimSolveBlocks.empty() )
+        return;
 
     m_GseimSolveBlocks.erase( m_GseimSolveBlocks.begin() + m_GseimSelectedBlock );
 
-    // Clamp selection
-    if( m_GseimSelectedBlock >= (int)m_GseimSolveBlocks.size() )
+    if( m_GseimSolveBlocks.empty() )
+    {
+        m_GseimSelectedBlock = -1;
+    }
+    else if( m_GseimSelectedBlock >= (int)m_GseimSolveBlocks.size() )
+    {
         m_GseimSelectedBlock = (int)m_GseimSolveBlocks.size() - 1;
+    }
 
     RefreshGseimBlockList();
     PopulateGseimControls( m_GseimSelectedBlock );
+
+    UpdateGseimBlockEditor();
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged( wxCommandEvent& event )
@@ -1327,6 +1344,21 @@ void DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged( wxCommandEvent& event )
 
     PopulateGseimControls(
         m_GseimSelectedBlock );
+}
+
+
+void DIALOG_EXPORT_NETLIST::UpdateGseimBlockEditor()
+{
+    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
+
+    bool enabled =
+        m_GseimSelectedBlock >= 0 &&
+        m_GseimSelectedBlock < (int)m_GseimSolveBlocks.size();
+
+    pg->m_GseimSolveTypeCtrl->Enable( enabled );
+    pg->m_GseimInitialSolCtrl->Enable( enabled );
+    pg->m_GseimOutputFileCtrl->Enable( enabled );
+    pg->m_GseimParametersGrid->Enable( enabled );
 }
 
 void DIALOG_EXPORT_NETLIST::UpdateGseimControls()

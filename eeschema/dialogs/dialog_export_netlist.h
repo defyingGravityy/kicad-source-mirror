@@ -74,6 +74,8 @@ private:
     void PopulateGseimParameterGrid( const GSEIM_SOLVE_BLOCK& blk );
     void ApplySolveTypePolicy( GSEIM_SOLVE_BLOCK& blk );
 
+
+    void UpdateGseimBlockEditor();
     void OnGseimCopyBlock( wxCommandEvent& event );
     void OnGseimPasteBlock( wxCommandEvent& event );
 
