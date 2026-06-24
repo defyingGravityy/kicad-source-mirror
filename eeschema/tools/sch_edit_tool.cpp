@@ -3880,6 +3880,14 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     for( const wxString& outparm : info->outparms )
         available.push_back( refName + "_" + outparm );
 
+    for( const wxString& outparm : info->outparms_ac )
+    {
+        wxString base = refName + "_" + outparm;
+
+        available.push_back( "mag_of_" + base );
+        available.push_back( "phase_of_" + base );
+    }
+
     if( available.empty() )
     {
         wxMessageBox( _( "No output variables available for this component." ),

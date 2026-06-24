@@ -17,6 +17,7 @@ struct GSEIM_COMPONENT_INFO
     std::unordered_map<wxString, wxString> stparms;
 
     std::vector<wxString> outparms;
+    std::vector<wxString> outparms_ac;
 };
 
 using GSEIM_COMPONENT_DB =

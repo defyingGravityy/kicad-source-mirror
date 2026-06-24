@@ -552,20 +552,23 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
             SCH_SYMBOL* symbol = static_cast<SCH_SYMBOL*>( item );
 
             SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
+
             if( !outVarsField )
                 continue;
 
             wxString stored = outVarsField->GetText();
+
             if( stored.IsEmpty() )
                 continue;
 
-            // Get the ref for description generation
             wxString ref = symbol->GetRef( &sheet );
 
             wxStringTokenizer tok( stored, " " );
+
             while( tok.HasMoreTokens() )
             {
                 wxString var = tok.GetNextToken();
+
                 if( var.IsEmpty() || seen.count( var ) )
                     continue;
 
@@ -574,18 +577,60 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                 GSEIM_OUTVAR ov;
                 ov.name = var;
 
-                // Derive default description
-                // Device outvar pattern: REF_outparm  e.g. R1_i -> i_of_R1
-                if( var.StartsWith( ref + "_" ) )
+                if( var.StartsWith( "mag_of_" ) )
+                {
+                    ov.isAc = true;
+                    ov.isMagnitude = true;
+
+                    ov.baseName = var.Mid( 7 );   // remove "mag_of_"
+
+                    wxString tmp = ov.baseName;
+
+                    if( tmp.EndsWith( "_ac" ) )
+                        tmp.RemoveLast( 3 );
+
+                    int pos = tmp.Find( '_' );
+
+                    if( pos != wxNOT_FOUND )
+                    {
+                        wxString refName = tmp.Left( pos );
+                        wxString outparm = tmp.Mid( pos + 1 );
+
+                        ov.expr = outparm + "_ac_of_" + refName;
+                    }
+                }
+                else if( var.StartsWith( "phase_of_" ) )
+                {
+                    ov.isAc = true;
+                    ov.isPhase = true;
+
+                    ov.baseName = var.Mid( 9 );   // remove "phase_of_"
+
+                    wxString tmp = ov.baseName;
+
+                    if( tmp.EndsWith( "_ac" ) )
+                        tmp.RemoveLast( 3 );
+
+                    int pos = tmp.Find( '_' );
+
+                    if( pos != wxNOT_FOUND )
+                    {
+                        wxString refName = tmp.Left( pos );
+                        wxString outparm = tmp.Mid( pos + 1 );
+
+                        ov.expr = outparm + "_ac_of_" + refName;
+                    }
+                }
+                else if( var.StartsWith( ref + "_" ) )
                 {
                     wxString outparm = var.Mid( ref.Length() + 1 );
+
                     ov.expr = outparm + "_of_" + ref;
                 }
                 else
                 {
-                    // Voltage var pattern: V<NET> -> nodev_of_<net>
-                    // Strip leading V and convert back to lower for expr
                     wxString net = var.Mid( 1 ).Lower();
+
                     ov.expr = "nodev_of_" + net;
                 }
 
@@ -978,13 +1023,6 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 
     m_GseimSolveBlocks = m_editFrame->Schematic().GetGseimSolveBlocks();
 
-    for( size_t i = 0; i < m_GseimSolveBlocks.size(); ++i )
-    {
-        wxLogMessage(
-            "Loaded block %zu type=%s",
-            i,
-            m_GseimSolveBlocks[i].solveType );
-    }
     if( !m_GseimSolveBlocks.empty() )
         m_GseimSelectedBlock = 0;
     else
@@ -1130,11 +1168,6 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
     EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
     const GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[index];
 
-    wxLogMessage(
-        "Populate block %d solveType=%s",
-        index,
-        blk.solveType );
-
     if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
     return;
 
@@ -1223,11 +1256,6 @@ void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
 
 void DIALOG_EXPORT_NETLIST::OnGseimControlChanged( wxCommandEvent& event )
 {   
-    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
-
-    wxLogMessage(
-        "OnGseimControlChanged solveType=%s",
-        pg->m_GseimSolveTypeCtrl->GetStringSelection() );
 
     if( m_GseimSelectedBlock >= 0 )
     {
@@ -1351,12 +1379,6 @@ void DIALOG_EXPORT_NETLIST::OnGseimRemoveBlock( wxCommandEvent& event )
 
 void DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged( wxCommandEvent& event )
 {
-    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
-
-    wxLogMessage(
-        "OnGseimSolveTypeChanged %s",
-        pg->m_GseimSolveTypeCtrl->GetStringSelection() );
-        
     if( m_GseimSelectedBlock < 0 )
         return;
 
@@ -1618,11 +1640,25 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
             ovGrid->DisableCellEditControl();
             for( int row = 0; row < ovGrid->GetNumberRows(); ++row )
             {
-                GSEIM_OUTVAR ov;
-                ov.name = ovGrid->GetCellValue( row, 1 );
-                ov.expr = ovGrid->GetCellValue( row, 2 );
+                wxString origName = ovGrid->GetCellValue( row, 3 );
 
-                explicitOutvars.push_back( ov );
+                auto it = std::find_if(
+                    m_GseimAllOutvars.begin(),
+                    m_GseimAllOutvars.end(),
+                    [&]( const GSEIM_OUTVAR& x )
+                    {
+                        return x.name == origName;
+                    } );
+
+                if( it != m_GseimAllOutvars.end() )
+                {
+                    GSEIM_OUTVAR ov = *it;     // copy AC metadata
+
+                    ov.name = ovGrid->GetCellValue( row, 1 );
+                    ov.expr = ovGrid->GetCellValue( row, 2 );
+
+                    explicitOutvars.push_back( ov );
+                }
             }
         }
         m_editFrame->Schematic().SetGseimExplicitOutvars( explicitOutvars );

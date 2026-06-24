@@ -83,6 +83,17 @@ GSEIM_COMPONENT_INFO ParseEbeFile(
             continue;
         }
 
+        if( line.StartsWith( "outparms_ac:" ) )
+        {
+            section = PARSE_SECTION::NONE;
+
+            SplitTokens(
+                line.AfterFirst( ':' ),
+                info.outparms_ac );
+
+            continue;
+        }
+
         if( line.StartsWith( "rparms:" ) )
         {
             section = PARSE_SECTION::RPARMS;

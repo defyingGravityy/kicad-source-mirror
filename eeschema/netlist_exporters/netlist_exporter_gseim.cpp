@@ -243,16 +243,32 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
 
         if( useExplicit )
         {
+            std::set<wxString> emittedAcBases;
+
             for( const GSEIM_OUTVAR& ov : m_explicitOutvars )
-                formatter.Print( 0, "+    %s=%s\n", TO_UTF8( ov.name ), TO_UTF8( ov.expr ) );
+            {
+                if( ov.isAc )
+                {
+                    if( emittedAcBases.count( ov.baseName ) )
+                        continue;
+
+                    emittedAcBases.insert( ov.baseName );
+
+                    formatter.Print( 0, "+    %s=%s\n", TO_UTF8( ov.baseName ), TO_UTF8( ov.expr ) );
+                }
+                else
+                {
+                    formatter.Print( 0, "+    %s=%s\n", TO_UTF8( ov.name ), TO_UTF8( ov.expr ) );
+                }
+            }
         }
         else
         {
             for( const auto& net : m_outvars )
             {
                 wxString varName = MakeOutvarName( net );
-                formatter.Print( 0, "+    %s=nodev_of_%s\n",
-                    TO_UTF8( varName ), TO_UTF8( net ) );
+
+                formatter.Print( 0, "+    %s=nodev_of_%s\n", TO_UTF8( varName ), TO_UTF8( net ) );
             }
         }
     }
