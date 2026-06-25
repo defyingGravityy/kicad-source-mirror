@@ -159,7 +159,7 @@ GSEIM_COMPONENT_INFO ParseEbeFile(
     return info;
 }
 
-GSEIM_COMPONENT_DB LoadEbeDatabase(
+GSEIM_COMPONENT_DB LoadEbeDatabase( 
     const wxString& aDirectory )
 {
     GSEIM_COMPONENT_DB db;
@@ -183,14 +183,10 @@ GSEIM_COMPONENT_DB LoadEbeDatabase(
             aDirectory,
             filename );
 
-        GSEIM_COMPONENT_INFO info =
-            ParseEbeFile(
-                fn.GetFullPath() );
+        GSEIM_COMPONENT_INFO info = ParseEbeFile( fn.GetFullPath() );
 
         if( !info.name.IsEmpty() )
-            db.emplace(
-                info.name,
-                std::move( info ) );
+            db.emplace( info.name, std::move( info ) );
 
         cont =
             dir.GetNext(
