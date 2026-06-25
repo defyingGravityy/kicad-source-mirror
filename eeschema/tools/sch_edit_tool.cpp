@@ -3931,6 +3931,7 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     // Build new stored string from user selection
     wxArrayInt chosen = dlg.GetSelections();
     wxString newStored;
+
     for( size_t i = 0; i < chosen.size(); ++i )
     {
         if( i > 0 ) newStored += " ";

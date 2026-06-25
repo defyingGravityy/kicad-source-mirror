@@ -596,7 +596,14 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                         wxString refName = tmp.Left( pos );
                         wxString outparm = tmp.Mid( pos + 1 );
 
-                        ov.expr = outparm + "_ac_of_" + refName;
+                        if( outparm == "S" )
+                        {
+                            ov.expr = "S_of_" + refName;
+                        }
+                        else
+                        {
+                            ov.expr = outparm + "_ac_of_" + refName;
+                        }
                     }
                 }
                 else if( var.StartsWith( "phase_of_" ) )
@@ -618,7 +625,14 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                         wxString refName = tmp.Left( pos );
                         wxString outparm = tmp.Mid( pos + 1 );
 
-                        ov.expr = outparm + "_ac_of_" + refName;
+                        if( outparm == "S" )
+                        {
+                            ov.expr = "S_of_" + refName;
+                        }
+                        else
+                        {
+                            ov.expr = outparm + "_ac_of_" + refName;
+                        }
                     }
                 }
                 else if( var.StartsWith( ref + "_" ) )
@@ -629,7 +643,7 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                 }
                 else
                 {
-                    wxString net = var.Mid( 1 ).Lower();
+                    wxString net = var.Mid( 1 );
 
                     ov.expr = "nodev_of_" + net;
                 }
@@ -750,6 +764,9 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimOutvars()
     std::unordered_map<wxString, wxString> userDescs;   // original name -> user-edited desc
 
     wxGrid* grid = pg->m_GseimOutvarsGrid;
+
+    bool hasSolveBlocks = !m_GseimSolveBlocks.empty();
+
     for( int row = 0; row < grid->GetNumberRows(); ++row )
     {
         wxString origName = grid->GetCellValue( row, 3 ); // hidden original name col
@@ -815,14 +832,17 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimOutvars()
         grid->SetCellValue( row, 0, checked.count( ov.name ) ? "1" : "" );
         grid->SetCellEditor( row, 0, new wxGridCellBoolEditor() );
         grid->SetCellRenderer( row, 0, new wxGridCellBoolRenderer() );
+        grid->SetReadOnly( row, 0, !hasSolveBlocks );
 
         // Col 1: var name (editable, pre-fill with user edit or default)
         wxString editName = userNames.count( ov.name ) ? userNames[ov.name] : ov.name;
         grid->SetCellValue( row, 1, editName );
+        grid->SetReadOnly( row, 1, !hasSolveBlocks );
 
         // Col 2: description (editable, pre-fill with user edit or default)
         wxString editDesc = userDescs.count( ov.name ) ? userDescs[ov.name] : ov.expr;
         grid->SetCellValue( row, 2, editDesc );
+        grid->SetReadOnly( row, 2, !hasSolveBlocks );
 
         // Col 3: hidden original name for tracking identity across edits
         grid->SetCellValue( row, 3, ov.name );
@@ -915,6 +935,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimSolveTypeCtrl->Append( "startup" );
     pg->m_GseimSolveTypeCtrl->Append( "dc" );
     pg->m_GseimSolveTypeCtrl->Append( "trns" );
+    pg->m_GseimSolveTypeCtrl->Append( "ac" );
     pg->m_GseimSolveTypeCtrl->SetSelection( 2 );
     pg->m_GseimSolveTypeCtrl->Bind( wxEVT_CHOICE, &DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged, this );
     pg->m_RightBoxSizer->Add( pg->m_GseimSolveTypeCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
@@ -1008,7 +1029,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 
     // Populate all outvars and seed the listbox
     m_GseimAllOutvars = GetGseimOutvars( m_editFrame );
-    PopulateGseimOutvars();
+    
 
     m_PanelNetType[PANELGSEIM] = pg;
 
@@ -1033,7 +1054,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 
     if( m_GseimSelectedBlock >= 0 )
         PopulateGseimControls( m_GseimSelectedBlock );
-    
+    PopulateGseimOutvars();
     UpdateGseimControls();
 }
 
@@ -1052,6 +1073,7 @@ void DIALOG_EXPORT_NETLIST::OnGseimPasteBlock( wxCommandEvent& event )
 
     RefreshGseimBlockList();
     PopulateGseimControls( m_GseimSelectedBlock );
+    PopulateGseimOutvars();      
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimCopyBlock( wxCommandEvent& event )
@@ -1071,17 +1093,22 @@ void DIALOG_EXPORT_NETLIST::ApplySolveTypePolicy(
 {
     if( blk.solveType == "trns" )
     {
-        blk.parameters.try_emplace( "algorithm_trns", "backward_euler" );
-        blk.parameters.try_emplace( "t_start", "0" );
-        blk.parameters.try_emplace( "t_end", "0" );
-        blk.parameters.try_emplace( "delt", "1u" );
+        blk.parameters.clear();
+
+        blk.parameters["algorithm_trns"] = "backward_euler";
+        blk.parameters["t_start"] = "0";
+        blk.parameters["t_end"]   = "0";
+        blk.parameters["delt"]    = "1u";
+    }
+    else if( blk.solveType == "ac" )
+    {
+        blk.parameters.clear();
+
+        blk.parameters["set_freq"] = "50";
     }
     else
     {
-        blk.parameters.erase( "algorithm_trns" );
-        blk.parameters.erase( "t_start" );
-        blk.parameters.erase( "t_end" );
-        blk.parameters.erase( "delt" );
+        blk.parameters.clear();
     }
 }
 
@@ -1138,7 +1165,8 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddParameter( wxCommandEvent& event )
     CommitGseimControls( m_GseimSelectedBlock );
 
     GSEIM_SOLVE_BLOCK& block = m_GseimSolveBlocks[m_GseimSelectedBlock];
-
+    if( block.solveType == "ac" )
+        return;
     wxArrayString choices;
 
     for( const auto& [keyword, info] : m_GseimParameterDb.GetParameters() )
@@ -1351,7 +1379,7 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddBlock( wxCommandEvent& event )
 
     RefreshGseimBlockList();
     PopulateGseimControls( m_GseimSelectedBlock );
-
+    PopulateGseimOutvars();  
     UpdateGseimBlockEditor();
 }
 
@@ -1372,7 +1400,12 @@ void DIALOG_EXPORT_NETLIST::OnGseimRemoveBlock( wxCommandEvent& event )
     }
 
     RefreshGseimBlockList();
-    PopulateGseimControls( m_GseimSelectedBlock );
+
+    if( m_GseimSelectedBlock >= 0 )
+        PopulateGseimControls( m_GseimSelectedBlock );
+
+    PopulateGseimOutvars();
+
     m_editFrame->Schematic().SetGseimSolveBlocks( m_GseimSolveBlocks );
     UpdateGseimBlockEditor();
 }
@@ -1416,21 +1449,11 @@ void DIALOG_EXPORT_NETLIST::UpdateGseimControls()
     wxString solveType =
         pg->m_GseimSolveTypeCtrl->GetStringSelection();
 
-    // bool isStartup = ( solveType == "startup" );
-    // bool isTrns    = ( solveType == "trns" );
-    bool hasOutput = ( solveType == "trns" || solveType == "dc" );
+    bool isAc   = ( solveType == "ac" );
+    bool isTrns = ( solveType == "trns" );
+    bool isDc   = ( solveType == "dc" );
 
-    // pg->m_GseimAlgorithmLabel->Show( isStartup || isTrns );
-    // pg->m_GseimAlgorithmCtrl->Show( isStartup || isTrns );
-
-    // pg->m_GseimTStartLabel->Show( isTrns );
-    // pg->m_GseimTStartCtrl->Show( isTrns );
-
-    // pg->m_GseimTEndLabel->Show( isTrns );
-    // pg->m_GseimTEndCtrl->Show( isTrns );
-
-    // pg->m_GseimDeltLabel->Show( isTrns );
-    // pg->m_GseimDeltCtrl->Show( isTrns );
+    bool hasOutput = isTrns || isDc || isAc;
 
     pg->m_GseimOutputLabel->Show( hasOutput );
     pg->m_GseimOutputFileCtrl->Show( hasOutput );
@@ -1443,11 +1466,18 @@ void DIALOG_EXPORT_NETLIST::UpdateGseimControls()
 
     if( pg->m_GseimRefreshSelectionBtn )
         pg->m_GseimRefreshSelectionBtn->Show( hasOutput );
+
     if( pg->m_GseimSelectionStatusLabel )
         pg->m_GseimSelectionStatusLabel->Show( hasOutput );
 
-    pg->GetSizer()->Layout();
+    if( pg->m_GseimAddParameterBtn )
+        pg->m_GseimAddParameterBtn->Show( !isAc );
+
+    if( pg->m_GseimParametersGrid )
+        pg->m_GseimParametersGrid->Show( true );
+
     pg->Layout();
+    pg->GetSizer()->Layout();
 }
 
 void DIALOG_EXPORT_NETLIST::InstallPageSpiceModel()
@@ -1604,9 +1634,16 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
             solveText += "   solve_type=" + block.solveType + "\n";
             solveText += "   initial_sol=" + block.initialSol + "\n";
 
-            for( const auto& [key, value] : block.parameters )
+            if( block.solveType == "ac" )
             {
-                solveText += "   method: " + key + "=" + value + "\n";
+                solveText += "   set_freq val=" + block.parameters.at("set_freq") + "\n";
+            }
+            else
+            {
+                for( const auto& [key,value] : block.parameters )
+                {
+                    solveText += "   method: " + key + "=" + value + "\n";
+                }
             }
 
             solveText += "\n";
