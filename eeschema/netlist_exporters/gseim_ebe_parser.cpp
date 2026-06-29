@@ -136,19 +136,19 @@ GSEIM_COMPONENT_INFO ParseEbeFile(
         switch( section )
         {
         case PARSE_SECTION::RPARMS:
-            info.rparms[name] = value;
+            info.rparms[name].defaultValue = value;
             break;
 
         case PARSE_SECTION::IPARMS:
-            info.iparms[name] = value;
+            info.iparms[name].defaultValue = value;
             break;
 
         case PARSE_SECTION::SPARMS:
-            info.sparms[name] = value;
+            info.sparms[name].defaultValue = value;
             break;
 
         case PARSE_SECTION::STPARMS:
-            info.stparms[name] = value;
+            info.stparms[name].defaultValue = value;
             break;
 
         default:

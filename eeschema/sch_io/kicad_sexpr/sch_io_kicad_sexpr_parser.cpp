@@ -2972,7 +2972,7 @@ void SCH_IO_KICAD_SEXPR_PARSER::ParseSchematic( SCH_SHEET* aSheet, bool aIsCopya
                 else if( tok == T_output_file )
                 {
                     NeedSYMBOLorNUMBER();
-                    blk.outputFile = FromUTF8();
+                    blk.outputs[0].outputFile = FromUTF8();
                     NeedRIGHT();
                 }
                 else if( tok == T_parameter )
@@ -2990,7 +2990,7 @@ void SCH_IO_KICAD_SEXPR_PARSER::ParseSchematic( SCH_SHEET* aSheet, bool aIsCopya
                 else if( tok == T_output_var )
                 {
                     NeedSYMBOLorNUMBER();
-                    blk.outputVars.push_back(
+                    blk.outputs[0].outputVars.push_back(
                         FromUTF8() );
 
                     NeedRIGHT();

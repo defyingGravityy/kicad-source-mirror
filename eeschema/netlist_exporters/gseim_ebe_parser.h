@@ -5,16 +5,22 @@
 
 #include <wx/string.h>
 
+struct GSEIM_PARAMETER
+{
+    wxString defaultValue;
+    std::vector<wxString> options;
+};
+
 struct GSEIM_COMPONENT_INFO
 {
     wxString name;
 
     std::vector<wxString> nodes;
 
-    std::unordered_map<wxString, wxString> rparms;
-    std::unordered_map<wxString, wxString> iparms;
-    std::unordered_map<wxString, wxString> sparms;
-    std::unordered_map<wxString, wxString> stparms;
+    std::unordered_map<wxString, GSEIM_PARAMETER> rparms;
+    std::unordered_map<wxString, GSEIM_PARAMETER> iparms;
+    std::unordered_map<wxString, GSEIM_PARAMETER> sparms;
+    std::unordered_map<wxString, GSEIM_PARAMETER> stparms;
 
     std::vector<wxString> outparms;
     std::vector<wxString> outparms_ac;

@@ -139,6 +139,7 @@ public:
     static TOOL_ACTION editFootprint;
 
     static TOOL_ACTION selectGseimOutvars;
+    static TOOL_ACTION modifyGseimParameters;
 
     static TOOL_ACTION autoplaceFields;
     static TOOL_ACTION cycleBodyStyle;

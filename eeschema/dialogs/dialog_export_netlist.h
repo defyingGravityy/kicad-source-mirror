@@ -60,6 +60,7 @@ private:
     std::vector<GSEIM_SOLVE_BLOCK>  m_GseimSolveBlocks;
     std::optional<GSEIM_SOLVE_BLOCK> m_GseimClipboard;
     int                              m_GseimSelectedBlock = -1;
+    int                              m_GseimSelectedOutput = 0;
 
     GSEIM_SOLVER_PARAMETER_DATABASE m_GseimParameterDb;
 
@@ -73,7 +74,10 @@ private:
     void OnGseimAddParameter( wxCommandEvent& event );
     void PopulateGseimParameterGrid( const GSEIM_SOLVE_BLOCK& blk );
     void ApplySolveTypePolicy( GSEIM_SOLVE_BLOCK& blk );
-
+    void RefreshGseimOutputList();
+    void OnGseimOutputSelected( wxCommandEvent& event );
+    void OnGseimAddOutput( wxCommandEvent& event );
+    void OnGseimRemoveOutput( wxCommandEvent& event );
 
     void UpdateGseimBlockEditor();
     void OnGseimCopyBlock( wxCommandEvent& event );

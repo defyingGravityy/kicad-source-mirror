@@ -51,6 +51,7 @@
 #include <netlist_exporters/netlist_exporter_gseim.h>
 #include <gseim_ebe_parser.h>
 #include "../gseim/gseim_component_db.h"
+#include "../gseim/gseim_param_parser.h"
 #include <reporter.h>
 #include <wx/listbox.h>
 #include <unordered_set>
@@ -217,10 +218,10 @@ public:
 
     wxCheckBox* m_GseimFilterBySelectionCtrl = nullptr;
 
-    // wxStaticText* m_GseimAlgorithmLabel;
-    // wxStaticText* m_GseimTStartLabel;
-    // wxStaticText* m_GseimTEndLabel;
-    // wxStaticText* m_GseimDeltLabel;
+    wxChoice* m_GseimOutputChoiceCtrl = nullptr;
+    wxButton* m_GseimAddOutputBtn = nullptr;
+    wxButton* m_GseimRemoveOutputBtn = nullptr;
+
     wxStaticText* m_GseimOutputLabel;
     wxStaticText* m_GseimOutvarsLabel;
 
@@ -408,135 +409,6 @@ DIALOG_EXPORT_NETLIST::DIALOG_EXPORT_NETLIST( SCH_EDIT_FRAME* aEditFrame, wxWind
     updateGeneratorButtons();
 }
 
-
-// static std::vector<wxString> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
-// {
-//     std::vector<wxString> outvars;
-
-//     NETLIST_EXPORTER_GSEIM exporter( &aEditFrame->Schematic() );
-
-//     if( exporter.ReadSchematicAndLibraries( NETLIST_EXPORTER_SPICE::OPTION_DEFAULT_FLAGS,
-//                                             NULL_REPORTER::GetInstance() ) )
-//     {
-//         std::unordered_set<wxString> groundNets;
-
-//         for( const SPICE_ITEM& item : exporter.GetItems() )
-//         {
-//             wxString gseimType;
-
-//             for( const SCH_FIELD& field : item.fields )
-//             {
-//                 if( field.GetName() == wxT( "Gseim.Type" ) )
-//                 {
-//                     gseimType = field.GetText();
-//                     break;
-//                 }
-//             }
-
-//             if( gseimType == "gnd" )
-//             {
-//                 if( !item.pinNetNames.empty() )
-//                 {
-//                     wxString name( item.pinNetNames[0] );
-
-//                     if( name.StartsWith( wxT( "/" ) ) )
-//                         name = name.Mid( 1 );
-
-//                     groundNets.insert( name );
-//                 }
-//             }
-//         }
-
-//         std::set<wxString> uniqueNets;
-//         std::vector<wxString> devOutvars;
-
-//         GSEIM_COMPONENT_DATABASE::Instance().Load(
-//             "/home/arsalan/Projects/jupyter_gseim/gseim_aux/ebe" );
-
-//         for( const SPICE_ITEM& item : exporter.GetItems() )
-//         {
-//             wxString gseimType;
-
-//             for( const SCH_FIELD& field : item.fields )
-//             {
-//                 if( field.GetName() == wxT( "Gseim.Type" ) )
-//                 {
-//                     gseimType = field.GetText();
-//                     break;
-//                 }
-//             }
-
-//             if( gseimType == "gnd" )
-//                 continue;
-
-//             if( !gseimType.IsEmpty() )
-//             {
-//                 const GSEIM_COMPONENT_INFO* info =
-//                     GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
-
-//                 if( info )
-//                 {
-//                     int pinNumber = 1;
-
-//                     for( const wxString& nodeName : info->nodes )
-//                     {
-//                         wxString net;
-//                         std::string pinStr = std::to_string( pinNumber );
-
-//                         for( size_t ii = 0;
-//                              ii < item.pinNumbers.size() && ii < item.pinNetNames.size();
-//                              ++ii )
-//                         {
-//                             if( item.pinNumbers[ii] == pinStr )
-//                             {
-//                                 wxString name( item.pinNetNames[ii] );
-
-//                                 if( name.StartsWith( wxT( "/" ) ) )
-//                                     name = name.Mid( 1 );
-
-//                                 net = name;
-//                                 break;
-//                             }
-//                         }
-
-//                         if( !net.IsEmpty() && groundNets.count( net ) == 0 )
-//                         {
-//                             wxString varName = net.Upper();
-
-//                             for( size_t i = 0; i < varName.Length(); ++i )
-//                             {
-//                                 wxChar c = varName[i];
-
-//                                 if( !( wxIsalnum( c ) || c == '_' ) )
-//                                     varName[i] = '_';
-//                             }
-
-//                             uniqueNets.insert( "V" + varName );
-//                         }
-
-//                         ++pinNumber;
-//                     }
-
-//                     for( const auto& outparm : info->outparms )
-//                     {
-//                         wxString refName( item.refName );
-//                         wxString name = refName + "_" + outparm;
-
-//                         devOutvars.push_back( name );
-//                     }
-//                 }
-//             }
-//         }
-
-//         for( const auto& net : uniqueNets )
-//             outvars.push_back( net );
-
-//         for( const auto& d : devOutvars )
-//             outvars.push_back( d );
-//     }
-
-//     return outvars;
-// }
 
 static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
 {
@@ -949,6 +821,18 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimInitialSolCtrl->SetSelection( 1 );
     pg->m_RightBoxSizer->Add( pg->m_GseimInitialSolCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
 
+    // --- Output ---
+    wxStaticText* outputLabel = new wxStaticText( pg, wxID_ANY, _( "Output" ) );
+    pg->m_RightBoxSizer->Add( outputLabel, 0, wxBOTTOM, 3 );
+    pg->m_GseimOutputChoiceCtrl = new wxChoice( pg, wxID_ANY );
+    pg->m_GseimAddOutputBtn = new wxButton( pg, wxID_ANY, "+" );
+    pg->m_GseimRemoveOutputBtn = new wxButton( pg, wxID_ANY, "-" );
+    wxBoxSizer* outputSizer = new wxBoxSizer( wxHORIZONTAL );
+    outputSizer->Add( pg->m_GseimOutputChoiceCtrl, 1, wxRIGHT, 5 );
+    outputSizer->Add( pg->m_GseimAddOutputBtn, 0, wxRIGHT, 2 );
+    outputSizer->Add( pg->m_GseimRemoveOutputBtn, 0 );
+    pg->m_RightBoxSizer->Add( outputSizer, 0, wxEXPAND | wxBOTTOM, 8 );
+
     // --- Output File ---
     pg->m_GseimOutputLabel = new wxStaticText( pg, wxID_ANY, _( "Output File" ) );
     pg->m_RightBoxSizer->Add( pg->m_GseimOutputLabel, 0, wxBOTTOM, 3 );
@@ -1036,11 +920,14 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     // Wire block-management events
     BindGseimChangeHandlers( true );
 
-    pg->m_GseimBlockChoiceCtrl->Bind( wxEVT_CHOICE,  &DIALOG_EXPORT_NETLIST::OnGseimBlockSelected, this );
+    pg->m_GseimBlockChoiceCtrl->Bind( wxEVT_CHOICE,  &DIALOG_EXPORT_NETLIST::OnGseimBlockSelected,  this );
     pg->m_GseimAddBlockBtn->Bind(     wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimAddBlock,       this );
     pg->m_GseimRemoveBlockBtn->Bind(  wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimRemoveBlock,    this );
     pg->m_GseimCopyBlockBtn->Bind(    wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimCopyBlock,      this );
     pg->m_GseimPasteBlockBtn->Bind(   wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimPasteBlock,     this );
+    pg->m_GseimOutputChoiceCtrl->Bind( wxEVT_CHOICE, &DIALOG_EXPORT_NETLIST::OnGseimOutputSelected, this );
+    pg->m_GseimAddOutputBtn->Bind( wxEVT_BUTTON,     &DIALOG_EXPORT_NETLIST::OnGseimAddOutput,      this );
+    pg->m_GseimRemoveOutputBtn->Bind( wxEVT_BUTTON,  &DIALOG_EXPORT_NETLIST::OnGseimRemoveOutput,   this );
 
     m_GseimSolveBlocks = m_editFrame->Schematic().GetGseimSolveBlocks();
 
@@ -1049,13 +936,100 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     else
         m_GseimSelectedBlock = -1;
 
-
     RefreshGseimBlockList();
 
     if( m_GseimSelectedBlock >= 0 )
         PopulateGseimControls( m_GseimSelectedBlock );
     PopulateGseimOutvars();
     UpdateGseimControls();
+}
+
+void DIALOG_EXPORT_NETLIST::OnGseimRemoveOutput( wxCommandEvent& )
+{
+    if( m_GseimSelectedBlock < 0 )
+        return;
+
+    GSEIM_SOLVE_BLOCK& blk =
+        m_GseimSolveBlocks[m_GseimSelectedBlock];
+
+    if( blk.outputs.size() <= 1 )
+        return;
+
+    CommitGseimControls( m_GseimSelectedBlock );
+
+    blk.outputs.erase(
+        blk.outputs.begin() + m_GseimSelectedOutput );
+
+    if( m_GseimSelectedOutput >= (int) blk.outputs.size() )
+        m_GseimSelectedOutput = blk.outputs.size() - 1;
+
+    RefreshGseimOutputList();
+    PopulateGseimControls( m_GseimSelectedBlock );
+}
+
+void DIALOG_EXPORT_NETLIST::RefreshGseimOutputList()
+{
+    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
+
+    pg->m_GseimOutputChoiceCtrl->Clear();
+
+    if( m_GseimSelectedBlock < 0 )
+        return;
+
+    GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[m_GseimSelectedBlock];
+
+    for( size_t i = 0; i < blk.outputs.size(); ++i )
+        pg->m_GseimOutputChoiceCtrl->Append(
+            wxString::Format( "Output %d", int( i + 1 ) ) );
+
+    if( blk.outputs.empty() )
+    {
+        m_GseimSelectedOutput = -1;
+        return;
+    }
+
+    if( m_GseimSelectedOutput >= (int) blk.outputs.size() )
+        m_GseimSelectedOutput = blk.outputs.size() - 1;
+
+    if( m_GseimSelectedOutput < 0 )
+        m_GseimSelectedOutput = 0;
+
+    pg->m_GseimOutputChoiceCtrl->SetSelection( m_GseimSelectedOutput );
+}
+
+void DIALOG_EXPORT_NETLIST::OnGseimOutputSelected( wxCommandEvent& )
+{
+    if( m_GseimSelectedBlock < 0 )
+        return;
+
+    CommitGseimControls( m_GseimSelectedBlock );
+
+    m_GseimSelectedOutput =
+        m_PanelNetType[PANELGSEIM]
+            ->m_GseimOutputChoiceCtrl
+            ->GetSelection();
+
+    PopulateGseimControls( m_GseimSelectedBlock );
+}
+
+void DIALOG_EXPORT_NETLIST::OnGseimAddOutput( wxCommandEvent& )
+{
+    if( m_GseimSelectedBlock < 0 )
+        return;
+
+    CommitGseimControls( m_GseimSelectedBlock );
+
+    GSEIM_OUTPUT_BLOCK output;
+
+    m_GseimSolveBlocks[m_GseimSelectedBlock]
+        .outputs.push_back( output );
+
+    m_GseimSelectedOutput =
+        m_GseimSolveBlocks[m_GseimSelectedBlock]
+            .outputs.size() - 1;
+
+    RefreshGseimOutputList();
+    PopulateGseimControls( m_GseimSelectedBlock );
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimPasteBlock( wxCommandEvent& event )
@@ -1195,6 +1169,7 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
 {   
     EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
     const GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[index];
+    const GSEIM_OUTPUT_BLOCK& output = blk.outputs[m_GseimSelectedOutput];
 
     if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
     return;
@@ -1208,12 +1183,12 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
 
     setChoice( pg->m_GseimSolveTypeCtrl,  blk.solveType  );
     setChoice( pg->m_GseimInitialSolCtrl, blk.initialSol );
-    pg->m_GseimOutputFileCtrl->SetValue(  blk.outputFile );
+    pg->m_GseimOutputFileCtrl->SetValue( output.outputFile );
     wxGrid* grid = pg->m_GseimOutvarsGrid;
 
     std::unordered_set<wxString> checked(
-        blk.outputVars.begin(),
-        blk.outputVars.end() );
+        output.outputVars.begin(),
+        output.outputVars.end() );
 
     for( int row = 0; row < grid->GetNumberRows(); ++row )
     {
@@ -1257,7 +1232,8 @@ void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
 
     blk.solveType  = pg->m_GseimSolveTypeCtrl->GetStringSelection();
     blk.initialSol = pg->m_GseimInitialSolCtrl->GetStringSelection();
-    blk.outputFile = pg->m_GseimOutputFileCtrl->GetValue();
+    GSEIM_OUTPUT_BLOCK& output = blk.outputs[m_GseimSelectedOutput];
+    output.outputFile = pg->m_GseimOutputFileCtrl->GetValue();
 
     wxGrid* grid = pg->m_GseimParametersGrid;
     blk.parameters.clear();
@@ -1269,14 +1245,14 @@ void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
             blk.parameters[key] = value;
     }
 
-    blk.outputVars.clear();
+    output.outputVars.clear();
     wxGrid* ovGrid = pg->m_GseimOutvarsGrid;
     ovGrid->SaveEditControlValue();
     ovGrid->DisableCellEditControl();
     for( int i = 0; i < ovGrid->GetNumberRows(); ++i )
     {
         if( ovGrid->GetCellValue( i, 0 ) == "1" )
-            blk.outputVars.push_back( ovGrid->GetCellValue( i, 1 ) );
+            output.outputVars.push_back( ovGrid->GetCellValue( i, 1 ) );
     }
 
     m_editFrame->Schematic().SetGseimSolveBlocks( m_GseimSolveBlocks );
@@ -1338,7 +1314,8 @@ void DIALOG_EXPORT_NETLIST::RefreshGseimBlockList()
 
     pg->m_GseimRemoveBlockBtn->Enable(
         m_GseimSolveBlocks.size() > 0 );
-
+    
+    RefreshGseimOutputList();
     m_GseimUpdating = false;
     UpdateGseimBlockEditor();
 }
@@ -1648,20 +1625,21 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
 
             solveText += "\n";
 
-            solveText += "   begin_output\n";
-            solveText += "      filename=" + block.outputFile + "\n";
-
-            if( !block.outputVars.empty() )
+            for( const auto& output : block.outputs )
             {
-                solveText += "      variables:";
+                solveText += "   begin_output\n";
+                solveText += "      filename=" + output.outputFile + "\n";
 
-                for( const auto& var : block.outputVars )
-                    solveText += " " + var;
+                if( !output.outputVars.empty() )
+                {
+                    solveText += "      variables:\n";
 
-                solveText += "\n";
+                    for( const auto& var : output.outputVars )
+                        solveText += "+         " + var + "\n";
+                }
+
+                solveText += "   end_output\n";
             }
-
-            solveText += "   end_output\n";
             solveText += "end_solve\n\n";
         }
 

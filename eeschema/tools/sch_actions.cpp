@@ -942,6 +942,15 @@ TOOL_ACTION SCH_ACTIONS::selectGseimOutvars( TOOL_ACTION_ARGS()
         .FriendlyName( _( "Select GSEIM Output Variables..." ) )
         .Icon( BITMAPS::sim_add_signal ) );
 
+TOOL_ACTION SCH_ACTIONS::modifyGseimParameters(
+    TOOL_ACTION_ARGS()
+        .Name( "eeschema.InteractiveEdit.modifyGseimParameters" )
+        .Scope( AS_GLOBAL )
+        .FriendlyName( _( "Modify GSEIM Parameters..." ) )
+        .Tooltip( _( "Modify GSEIM Parameters" ) )
+        .Icon( BITMAPS::edit )
+);
+
 TOOL_ACTION SCH_ACTIONS::autoplaceFields( TOOL_ACTION_ARGS()
         .Name( "eeschema.InteractiveEdit.autoplaceFields" )
         .Scope( AS_GLOBAL )

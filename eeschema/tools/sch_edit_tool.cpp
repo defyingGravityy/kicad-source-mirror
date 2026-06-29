@@ -76,9 +76,15 @@
 #include <project/net_settings.h>
 #include <tools/sch_tool_utils.h>
 
+#include <dialog_shim.h>
+#include <wx/grid.h>
+#include <wx/sizer.h>
+#include <wx/button.h>
+
 #include <netlist_exporters/netlist_exporter_gseim.h>
 #include <gseim_ebe_parser.h>
 #include "../gseim/gseim_component_db.h"
+#include "../gseim/gseim_param_parser.h"
 
 class SYMBOL_UNIT_MENU : public ACTION_MENU
 {
@@ -870,6 +876,7 @@ bool SCH_EDIT_TOOL::Init()
     moveMenu.AddItem( SCH_ACTIONS::properties,        propertiesCondition, 200 );
     moveMenu.AddMenu( makeEditFieldsMenu(),           S_C::SingleSymbol, 200 );
     moveMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
+    moveMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
 
     moveMenu.AddSeparator();
     moveMenu.AddItem( ACTIONS::cut,                   S_C::IdleSelection );
@@ -897,6 +904,7 @@ bool SCH_EDIT_TOOL::Init()
     drawMenu.AddItem( SCH_ACTIONS::properties,        propertiesCondition, 200 );
     drawMenu.AddMenu( makeEditFieldsMenu(),           S_C::SingleSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
+    drawMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::autoplaceFields,   autoplaceCondition, 200 );
 
     drawMenu.AddItem( SCH_ACTIONS::editWithLibEdit,   S_C::SingleSymbolOrPower && S_C::Idle, 200 );
@@ -922,7 +930,8 @@ bool SCH_EDIT_TOOL::Init()
     selToolMenu.AddItem( SCH_ACTIONS::swap,            swapSelectionCondition, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::properties,      propertiesCondition, 200 );
     selToolMenu.AddMenu( makeEditFieldsMenu(),         S_C::SingleSymbol, 200 );
-    selToolMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );  // add this
+    selToolMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );  
+    selToolMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::autoplaceFields, autoplaceCondition, 200 );
 
     selToolMenu.AddItem( SCH_ACTIONS::editWithLibEdit, S_C::SingleSymbolOrPower && S_C::Idle, 200 );
@@ -3959,6 +3968,242 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     return 0;
 }
 
+
+int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
+{
+    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SYMBOL_T } );
+
+    if( selection.Empty() )
+        return 0;
+
+    SCH_SYMBOL* symbol = dynamic_cast<SCH_SYMBOL*>( selection.Front() );
+
+    if( !symbol )
+        return 0;
+
+    SCH_FIELD* typeField = symbol->GetField( wxT( "Gseim.Type" ) );
+
+    if( !typeField )
+        return 0;
+
+    wxString gseimType = typeField->GetText();
+
+    GSEIM_COMPONENT_DATABASE::Instance().Load(
+        "/home/arsalan/Projects/jupyter_gseim/gseim_aux/ebe" );
+
+    const GSEIM_COMPONENT_INFO* info =
+        GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+
+    if( !info )
+    {
+        wxMessageBox(
+            wxString::Format(
+                _( "No GSEIM component info found for type '%s'." ),
+                gseimType ),
+            _( "GSEIM" ),
+            wxOK | wxICON_WARNING );
+
+        return 0;
+    }
+
+    SCH_FIELD* paramsField = symbol->GetField( wxT( "Gseim.Params" ) );
+
+    wxString stored;
+
+    if( paramsField )
+        stored = paramsField->GetText();
+
+    std::map<wxString, wxString> overrides =
+        ParseGseimParams( stored );
+
+    class PARAM_DIALOG : public DIALOG_SHIM
+    {
+    public:
+        wxGrid* Grid;
+
+        PARAM_DIALOG( wxWindow* parent ) :
+            DIALOG_SHIM(
+                parent,
+                wxID_ANY,
+                _( "Modify GSEIM Parameters" ),
+                wxDefaultPosition,
+                wxSize( 650, 450 ),
+                wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER )
+        {
+            wxBoxSizer* topSizer = new wxBoxSizer( wxVERTICAL );
+
+            Grid = new wxGrid( this, wxID_ANY );
+            Grid->CreateGrid( 0, 4 );
+
+            Grid->SetColLabelValue( 0, "" );
+            Grid->SetColLabelValue( 1, "Parameter" );
+            Grid->SetColLabelValue( 2, "Default" );
+            Grid->SetColLabelValue( 3, "Current" );
+
+            Grid->SetColSize( 0, 30 );
+            Grid->SetRowLabelSize( 0 );
+
+            Grid->Bind( wxEVT_GRID_CELL_LEFT_CLICK,
+            []( wxGridEvent& event )
+            {
+                if( event.GetCol() == 0 )
+                {
+                    wxGrid* grid = static_cast<wxGrid*>( event.GetEventObject() );
+
+                    wxString value = grid->GetCellValue( event.GetRow(), 0 );
+
+                    grid->SetCellValue( event.GetRow(), 0, value == "1" ? "" : "1" );
+
+                    event.Skip( false );
+                }
+                else
+                {
+                    event.Skip();
+                }
+            } );
+
+
+            topSizer->Add( Grid, 1, wxEXPAND | wxALL, 8 );
+
+            wxStdDialogButtonSizer* btnSizer =
+                new wxStdDialogButtonSizer();
+
+            btnSizer->AddButton(
+                new wxButton( this, wxID_OK ) );
+
+            btnSizer->AddButton(
+                new wxButton( this, wxID_CANCEL ) );
+
+            btnSizer->Realize();
+
+            topSizer->Add(
+                btnSizer,
+                0,
+                wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
+                8 );
+
+            SetSizer( topSizer );
+            Layout();
+        }
+    };
+
+    PARAM_DIALOG dlg( m_frame );
+
+    struct PARAM_ENTRY
+    {
+        wxString name;
+        GSEIM_PARAMETER param;
+    };
+
+    std::vector<PARAM_ENTRY> params;
+
+    for( const auto& [name, param] : info->rparms )
+        params.push_back( { name, param } );
+
+    for( const auto& [name, param] : info->iparms )
+        params.push_back( { name, param } );
+
+    for( const auto& [name, param] : info->sparms )
+        params.push_back( { name, param } );
+
+    for( const auto& [name, param] : info->stparms )
+        params.push_back( { name, param } );
+
+    std::sort(
+        params.begin(),
+        params.end(),
+        []( const PARAM_ENTRY& a, const PARAM_ENTRY& b )
+        {
+            return a.name.CmpNoCase( b.name ) < 0;
+        } );
+
+    dlg.Grid->AppendRows( params.size() );
+
+    for( int row = 0; row < (int) params.size(); row++ )
+    {
+        const PARAM_ENTRY& entry = params[row];
+
+        wxString cur = entry.param.defaultValue;
+
+        auto it = overrides.find( entry.name );
+
+        if( it != overrides.end() )
+            cur = it->second;
+
+        bool checked = ( overrides.find( entry.name ) != overrides.end() );
+
+        dlg.Grid->SetCellValue( row, 0, checked ? "1" : "" );
+        dlg.Grid->SetCellEditor( row, 0, new wxGridCellBoolEditor() );
+        dlg.Grid->SetCellRenderer( row, 0, new wxGridCellBoolRenderer() );
+
+        dlg.Grid->SetCellValue( row, 1, entry.name );
+        dlg.Grid->SetCellValue( row, 2, entry.param.defaultValue );
+        dlg.Grid->SetCellValue( row, 3, cur );
+
+        dlg.Grid->SetReadOnly( row, 1, true );
+        dlg.Grid->SetReadOnly( row, 2, true );
+
+        if( !entry.param.options.empty()
+            && !( entry.param.options.size() == 1
+                && entry.param.options[0] == "none" ) )
+        {
+            wxArrayString choices;
+
+            for( const wxString& option : entry.param.options )
+                choices.Add( option );
+
+            dlg.Grid->SetCellEditor(
+                row,
+                3,
+                new wxGridCellChoiceEditor( choices ) );
+        }
+
+    }
+
+    if( dlg.ShowModal() != wxID_OK )
+        return 0;
+
+    std::map<wxString, wxString> modified;
+
+    for( int row = 0; row < dlg.Grid->GetNumberRows(); row++ )
+    {
+        if( dlg.Grid->GetCellValue( row, 0 ) != "1" )
+            continue;
+
+        wxString name = dlg.Grid->GetCellValue( row, 1 );
+        wxString cur  = dlg.Grid->GetCellValue( row, 3 );
+
+        modified[name] = cur;
+    }
+
+    wxString newStored =
+        SerializeGseimParams( modified );
+
+    SCH_COMMIT commit( m_toolMgr );
+    commit.Modify( symbol, m_frame->GetScreen() );
+
+    if( paramsField )
+    {
+        paramsField->SetText( newStored );
+    }
+    else
+    {
+        SCH_FIELD newField(
+            symbol,
+            FIELD_T::USER,
+            wxT( "Gseim.Params" ) );
+
+        newField.SetText( newStored );
+        newField.SetVisible( false );
+
+        symbol->AddField( newField );
+    }
+
+    commit.Push( _( "Modify GSEIM Parameters" ) );
+
+    return 0;
+}
+
 void SCH_EDIT_TOOL::setTransitions()
 {
     // clang-format off
@@ -3984,6 +4229,7 @@ void SCH_EDIT_TOOL::setTransitions()
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editReference.MakeEvent() );
 
     Go( &SCH_EDIT_TOOL::SelectGseimOutvars, SCH_ACTIONS::selectGseimOutvars.MakeEvent() );
+    Go( &SCH_EDIT_TOOL::ModifyGseimParameters, SCH_ACTIONS::modifyGseimParameters.MakeEvent() );
 
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editValue.MakeEvent() );
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editFootprint.MakeEvent() );

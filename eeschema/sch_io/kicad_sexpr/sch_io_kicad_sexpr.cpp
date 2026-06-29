@@ -481,7 +481,7 @@ void SCH_IO_KICAD_SEXPR::Format( SCH_SHEET* aSheet )
 
         m_out->Print(
             " (output_file %s)",
-            m_out->Quotew( blk.outputFile ).c_str() );
+            m_out->Quotew( blk.outputs[0].outputFile ).c_str() );
 
         for( const auto& [key,value] : blk.parameters )
         {
@@ -491,7 +491,7 @@ void SCH_IO_KICAD_SEXPR::Format( SCH_SHEET* aSheet )
                 m_out->Quotew( value ).c_str() );
         }
 
-        for( const wxString& var : blk.outputVars )
+        for( const wxString& var : blk.outputs[0].outputVars )
         {
             m_out->Print(
                 " (output_var %s)",

@@ -3,6 +3,17 @@
 #include <map>
 #include <vector>
 
+struct GSEIM_OUTPUT_BLOCK
+{
+    wxString outputFile;
+    std::vector<wxString> outputVars;
+
+    GSEIM_OUTPUT_BLOCK() :
+        outputFile( "output_file.dat" )
+    {
+    }
+};
+
 struct GSEIM_SOLVE_BLOCK
 {
     wxString solveType;
@@ -10,13 +21,12 @@ struct GSEIM_SOLVE_BLOCK
 
     std::map<wxString, wxString> parameters;
 
-    wxString outputFile;
-    std::vector<wxString> outputVars;
+    std::vector<GSEIM_OUTPUT_BLOCK> outputs;
 
     GSEIM_SOLVE_BLOCK() :
         solveType( "trns" ),
-        initialSol( "previous" ),
-        outputFile( "output_file.dat" )
+        initialSol( "previous" )
     {
+        outputs.emplace_back();
     }
 };

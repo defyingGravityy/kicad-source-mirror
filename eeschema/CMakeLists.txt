@@ -493,6 +493,7 @@ set( EESCHEMA_SRCS
     netlist_exporters/gseim_solver_parameter_database.h
     gseim/gseim_component_db.h
     gseim/gseim_component_db.cpp
+    gseim/gseim_param_parser.cpp
 
     tools/assign_footprints.cpp
     tools/backannotate.cpp
