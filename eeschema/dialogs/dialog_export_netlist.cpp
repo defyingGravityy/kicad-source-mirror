@@ -515,9 +515,21 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                 }
                 else
                 {
-                    wxString net = var.Mid( 1 );
+                    if( var.EndsWith( "_ac" ) )
+                    {
+                        ov.isAc = true;
+                        ov.baseName = var;
 
-                    ov.expr = "nodev_of_" + net;
+                        wxString net = var.Mid( 1 );
+                        net.RemoveLast( 3 );     // remove "_ac"
+
+                        ov.expr = "nodev_ac_of_" + net;
+                    }
+                    else
+                    {
+                        wxString net = var.Mid( 1 );
+                        ov.expr = "nodev_of_" + net;
+                    }
                 }
 
                 outvars.push_back( ov );

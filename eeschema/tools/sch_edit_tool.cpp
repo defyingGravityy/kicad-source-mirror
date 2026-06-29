@@ -3878,10 +3878,16 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
             if( !( wxIsalnum( c ) || c == '_' ) )
                 varName[i] = '_';
         }
-        wxString vVar = "V" + varName;
-        // deduplicate
+        wxString vVar   = "V" + varName;
+        wxString vVarAc = vVar + "_ac";
+
+        // DC / transient node voltage
         if( std::find( available.begin(), available.end(), vVar ) == available.end() )
             available.push_back( vVar );
+
+        // AC node voltage
+        if( std::find( available.begin(), available.end(), vVarAc ) == available.end() )
+            available.push_back( vVarAc );
     }
 
     // Device outparms
