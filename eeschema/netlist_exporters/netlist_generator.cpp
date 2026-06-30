@@ -96,12 +96,13 @@ bool SCH_EDIT_FRAME::WriteNetListFile( int aFormat, const wxString& aFullFileNam
 
         wxString solveBlock = sch->GetGseimSolveBlock();
         gseim->SetSolveBlock( solveBlock );
-
+        gseim->SetExportAsSubcircuit( sch->GetGseimExportAsSubcircuit() );
         const std::vector<GSEIM_OUTVAR>& explicitOutvars = sch->GetGseimExplicitOutvars();
         if( !explicitOutvars.empty() )
             gseim->SetExplicitOutvars( explicitOutvars );
 
         helper = gseim;
+
         break;
     }
 

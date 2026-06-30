@@ -493,6 +493,9 @@ set( EESCHEMA_SRCS
     netlist_exporters/gseim_solver_parameter_database.h
     gseim/gseim_component_db.h
     gseim/gseim_component_db.cpp
+    gseim/gseim_component_db.cpp
+    gseim/gseim_subckt_db.cpp
+    gseim/gseim_sub_parser.cpp
     gseim/gseim_param_parser.cpp
     gseim/gseim_paths.cpp
 

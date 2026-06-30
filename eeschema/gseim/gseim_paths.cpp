@@ -21,3 +21,8 @@ wxString GetGseimSolverParameterPath()
 {
     return GetGseimResourcePath() + "/slvparms.in";
 }
+
+wxString GetGseimSubPath()
+{
+    return GetGseimResourcePath() + "/sub";
+}

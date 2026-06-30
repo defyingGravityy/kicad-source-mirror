@@ -4,6 +4,7 @@ install(
     DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}/ebe
         ${CMAKE_CURRENT_SOURCE_DIR}/xbe
+        ${CMAKE_CURRENT_SOURCE_DIR}/sub
     DESTINATION ${KICAD_DATA}/resources
 )
 

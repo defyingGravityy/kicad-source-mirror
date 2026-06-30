@@ -550,6 +550,9 @@ public:
         m_GseimSolveBlocks = aBlocks;
     }
 
+    bool GetGseimExportAsSubcircuit() const { return m_gseimExportAsSubcircuit; }
+    void SetGseimExportAsSubcircuit( bool aValue ) { m_gseimExportAsSubcircuit = aValue; }
+
     /**
      * This is a throw away method for variant testing.
      *
@@ -638,6 +641,8 @@ private:
     std::unordered_set<wxString> m_gseimCheckedOutvars;
 
     std::vector<GSEIM_SOLVE_BLOCK> m_GseimSolveBlocks;
+
+    bool m_gseimExportAsSubcircuit = false;
 
     /**
      * Simulation operating points for text variable substitution.

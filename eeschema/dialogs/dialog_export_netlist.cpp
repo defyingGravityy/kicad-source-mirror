@@ -224,6 +224,8 @@ public:
     wxButton* m_GseimAddOutputBtn = nullptr;
     wxButton* m_GseimRemoveOutputBtn = nullptr;
 
+    wxCheckBox* m_GseimExportAsSubckt = nullptr;
+
     wxStaticText* m_GseimOutputLabel;
     wxStaticText* m_GseimOutvarsLabel;
 
@@ -284,6 +286,7 @@ EXPORT_NETLIST_PAGE::EXPORT_NETLIST_PAGE( wxNotebook* aParent, const wxString& a
         m_TitleStringCtrl( nullptr ),
         m_GseimSolveTypeCtrl( nullptr ),
         m_GseimInitialSolCtrl( nullptr ),
+
 
         // m_GseimAlgorithmCtrl( nullptr ),
 
@@ -792,6 +795,11 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     // --- Solve Block selector ---
     wxStaticText* blockLabel = new wxStaticText( pg, wxID_ANY, _( "Solve Block" ) );
     pg->m_RightBoxSizer->Add( blockLabel, 0, wxBOTTOM, 3 );
+
+    pg->m_GseimExportAsSubckt = new wxCheckBox( pg, wxID_ANY, _( "Export as subcircuit (.sub)" ) );
+    pg->m_GseimExportAsSubckt->SetToolTip( _( "Export this schematic as a GSEIM subcircuit definition "
+                                              "instead of a full circuit netlist" ) );
+    pg->m_RightBoxSizer->Add( pg->m_GseimExportAsSubckt, 0, wxBOTTOM, 8 );
 
     wxBoxSizer* blockRow = new wxBoxSizer( wxHORIZONTAL );
     pg->m_GseimBlockChoiceCtrl = new wxChoice( pg, wxID_ANY );
@@ -1579,6 +1587,14 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
     fn = m_editFrame->Schematic().GetFileName();
     FilenamePrms( currPage->m_IdNetType, &fileExt, &fileWildcard );
 
+    if( currPage->m_IdNetType == NET_TYPE_GSEIM
+        && currPage->m_GseimExportAsSubckt
+        && currPage->m_GseimExportAsSubckt->IsChecked() )
+    {
+        fileExt = "sub";
+        fileWildcard = "GSEIM Subcircuit (*.sub)|*.sub";
+    }
+
     // Set some parameters
     switch( currPage->m_IdNetType )
     {
@@ -1615,6 +1631,8 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
     {
         if( m_GseimSelectedBlock >= 0 )
             CommitGseimControls( m_GseimSelectedBlock );
+
+        m_editFrame->Schematic().SetGseimExportAsSubcircuit( m_PanelNetType[PANELGSEIM]->m_GseimExportAsSubckt->IsChecked() );
 
         wxString solveText;
 
