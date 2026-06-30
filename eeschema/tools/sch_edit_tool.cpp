@@ -85,6 +85,7 @@
 #include <gseim_ebe_parser.h>
 #include "../gseim/gseim_component_db.h"
 #include "../gseim/gseim_param_parser.h"
+#include "../gseim/gseim_paths.h"
 
 class SYMBOL_UNIT_MENU : public ACTION_MENU
 {
@@ -3840,7 +3841,7 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     wxString gseimType = typeField->GetText();
 
     GSEIM_COMPONENT_DATABASE::Instance().Load(
-        "/home/arsalan/Projects/jupyter_gseim/gseim_aux/ebe" );
+        GetGseimEbePath() );
 
     const GSEIM_COMPONENT_INFO* info =
         GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
@@ -3995,7 +3996,7 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
     wxString gseimType = typeField->GetText();
 
     GSEIM_COMPONENT_DATABASE::Instance().Load(
-        "/home/arsalan/Projects/jupyter_gseim/gseim_aux/ebe" );
+        GetGseimEbePath() );
 
     const GSEIM_COMPONENT_INFO* info =
         GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );

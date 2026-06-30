@@ -494,6 +494,7 @@ set( EESCHEMA_SRCS
     gseim/gseim_component_db.h
     gseim/gseim_component_db.cpp
     gseim/gseim_param_parser.cpp
+    gseim/gseim_paths.cpp
 
     tools/assign_footprints.cpp
     tools/backannotate.cpp
@@ -715,6 +716,20 @@ set_source_files_properties( eeschema.cpp PROPERTIES
 
 # if building eeschema, then also build eeschema_kiface if out of date.
 add_dependencies( eeschema eeschema_kiface )
+
+add_custom_command(
+    TARGET eeschema POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources/gseim
+        $<TARGET_FILE_DIR:eeschema>/resources/gseim
+)
+
+add_custom_command(
+    TARGET eeschema_kiface POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources/gseim
+        $<TARGET_FILE_DIR:eeschema_kiface>/resources/gseim
+)
 
 # Generate link map with cross reference
 target_link_options( eeschema_kiface PRIVATE

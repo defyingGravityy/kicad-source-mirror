@@ -556,6 +556,41 @@ void LIBRARY_MANAGER::LoadGlobalTables( std::initializer_list<LIBRARY_TABLE_TYPE
     }
 
     loadTables( PATHS::GetUserSettingsPath(), LIBRARY_TABLE_SCOPE::GLOBAL, aTablesToLoad );
+    if( aTablesToLoad.size() == 0 || std::ranges::find( aTablesToLoad.begin(), aTablesToLoad.end(), LIBRARY_TABLE_TYPE::SYMBOL ) != aTablesToLoad.end() )
+    {
+        LIBRARY_TABLE* table = Table( LIBRARY_TABLE_TYPE::SYMBOL, LIBRARY_TABLE_SCOPE::GLOBAL ).value_or( nullptr );
+
+        if( table )
+        {
+            const wxString uri = PATHS::GetStockDataPath() +
+                "/resources/gseim/sym-lib-table";
+
+            bool found = false;
+
+            for( const LIBRARY_TABLE_ROW& row : table->Rows() )
+            {
+                if( row.Type() == LIBRARY_TABLE_ROW::TABLE_TYPE_NAME && row.URI() == uri )
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if( !found )
+            {
+                LIBRARY_TABLE_ROW chained = table->MakeRow();
+                chained.SetType( LIBRARY_TABLE_ROW::TABLE_TYPE_NAME );
+                chained.SetNickname( "GSEIM" );
+                chained.SetDescription( "GSEIM Libraries" );
+                chained.SetURI( uri );
+                table->Rows().push_back( chained );
+                table->Save().map_error( []( const LIBRARY_ERROR& aError )
+                    {
+                        wxLogTrace( traceLibraries, "Failed to save GSEIM chained table: %s", aError.message );
+                    } );
+            }
+        }
+    }
 
     SETTINGS_MANAGER& mgr = Pgm().GetSettingsManager();
     KICAD_SETTINGS*   settings = mgr.GetAppSettings<KICAD_SETTINGS>( "kicad" );

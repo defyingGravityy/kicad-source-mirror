@@ -79,6 +79,8 @@
 #include <wx/txtstrm.h>
 #include <wx/utils.h>
 
+#include "../gseim/gseim_paths.h"
+
 #include <thread>
 #include <vector>
 #include <properties/property_mgr.h>
@@ -852,7 +854,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_RightBoxSizer->Add( pg->m_GseimOutputFileCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
 
     // --- Add Parameter button ---
-    m_GseimParameterDb.Load( "/home/arsalan/Projects/jupyter_gseim/gseim_aux/slvparms.in" );
+    m_GseimParameterDb.Load( GetGseimSolverParameterPath() );
     pg->m_GseimAddParameterBtn = new wxButton( pg, wxID_ANY, "Add Parameter" );
     pg->m_RightBoxSizer->Add( pg->m_GseimAddParameterBtn, 0, wxEXPAND | wxTOP, 5 );
     pg->m_GseimAddParameterBtn->Bind( wxEVT_BUTTON, &DIALOG_EXPORT_NETLIST::OnGseimAddParameter, this );

@@ -229,7 +229,6 @@ static wxString getOSXBundleRoot()
 }
 #endif
 
-
 wxString PATHS::GetStockDataPath( bool aRespectRunFromBuildDir )
 {
     wxString path;

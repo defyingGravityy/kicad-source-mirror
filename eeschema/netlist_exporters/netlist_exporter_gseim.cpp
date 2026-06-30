@@ -11,6 +11,7 @@
 #include "../gseim/gseim_param_parser.h"
 
 #include "gseim_outvar.h"
+#include "../gseim/gseim_paths.h"
 
 namespace
 {
@@ -103,7 +104,7 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
     m_outvars.clear();
 
     GSEIM_COMPONENT_DATABASE::Instance().Load(
-        "/home/arsalan/Projects/jupyter_gseim/gseim_aux/ebe" );
+        GetGseimEbePath() );
 
     FILE_OUTPUTFORMATTER formatter( aOutFileName );
 
