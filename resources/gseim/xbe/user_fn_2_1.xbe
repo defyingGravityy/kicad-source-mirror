@@ -1,0 +1,34 @@
+xbe name=user_fn_2_1 evaluate=yes
+Jacobian: variable
+input_vars: x1 x2
+output_vars: y1
+aux_vars:
+aux_vars_ac:
+iparms:
++  iprm1=0
++  iprm2=0
++  index_fn=1
++  jac=0
+sparms:
+rparms:
++  rprm1=0
++  rprm2=0
++  rprm3=0
++  rprm4=0
++  rprm5=0
++  rprm6=0
++  rprm7=0
++  rprm8=0
++  rprm9=0
++  rprm10=0
+stparms:
+igparms:
+outparms: y1
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y1 x1 x2
+n_f_ac=0
+C:
+endC
+endxbe

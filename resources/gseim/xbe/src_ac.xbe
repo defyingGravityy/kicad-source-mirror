@@ -1,0 +1,30 @@
+xbe name=src_ac evaluate=yes allow_elex=yes allow_ssw=yes allow_sss=yes
++  allow_sse=yes allow_ssf=yes allow_ac=yes
+# y = a*sin(w*(t-t0)+phi)
+Jacobian: constant
+input_vars:
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  a=1 
++  f_hz=1
++  phi_deg=0
++  t0=0
++  dc=0
++  omega=0
++  phi_rad=0
+stparms:
+igparms:
+outparms: y
+outparms_ac: y_ac
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=1
+f_ac_1: y
+C:
+endC
+endxbe

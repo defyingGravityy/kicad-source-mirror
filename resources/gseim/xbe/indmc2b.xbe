@@ -1,0 +1,35 @@
+xbe name=indmc2b evaluate=yes allow_elex=yes
+
+# induction motor model: current calculation
+# (use this along with indmc2a.xbe)
+Jacobian: variable
+input_vars: psids psidr psiqs psiqr
+output_vars: ia ib ic
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  lls=0.002
++  lm=0.0693
++  llr=0.002
++  ls=0
++  lr=0
++  le=0
++  l1=0
+stparms:
+igparms:
+outparms:
++  ia
++  ib
++  ic
+outparms_ac:
+n_f= 0
+n_g= 3
+g_1: ia psiqs psiqr
+g_2: ib psiqs psiqr psids psidr
+g_3: ic psiqs psiqr psids psidr
+n_f_ac=0
+C:
+endC
+endxbe

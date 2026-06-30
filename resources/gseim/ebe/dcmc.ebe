@@ -1,0 +1,46 @@
+ebe name=dcmc x_inputs=yes x_outputs=yes allow_elex=no
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars: ia eb tem
+aux_vars_ac:
+aux_vars_startup: ia_st eb_st tem_st
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: wrm tl
+iparms:
+sparms:
+rparms:
++  ra=1
++  la=1m
++  c=1 
++  j=0.25
++  b_damp=0
+stparms: wrm0=0 ia0=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v tem tl wrm
+outparms_ac:
+n_f=6
+f_1: ia
+f_2: ia
+f_3: eb wrm
+f_4: tem ia
+f_5: d_dt(ia) v(p) v(n) ia eb
+f_6: d_dt(wrm) tem tl wrm
+n_g=0
+n_h=6
+h_1: ia_st
+h_2: ia_st
+h_3: eb_st wrm
+h_4: tem_st ia_st
+h_5: ia_st
+h_6: wrm
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

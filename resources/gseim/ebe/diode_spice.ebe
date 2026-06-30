@@ -1,0 +1,63 @@
+ebe name=diode_spice allow_sss=no
+Jacobian: variable
+nodes: p n
+state_vars: qd0 qd1
+aux_vars:
+aux_vars_ac:
+aux_vars_startup: id_s
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms:
++  af=0.0
++  area=1.0
++  bv=100
++  bvj=100
++  cjo=1p
++  eg=1.11
++  fc=0.5
++  ibv=0.001
++  is=1e-14
++  kf=0.0
++  m=0.5
++  n0=1.0
++  tnom=300.15
++  tt=0.0
++  vj=1.0
++  xti=3.0
++  t1=300.15
++  vth=0
++  vth_nom=0
++  f1=0
++  f2=0
++  f3=0
++  fcp=0
++  ibv_calc=0
++  is_temp=0
++  cur_max=1e3
++  k_crit=0
+stparms: v0=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac:
+n_f=2
+f_1: d_dt(qd0) v(p) v(n)
+f_2: d_dt(qd1) v(p) v(n)
+n_g=2
+g_1: qd0 v(p) v(n)
+g_2: qd1 v(p) v(n)
+n_h=3
+h_1: id_s
+h_2: id_s
+h_3: v(p) v(n)
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

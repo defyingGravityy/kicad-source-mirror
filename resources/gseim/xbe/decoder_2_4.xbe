@@ -1,0 +1,41 @@
+xbe name=decoder_2_4 evaluate=yes
+Jacobian: variable
+input_vars: x0 x1
+output_vars: y0 y1 y2 y3
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  y00=0
++  y01=0
++  y02=0
++  y03=0
++  y10=0
++  y11=0
++  y12=0
++  y13=0
++  y20=0
++  y21=0
++  y22=0
++  y23=0
++  y30=0
++  y31=0
++  y32=0
++  y33=0
++  x_high=1
++  hb2=0
+stparms:
+igparms:
+outparms: x0 x1 y0 y1 y2 y3
+outparms_ac:
+n_f= 0
+n_g= 4
+g_1: y0
+g_2: y1
+g_3: y2
+g_4: y3
+n_f_ac=0
+C:
+endC
+endxbe

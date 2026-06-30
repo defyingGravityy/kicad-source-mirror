@@ -1,0 +1,40 @@
+ebe name=ammeter_fb x_outputs=yes allow_elex=yes
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: i_fb
+iparms:
+sparms:
+rparms: k_scale=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i_fb
+outparms_ac:
+n_f=3
+f_1: i_fb
+f_2: i_fb
+f_3: v(p) v(n)
+n_g=0
+n_h=3
+h_1: i_fb
+h_2: i_fb
+h_3: v(p) v(n)
+n_f_ac=0
+n_ef=2
+ef_1: cur(p) i_fb
+ef_2: v(p) v(n)
+n_eg=3
+eg_1: i_fb
+eg_2: i_fb
+eg_3: v(p) v(n)
+C:
+endC
+endebe

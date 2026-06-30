@@ -1,0 +1,42 @@
+xbe name=clock evaluate=yes limit_tstep=yes allow_ssw=yes allow_sss=yes
++  allow_elex=yes elex_limit_tstep=yes
++  el3_limit_tstep=yes
+# clock source with T1, T2 specified
+Jacobian: constant
+input_vars:
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+# Note: L1 is the level in the first interval, L2 in the second.
+rparms:
++  T1=1
++  T2=1
++  L1=1
++  L2=-1
++  t0=0
++  delta1=0.01
++  delta2=0.01
++  elex_dt=1.0e-10
++  T=0
++  L0=0
++  tk1=0
++  tk2=0
++  tk3=0
++  tk4=0
++  tk5=0
++  slope1=0
++  slope2=0
++  epsl=0
+stparms:
+igparms:
+outparms: y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

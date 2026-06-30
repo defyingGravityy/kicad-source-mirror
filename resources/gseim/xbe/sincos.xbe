@@ -1,0 +1,22 @@
+xbe name=sincos evaluate=yes
+# sin x, cos x
+Jacobian: variable
+input_vars: x
+output_vars: s c
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: x s c
+outparms_ac:
+n_f= 0
+n_g= 2
+g_1: x s
+g_2: x c
+n_f_ac=0
+C:
+endC
+endxbe

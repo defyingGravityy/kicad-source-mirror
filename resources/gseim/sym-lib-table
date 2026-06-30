@@ -1,0 +1,10 @@
+(sym_lib_table
+    (version 7)
+    (lib
+        (name "GSEIM_Library")
+        (type "KiCad")
+        (uri "${@KICAD_SYMBOL_ENV@}/GSEIM_Library.kicad_sym")
+        (options "")
+        (descr "GSEIM Symbols")
+    )
+)

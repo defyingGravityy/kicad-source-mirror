@@ -1,0 +1,21 @@
+xbe name=dq_to_alphabeta_2 evaluate=yes
+Jacobian: variable
+input_vars: xd xq c s
+output_vars: alpha beta
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: xd xq alpha beta
+outparms_ac:
+n_f= 0
+n_g= 2
+g_1: alpha xd xq c s 
+g_2: beta xd xq c s 
+n_f_ac=0
+C:
+endC
+endxbe

@@ -1,0 +1,21 @@
+xbe name=max evaluate=yes allow_elex=yes
+# y = max(x1,x2)
+Jacobian: variable
+input_vars: x1 x2
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: x1 x2 y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

@@ -1,0 +1,26 @@
+xbe name=average_mv_2 evaluate=yes save_history=yes allow_ssw=no
++ allow_sss=no
+#
+#
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  flag1=0
+sparms:
+rparms:
++  T=1
++  sum1=0
+stparms: x_avg_st=0
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

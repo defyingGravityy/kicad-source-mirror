@@ -1,0 +1,17 @@
+xbe name=dummy evaluate=yes allow_ssw=yes
+# dummy (do nothing)
+Jacobian: constant
+input_vars:
+output_vars: x
+aux_vars:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms:
+n_f= 0
+n_g= 0
+C:
+endC
+endxbe

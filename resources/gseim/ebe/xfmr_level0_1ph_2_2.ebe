@@ -1,0 +1,73 @@
+ebe name=xfmr_level0_1ph_2_2 allow_elex=yes
+#
+# two primary windings, two secondary windings
+# (No magnetizing inductance)
+#
+Jacobian: constant
+nodes: p1_p p1_n p2_p p2_n s1_p s1_n s2_p s2_n
+state_vars:
+aux_vars: cur_p1_p  cur_p2_p  cur_s1_p  cur_s2_p
+aux_vars_ac:
+aux_vars_startup: cur_p1_p_s  cur_p2_p_s  cur_s1_p_s  cur_s2_p_s
+elex_aux_vars: Vp1 Vp2 Vs1 Vs2
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms: Np=2 Ns=2
+sparms:
+rparms:
++  p1_turns=1
++  p2_turns=1
++  s1_turns=1
++  s2_turns=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: ip1 ip2 is1 is2 vp1 vp2 vs1 vs2
+outparms_ac:
+n_f=12
+f_1:  cur_p1_p
+f_2:  cur_p1_p
+f_3:  cur_p2_p
+f_4:  cur_p2_p
+f_5:  cur_s1_p
+f_6:  cur_s1_p
+f_7:  cur_s2_p
+f_8:  cur_s2_p
+f_9:  v(p1_p) v(p1_n) v(s1_p) v(s1_n)
+f_10: v(p1_p) v(p1_n) v(s2_p) v(s2_n)
+f_11: v(p1_p) v(p1_n) v(p2_p) v(p2_n)
+f_12: cur_p1_p cur_p2_p cur_s1_p cur_s2_p
+n_g=0
+n_h=12
+h_1:  cur_p1_p_s
+h_2:  cur_p1_p_s
+h_3:  cur_p2_p_s
+h_4:  cur_p2_p_s
+h_5:  cur_s1_p_s
+h_6:  cur_s1_p_s
+h_7:  cur_s2_p_s
+h_8:  cur_s2_p_s
+h_9:  v(p1_p) v(p1_n) v(s1_p) v(s1_n)
+h_10: v(p1_p) v(p1_n) v(s2_p) v(s2_n)
+h_11: v(p1_p) v(p1_n) v(p2_p) v(p2_n)
+h_12: cur_p1_p_s cur_p2_p_s cur_s1_p_s cur_s2_p_s
+n_f_ac=0
+n_ef= 12
+ef_1:  Vp1 v(p1_p) v(p1_n)
+ef_2:  Vp2 v(p2_p) v(p2_n)
+ef_3:  Vs1 v(s1_p) v(s1_n)
+ef_4:  Vs2 v(s2_p) v(s2_n)
+ef_5:  Vp1 Vs1
+ef_6:  Vp1 Vs2
+ef_7:  Vp1 Vp2
+ef_8:  cur(p1_p) cur(p2_p) cur(s1_p) cur(s2_p)
+ef_9:  cur(p1_p) cur(p1_n)
+ef_10: cur(p2_p) cur(p2_n)
+ef_11: cur(s1_p) cur(s1_n)
+ef_12: cur(s2_p) cur(s2_n)
+n_eg=0
+C:
+endC
+endebe

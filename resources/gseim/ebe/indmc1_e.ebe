@@ -1,0 +1,103 @@
+ebe name=indmc1_e x_inputs=yes x_outputs=yes allow_elex=no
+Jacobian: variable
+nodes: a b c
+state_vars:
+aux_vars:
++  ids
++  idr
++  iqs
++  iqr
++  psids
++  psidr
++  psiqs
++  psiqr
++  wr
++  tem
++  vds
++  vqs
+aux_vars_ac:
+aux_vars_startup:
++  ids_st
++  idr_st
++  iqs_st
++  iqr_st
++  psids_st
++  psidr_st
++  psiqs_st
++  psiqr_st
++  wr_st
++  tem_st
++  vds_st
++  vqs_st
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: wrm tl
+iparms:
++  poles=4
+sparms:
+rparms:
++  rs=1.157
++  lls=6.2m
++  lm=139m
++  llr=6.2m
++  rr=1.157
++  j=0.25
++  b_damp=0
++  le=0
++  l1=0
++  l2=0
++  x1=0
++  x2=0
+stparms:
++  psids0=0
++  psidr0=0
++  psiqs0=0
++  psiqr0=0
++  wrm0=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: ia ib ic va vb vc tem wrm ids idr iqs iqr vds vqs
+outparms_ac:
+n_f=16
+f_1:  iqs 
+f_2:  iqs ids
+f_3:  iqs ids
+f_4:  vqs v(a) v(b) v(c)
+f_5:  vds v(b) v(c)
+f_6:  ids psids psidr
+f_7:  idr psids ids
+f_8:  iqs psiqs psiqr
+f_9:  iqr psiqs iqs
+f_10: tem iqs idr ids iqr
+f_11: wr wrm
+f_12: d_dt(psids) vds ids
+f_13: d_dt(psiqs) vqs iqs
+f_14: d_dt(psidr) wr psiqr idr
+f_15: d_dt(psiqr) wr psidr iqr
+f_16: d_dt(wrm) tem tl wrm
+n_g=0
+n_h=16
+h_1:  iqs_st 
+h_2:  iqs_st ids_st
+h_3:  iqs_st ids_st
+h_4:  vqs_st v(a) v(b) v(c)
+h_5:  vds_st v(b) v(c)
+h_6:  ids_st psids_st psidr_st
+h_7:  idr_st psids_st ids_st
+h_8:  iqs_st psiqs_st psiqr_st
+h_9:  iqr_st psiqs_st iqs_st
+h_10: tem_st iqs_st idr_st ids_st iqr_st
+h_11: wr_st wrm
+h_12: psids_st
+h_13: psiqs_st
+h_14: psidr_st
+h_15: psiqr_st
+h_16: wrm
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

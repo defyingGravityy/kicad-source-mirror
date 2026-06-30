@@ -1,0 +1,43 @@
+ebe name=battery_r x_inputs=yes
+# resistor element for battery modeling
+# Reference:
+#   Chen and Rincon-Mora,
+#   "Accurate Electrical Battery Model Capable of Predicting Runtime
+#   and I-V Performance,"
+#   IEEE Transactions on energy conversion, vol. 21, June 2006.
+Jacobian: variable
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: soc
+iparms:
+sparms:
+rparms:
++  a0=0.1
++  b0=0.1
++  b1=20.0
++  r=0.0
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v
+outparms_ac:
+n_f=2
+f_1: v(p) v(n) soc
+f_2: v(p) v(n) soc
+n_g=0
+n_h=2
+h_1: v(p) v(n) soc
+h_2: v(p) v(n) soc
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

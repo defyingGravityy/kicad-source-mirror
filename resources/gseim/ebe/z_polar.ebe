@@ -1,0 +1,43 @@
+ebe name=z_polar allow_sse=no allow_ac=yes allow_trns=no
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms:
++  mag=1
++  theta_deg=0
++  r=0
++  x=0
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+#outparms: P Q
+outparms:
+outparms_ac: i_ac v_ac S
+# Note: we should make n_f = 0 here (since trns is not allowed for z.ebe);
+# however, n_f >= n_nodes is assumed by gseim in allocation of some arrays.
+# -> keep it. f_1, f_2, h_1, h_2 will not make sense here, but keep them.
+n_f=2
+f_1: v(p) v(n)
+f_2: v(p) v(n)
+n_g=0
+n_h=2
+h_1: v(p) v(n)
+h_2: v(p) v(n)
+n_f_ac=2
+f_ac_1: v(p) v(n)
+f_ac_2: v(p) v(n)
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

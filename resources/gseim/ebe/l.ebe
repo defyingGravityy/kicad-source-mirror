@@ -1,0 +1,49 @@
+ebe name=l allow_elex=yes elex_need_oldvars=yes
++  el3_need_oldvars=yes el3_rhs_ddt=yes
++  allow_sse=yes
++  allow_ac=yes
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars: cur_p
+aux_vars_ac: cur_p_ac
+aux_vars_startup:
+elex_aux_vars: IL ILd
+el3_aux_vars: IL3 ILd3
+el3_state_vars: IL3s
+x_vars:
+iparms:
+sparms:
+rparms:
++  l=1.0
++  rp=10.0e6
++  k_scale=1
++  gp=0
+stparms: i0=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac: i_ac v_ac S
+n_f=3
+f_1: cur_p
+f_2: cur_p
+f_3: d_dt(cur_p) v(p) v(n)
+n_g=0
+n_h=2
+h_1:
+h_2:
+n_f_ac=3
+f_ac_1: cur_p_ac
+f_ac_2: cur_p_ac
+f_ac_3: cur_p_ac v(p) v(n)
+n_ef=2
+ef_1: rhs_ddt IL
+ef_2: ILd v(p) v(n)
+n_eg=3
+eg_1: IL3
+eg_2: IL3
+eg_3: ILd3 v(p) v(n)
+C:
+endC
+endebe
