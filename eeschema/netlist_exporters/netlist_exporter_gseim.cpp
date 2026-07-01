@@ -104,38 +104,6 @@ wxString MakeOutvarName( const wxString& aNet )
 
 } // anonymous namespace
 
-
-void NETLIST_EXPORTER_GSEIM::DumpHierarchy()
-{
-    SCH_SHEET_LIST sheetList = m_schematic->Hierarchy();
-
-    for( const SCH_SHEET_PATH& path : sheetList )
-    {
-        SCH_SHEET* sheet = path.Last();
-        SCH_SCREEN* screen = path.LastScreen();
-
-        wxLogMessage( "Sheet: %s (path: %s)",
-            sheet->GetName(), path.PathHumanReadable() );
-
-        for( SCH_ITEM* item : screen->Items().OfType( SCH_SYMBOL_T ) )
-        {
-            SCH_SYMBOL* sym = static_cast<SCH_SYMBOL*>( item );
-            wxLogMessage( "    Symbol: %s", sym->GetRef( &path ) );
-        }
-
-        for( SCH_ITEM* item : screen->Items().OfType( SCH_SHEET_T ) )
-        {
-            SCH_SHEET* child = static_cast<SCH_SHEET*>( item );
-            wxLogMessage( "    Child sheet: %s", child->GetName() );
-        }
-
-        for( SCH_SHEET_PIN* pin : sheet->GetPins() )
-        {
-            wxLogMessage( "    Pin: %s", pin->GetText() );
-        }
-    }
-}
-
 std::vector<NETLIST_EXPORTER_GSEIM::GSEIM_SUBCKT> NETLIST_EXPORTER_GSEIM::PopulateSubckts()
 {
     std::vector<GSEIM_SUBCKT> subckts;
@@ -236,6 +204,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
     }
 
     std::vector<wxString> nodeNames;
+    std::set<wxString> auxNodes;
 
     for( SCH_ITEM* item : screen->Items().OfType( SCH_HIER_LABEL_T ) )
     {
@@ -243,14 +212,99 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         nodeNames.push_back( label->GetText() );
     }
 
+    // First pass: collect auxiliary nodes
+    for( SCH_ITEM* item : screen->Items().OfType( SCH_SYMBOL_T ) )
+    {
+        SCH_SYMBOL* sym = static_cast<SCH_SYMBOL*>( item );
+
+        wxString gseimType;
+
+        for( SCH_FIELD& field : sym->GetFields() )
+        {
+            if( field.GetName() == "Gseim.Type" )
+            {
+                gseimType = field.GetText();
+                break;
+            }
+        }
+
+        if( gseimType.IsEmpty() || gseimType == "gnd" )
+            continue;
+
+        const GSEIM_COMPONENT_INFO* info =
+            GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+
+        if( !info )
+            continue;
+
+        int pinNumber = 1;
+
+        for( const wxString& nodeName : info->nodes )
+        {
+            wxString net;
+
+            for( SCH_PIN* pin : sym->GetPins( &path ) )
+            {
+                if( pin->GetNumber() == wxString::Format( "%d", pinNumber ) )
+                {
+                    SCH_CONNECTION* conn = pin->Connection( &path );
+
+                    if( conn )
+                        net = conn->Name( true );
+
+                    break;
+                }
+            }
+
+            if( !groundNets.count( net )
+                && std::find( nodeNames.begin(), nodeNames.end(), net ) == nodeNames.end() )
+            {
+                auxNodes.insert( net );
+            }
+
+            ++pinNumber;
+        }
+    }
+
     FILE_OUTPUTFORMATTER formatter( aOutFileName );
 
-    formatter.Print( 0, "begin_subckt name=%s\n\n", TO_UTF8( aSubcktName ) );
+    formatter.Print( 0, "begin_subckt name=%s\n", TO_UTF8( aSubcktName ) );
 
     formatter.Print( 0, "  nodes:" );
     for( const wxString& n : nodeNames )
         formatter.Print( 0, " %s", TO_UTF8( n ) );
-    formatter.Print( 0, "\n\n" );
+    formatter.Print( 0, "\n" );
+
+    if( !auxNodes.empty() )
+    {
+        formatter.Print( 0, "  aux_nodes:" );
+        for( const wxString& n : auxNodes )
+            formatter.Print( 0, " %s", TO_UTF8( n ) );
+        formatter.Print( 0, "\n" );
+    }
+
+    const auto& rparms = m_schematic->GetGseimSubcktRparmValues();
+    if( !rparms.empty() )
+    {
+        formatter.Print( 0, "  rparms:\n" );
+        for( const auto& [name, value] : rparms )
+        {
+            if( !value.IsEmpty() )
+                formatter.Print( 0, "+ %s=%s\n", TO_UTF8( name ), TO_UTF8( value ) );
+        }
+        formatter.Print( 0, "\n" );
+    }
+
+    const auto& outvars = m_schematic->GetGseimExplicitOutvars();
+    if( !outvars.empty() )
+    {
+        formatter.Print( 0, "  outvar:\n" );
+        for( const GSEIM_OUTVAR& ov : outvars )
+        {
+            formatter.Print( 0, "+   %s=%s\n", TO_UTF8( ov.name ), TO_UTF8( ov.expr ) );
+        }
+        formatter.Print( 0, "\n" );
+    }
 
     for( SCH_ITEM* item : screen->Items().OfType( SCH_SYMBOL_T ) )
     {
@@ -325,8 +379,13 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
 
     if( m_exportAsSubcircuit )
     {
-        wxFileName fn( m_schematic->GetFileName() );
-        wxString subcktName = fn.GetName();   
+        wxString subcktName = m_subcktName;
+
+        if( subcktName.IsEmpty() )
+        {
+            wxFileName fn( m_schematic->GetFileName() );
+            subcktName = fn.GetName();
+        }
 
         return ExportSubcircuit( subcktName, aOutFileName, aNetlistOptions, aReporter );
     }

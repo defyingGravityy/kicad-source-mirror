@@ -28,8 +28,7 @@ static void SplitTokens(
         aOutput.push_back( tok.GetNextToken() );
 }
 
-GSEIM_COMPONENT_INFO ParseEbeFile(
-    const wxString& aFilename )
+GSEIM_COMPONENT_INFO ParseEbeFile( const wxString& aFilename )
 {
     GSEIM_COMPONENT_INFO info;
 
@@ -37,6 +36,27 @@ GSEIM_COMPONENT_INFO ParseEbeFile(
 
     if( !file.Open( aFilename ) )
         return info;
+
+    auto ParseParameter = []( const wxString& aText,
+                              auto& aMap )
+    {
+        wxString text = aText;
+        text.Trim( true );
+        text.Trim( false );
+
+        if( text.IsEmpty() )
+            return;
+
+        wxString name  = text.BeforeFirst( '=' );
+        wxString value = text.AfterFirst( '=' );
+
+        name.Trim( true );
+        name.Trim( false );
+        value.Trim( true );
+        value.Trim( false );
+
+        aMap[name].defaultValue = value;
+    };
 
     PARSE_SECTION section = PARSE_SECTION::NONE;
 
@@ -47,108 +67,87 @@ GSEIM_COMPONENT_INFO ParseEbeFile(
         line.Trim( true );
         line.Trim( false );
 
-        if( line.IsEmpty() )
-            continue;
-
-        if( line.StartsWith( "#" ) )
+        if( line.IsEmpty() || line.StartsWith( "#" ) )
             continue;
 
         if( line.StartsWith( "ebe name=" ) )
         {
             wxString tmp = line.AfterFirst( '=' );
-
             info.name = tmp.BeforeFirst( ' ' );
+            section = PARSE_SECTION::NONE;
             continue;
         }
 
         if( line.StartsWith( "nodes:" ) )
         {
             section = PARSE_SECTION::NONE;
-
-            SplitTokens(
-                line.AfterFirst( ':' ),
-                info.nodes );
-
+            SplitTokens( line.AfterFirst( ':' ), info.nodes );
             continue;
         }
 
         if( line.StartsWith( "outparms:" ) )
         {
             section = PARSE_SECTION::NONE;
-
-            SplitTokens(
-                line.AfterFirst( ':' ),
-                info.outparms );
-
+            SplitTokens( line.AfterFirst( ':' ), info.outparms );
             continue;
         }
 
         if( line.StartsWith( "outparms_ac:" ) )
         {
             section = PARSE_SECTION::NONE;
-
-            SplitTokens(
-                line.AfterFirst( ':' ),
-                info.outparms_ac );
-
+            SplitTokens( line.AfterFirst( ':' ), info.outparms_ac );
             continue;
         }
 
         if( line.StartsWith( "rparms:" ) )
         {
             section = PARSE_SECTION::RPARMS;
+            ParseParameter( line.AfterFirst( ':' ), info.rparms );
             continue;
         }
 
         if( line.StartsWith( "iparms:" ) )
         {
             section = PARSE_SECTION::IPARMS;
+            ParseParameter( line.AfterFirst( ':' ), info.iparms );
             continue;
         }
 
         if( line.StartsWith( "sparms:" ) )
         {
             section = PARSE_SECTION::SPARMS;
+            ParseParameter( line.AfterFirst( ':' ), info.sparms );
             continue;
         }
 
         if( line.StartsWith( "stparms:" ) )
         {
             section = PARSE_SECTION::STPARMS;
+            ParseParameter( line.AfterFirst( ':' ), info.stparms );
             continue;
         }
 
         if( !line.StartsWith( "+" ) )
             continue;
 
-        wxString text =
-            line.AfterFirst( '+' );
-
-        text.Trim( true );
-        text.Trim( false );
-
-        wxString name =
-            text.BeforeFirst( '=' );
-
-        wxString value =
-            text.AfterFirst( '=' );
+        wxString text = line.AfterFirst( '+' );
 
         switch( section )
         {
         case PARSE_SECTION::RPARMS:
-            info.rparms[name].defaultValue = value;
+            ParseParameter( text, info.rparms );
             break;
 
         case PARSE_SECTION::IPARMS:
-            info.iparms[name].defaultValue = value;
+            ParseParameter( text, info.iparms );
             break;
 
         case PARSE_SECTION::SPARMS:
-            info.sparms[name].defaultValue = value;
+            ParseParameter( text, info.sparms );
             break;
 
         case PARSE_SECTION::STPARMS:
-            info.stparms[name].defaultValue = value;
+            ParseParameter( text, info.stparms );
             break;
 
         default:

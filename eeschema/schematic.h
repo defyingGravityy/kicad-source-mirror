@@ -553,6 +553,24 @@ public:
     bool GetGseimExportAsSubcircuit() const { return m_gseimExportAsSubcircuit; }
     void SetGseimExportAsSubcircuit( bool aValue ) { m_gseimExportAsSubcircuit = aValue; }
 
+
+    const wxString& GetGseimSubcktName() const { return m_gseimSubcktName; }
+    void SetGseimSubcktName( const wxString& aName ) { m_gseimSubcktName = aName; }
+
+
+    // Candidate rparm names, auto-collected from Gseim.Params fields on the sheet
+    const std::vector<wxString>& GetGseimSubcktRparmNames() const { return m_gseimSubcktRparmNames; }
+    void SetGseimSubcktRparmNames( const std::vector<wxString>& v ) { m_gseimSubcktRparmNames = v; }
+
+    // User-entered default values, keyed by rparm name
+    std::map<wxString, wxString>& GetGseimSubcktRparmValues() { return m_gseimSubcktRparmValues; }
+    const std::map<wxString, wxString>& GetGseimSubcktRparmValues() const { return m_gseimSubcktRparmValues; }
+    void SetGseimSubcktRparmValues( const std::map<wxString, wxString>& v ) { m_gseimSubcktRparmValues = v; }
+
+    // Free-text C: / endC block content
+    const wxString& GetGseimSubcktCCode() const { return m_gseimSubcktCCode; }
+    void SetGseimSubcktCCode( const wxString& aText ) { m_gseimSubcktCCode = aText; }
+
     /**
      * This is a throw away method for variant testing.
      *
@@ -643,6 +661,13 @@ private:
     std::vector<GSEIM_SOLVE_BLOCK> m_GseimSolveBlocks;
 
     bool m_gseimExportAsSubcircuit = false;
+
+    wxString m_gseimSubcktName;
+
+    std::vector<wxString> m_gseimSubcktRparmNames;
+    std::map<wxString, wxString> m_gseimSubcktRparmValues;
+    wxString m_gseimSubcktCCode;
+
 
     /**
      * Simulation operating points for text variable substitution.

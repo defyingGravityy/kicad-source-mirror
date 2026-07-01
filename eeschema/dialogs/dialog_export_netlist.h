@@ -84,7 +84,7 @@ private:
     void OnGseimPasteBlock( wxCommandEvent& event );
 
     void BindGseimChangeHandlers( bool bind );
-
+    void PopulateGseimSubcktRparms();
     void PopulateGseimOutvars();
     std::vector<GSEIM_OUTVAR> m_GseimAllOutvars;
 

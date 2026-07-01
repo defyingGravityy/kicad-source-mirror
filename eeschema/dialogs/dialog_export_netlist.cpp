@@ -226,6 +226,9 @@ public:
 
     wxCheckBox* m_GseimExportAsSubckt = nullptr;
 
+    wxStaticText* m_GseimRparmsLabel = nullptr;
+    wxGrid*       m_GseimRparmsGrid  = nullptr;
+
     wxStaticText* m_GseimOutputLabel;
     wxStaticText* m_GseimOutvarsLabel;
 
@@ -726,12 +729,15 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimOutvars()
         // Col 1: var name (editable, pre-fill with user edit or default)
         wxString editName = userNames.count( ov.name ) ? userNames[ov.name] : ov.name;
         grid->SetCellValue( row, 1, editName );
-        grid->SetReadOnly( row, 1, !hasSolveBlocks );
+
 
         // Col 2: description (editable, pre-fill with user edit or default)
         wxString editDesc = userDescs.count( ov.name ) ? userDescs[ov.name] : ov.expr;
         grid->SetCellValue( row, 2, editDesc );
-        grid->SetReadOnly( row, 2, !hasSolveBlocks );
+
+        bool editable = hasSolveBlocks || ( pg->m_GseimExportAsSubckt && pg->m_GseimExportAsSubckt->IsChecked() );
+        grid->SetReadOnly( row, 1, !editable );
+        grid->SetReadOnly( row, 2, !editable );
 
         // Col 3: hidden original name for tracking identity across edits
         grid->SetCellValue( row, 3, ov.name );
@@ -798,8 +804,14 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 
     pg->m_GseimExportAsSubckt = new wxCheckBox( pg, wxID_ANY, _( "Export as subcircuit (.sub)" ) );
     pg->m_GseimExportAsSubckt->SetToolTip( _( "Export this schematic as a GSEIM subcircuit definition "
-                                              "instead of a full circuit netlist" ) );
+        "instead of a full circuit netlist" ) );
     pg->m_RightBoxSizer->Add( pg->m_GseimExportAsSubckt, 0, wxBOTTOM, 8 );
+    pg->m_GseimExportAsSubckt->Bind( wxEVT_CHECKBOX, [this]( wxCommandEvent& )
+        {
+            PopulateGseimSubcktRparms();
+            PopulateGseimOutvars();      
+            UpdateGseimControls();
+        } );
 
     wxBoxSizer* blockRow = new wxBoxSizer( wxHORIZONTAL );
     pg->m_GseimBlockChoiceCtrl = new wxChoice( pg, wxID_ANY );
@@ -876,6 +888,19 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimParametersGrid->SetColSize( 1, 180 );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimParametersGrid, 1, wxEXPAND | wxBOTTOM, 10 );
 
+    pg->m_GseimRparmsLabel = new wxStaticText( pg, wxID_ANY, _( "Rparms:" ) );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimRparmsLabel, 0, wxBOTTOM, 5 );
+    pg->m_GseimRparmsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 300, 180 ) );
+    pg->m_GseimRparmsGrid->CreateGrid( 0, 2 );
+    pg->m_GseimRparmsGrid->SetColLabelValue( 0, "Parameter" );
+    pg->m_GseimRparmsGrid->SetColLabelValue( 1, "Default Value" );
+    pg->m_GseimRparmsGrid->SetRowLabelSize( 0 );
+    pg->m_GseimRparmsGrid->SetColSize( 0, 160 );
+    pg->m_GseimRparmsGrid->SetColSize( 1, 160 );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimRparmsGrid, 0, wxEXPAND | wxBOTTOM, 10 );
+    pg->m_GseimRparmsLabel->Hide();
+    pg->m_GseimRparmsGrid->Hide();
+
     // --- Output Variables ---
     pg->m_GseimOutvarsLabel = new wxStaticText( pg, wxID_ANY, _( "Output Variables:" ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsLabel, 0, wxBOTTOM, 5 );
@@ -930,6 +955,10 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     {
         if( m_GseimSelectedBlock >= 0 )
             CommitGseimControls( m_GseimSelectedBlock );
+
+        if( m_PanelNetType[PANELGSEIM]->m_GseimExportAsSubckt->IsChecked() )
+            PopulateGseimSubcktRparms();
+
         PopulateGseimOutvars();
     } );
 
@@ -962,8 +991,73 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 
     if( m_GseimSelectedBlock >= 0 )
         PopulateGseimControls( m_GseimSelectedBlock );
+    PopulateGseimSubcktRparms();
     PopulateGseimOutvars();
     UpdateGseimControls();
+}
+
+void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktRparms()
+{
+    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
+
+    if( !pg || !pg->m_GseimRparmsGrid )
+        return;
+
+    wxGrid* grid = pg->m_GseimRparmsGrid;
+
+    if( grid->GetNumberRows() )
+        grid->DeleteRows( 0, grid->GetNumberRows() );
+
+    std::set<wxString> names;
+
+    SCH_SHEET_LIST hierarchy = m_editFrame->Schematic().Hierarchy();
+
+    if( hierarchy.empty() )
+        return;
+
+    const SCH_SHEET_PATH& path = hierarchy[0];
+    SCH_SCREEN* screen = path.LastScreen();
+
+    for( SCH_ITEM* item : screen->Items().OfType( SCH_SYMBOL_T ) )
+    {
+        SCH_SYMBOL* sym = static_cast<SCH_SYMBOL*>( item );
+
+        wxString paramText;
+
+        for( SCH_FIELD& field : sym->GetFields() )
+        {
+            if( field.GetName() == "Gseim.Params" )
+            {
+                paramText = field.GetText();
+                break;
+            }
+        }
+
+        auto params = ParseGseimParams( paramText );
+
+        for( const auto& [key,value] : params )
+            names.insert( value );
+    }
+
+    const auto& saved =
+        m_editFrame->Schematic().GetGseimSubcktRparmValues();
+
+    grid->AppendRows( names.size() );
+
+    int row = 0;
+
+    for( const wxString& name : names )
+    {
+        grid->SetCellValue( row, 0, name );
+        grid->SetReadOnly( row, 0 );
+
+        auto it = saved.find( name );
+
+        if( it != saved.end() )
+            grid->SetCellValue( row, 1, it->second );
+
+        row++;
+    }
 }
 
 void DIALOG_EXPORT_NETLIST::OnGseimRemoveOutput( wxCommandEvent& )
@@ -1445,6 +1539,11 @@ void DIALOG_EXPORT_NETLIST::UpdateGseimControls()
     if( !pg )
         return;
 
+
+    bool exportAsSubckt = pg->m_GseimExportAsSubckt && pg->m_GseimExportAsSubckt->IsChecked();
+    pg->m_GseimRparmsLabel->Show( exportAsSubckt );
+    pg->m_GseimRparmsGrid->Show( exportAsSubckt );
+
     wxString solveType =
         pg->m_GseimSolveTypeCtrl->GetStringSelection();
 
@@ -1475,8 +1574,19 @@ void DIALOG_EXPORT_NETLIST::UpdateGseimControls()
     if( pg->m_GseimParametersGrid )
         pg->m_GseimParametersGrid->Show( true );
 
+    pg->m_RightOptionsBoxSizer->Layout();
+    pg->m_RightBoxSizer->Layout();
+    pg->m_LowBoxSizer->Layout();
+
     pg->Layout();
-    pg->GetSizer()->Layout();
+
+    m_NoteBook->Layout();
+
+    Layout();
+
+
+    // pg->Layout();
+    // pg->GetSizer()->Layout();
 }
 
 void DIALOG_EXPORT_NETLIST::InstallPageSpiceModel()
@@ -1620,13 +1730,6 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
         runExternalSpiceCommand = currPage->m_RunExternalSpiceCommand->GetValue();
         break;
 
-    // case NET_TYPE_GSEIM:
-    //     if( m_GseimSelectedBlock >= 0 )
-    //         CommitGseimControls( m_GseimSelectedBlock );
-    //     // m_GseimSolveBlocks is now authoritative — pass it to the exporter
-    //     // (exporter integration deferred per your requirement)
-    //     break;
-
     case NET_TYPE_GSEIM:
     {
         if( m_GseimSelectedBlock >= 0 )
@@ -1709,6 +1812,43 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
             }
         }
         m_editFrame->Schematic().SetGseimExplicitOutvars( explicitOutvars );
+
+                std::map<wxString, wxString> rparms;
+
+        if( gseimPg && gseimPg->m_GseimRparmsGrid )
+        {
+            wxGrid* grid = gseimPg->m_GseimRparmsGrid;
+
+            grid->SaveEditControlValue();
+            grid->DisableCellEditControl();
+
+            for( int row = 0; row < grid->GetNumberRows(); ++row )
+            {
+                wxString name  = grid->GetCellValue( row, 0 );
+                wxString value = grid->GetCellValue( row, 1 );
+
+                value.Trim( true ).Trim( false );
+
+                if( value.IsEmpty() )
+                {
+                    wxMessageBox(
+                        wxString::Format(
+                            _( "Please enter a default value for parameter '%s'." ),
+                            name ),
+                        _( "Missing Parameter Value" ),
+                        wxOK | wxICON_ERROR,
+                        this );
+
+                    return false;
+                }
+
+                rparms[name] = value;
+            }
+        }
+
+        m_editFrame->Schematic().SetGseimSubcktRparmValues( rparms );
+
+        m_editFrame->Schematic().SetGseimSubcktRparmValues( rparms );
         break;
     }
 
@@ -1740,7 +1880,39 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
 
     wxString fullpath;
 
-    if( runExternalSpiceCommand )
+    bool isSubcktExport = ( currPage->m_IdNetType == NET_TYPE_GSEIM
+                            && currPage->m_GseimExportAsSubckt
+                            && currPage->m_GseimExportAsSubckt->IsChecked() );
+
+    if( isSubcktExport )
+    {
+        wxFileName subDir( GetGseimSubPath(), wxEmptyString );
+
+        if( !subDir.DirExists() )
+            subDir.Mkdir( wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL );
+
+        wxString defaultName = wxFileName( m_editFrame->Schematic().GetFileName() ).GetName();
+
+    wxFileDialog dlg( this, _( "Save Subcircuit" ), wxEmptyString, defaultName + ".sub",
+        "GSEIM Subcircuits (*.sub)|*.sub", wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+
+    if( dlg.ShowModal() == wxID_CANCEL )
+        return false;
+
+    fullpath = dlg.GetPath();
+    fn.Assign( fullpath );
+    wxString subcktName = fn.GetName();
+    subcktName.Trim( true ).Trim( false );
+
+    if( subcktName.IsEmpty() )
+    {
+        wxMessageBox( _( "Subcircuit name cannot be empty." ) );
+        return false;
+    }
+
+    m_editFrame->Schematic().SetGseimSubcktName( subcktName );
+    }
+    else if( runExternalSpiceCommand )
     {
         fn.SetExt( FILEEXT::SpiceFileExtension );
         fullpath = fn.GetFullPath();
@@ -1778,6 +1950,18 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
         return false;
 
     m_editFrame->WriteNetListFile( currPage->m_IdNetType, fullpath, netlist_opt, &reporter );
+    if( isSubcktExport )
+    {
+        wxFileName subDir( GetGseimSubPath(), wxEmptyString );
+
+        if( !subDir.DirExists() )
+            subDir.Mkdir( wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL );
+
+        wxString internalPath = subDir.GetPathWithSep() + m_editFrame->Schematic().GetGseimSubcktName() + ".sub";
+
+        if( fullpath != internalPath )
+            wxCopyFile( fullpath, internalPath, true );
+    }
 
     if( runExternalSpiceCommand )
     {

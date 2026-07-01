@@ -32,6 +32,9 @@ public:
 
     void SetExportAsSubcircuit( bool aValue ) { m_exportAsSubcircuit = aValue; }
 
+    void SetSubcktName( const wxString& aName ) { m_subcktName = aName; }
+    
+
 private:
     wxString m_solveBlock;
     std::set<wxString> m_outvars;
@@ -62,8 +65,7 @@ private:
         std::vector<GSEIM_INSTANCE> instances;
     };
 
-    void DumpHierarchy();
     std::vector<GSEIM_SUBCKT> PopulateSubckts();
-
+    wxString m_subcktName;
 };
 #endif
