@@ -585,6 +585,19 @@ public:
     const wxString& GetGseimSubcktCCode() const { return m_gseimSubcktCCode; }
     void SetGseimSubcktCCode( const wxString& aText ) { m_gseimSubcktCCode = aText; }
 
+
+
+    const wxString& GetGseimGlobalRparms() const;
+    const wxString& GetGseimGlobalIparms() const;
+    const wxString& GetGseimGlobalSparms() const;
+
+    void SetGseimGlobalRparms( const wxString& );
+    void SetGseimGlobalIparms( const wxString& );
+    void SetGseimGlobalSparms( const wxString& );
+
+    const wxString& GetGseimGparmCCode() const;
+    void SetGseimGparmCCode( const wxString& );
+
     /**
      * This is a throw away method for variant testing.
      *
@@ -674,7 +687,6 @@ private:
 
     std::vector<GSEIM_SOLVE_BLOCK> m_GseimSolveBlocks;
 
-
     wxString m_gseimSubcktName;
 
     std::vector<wxString> m_gseimSubcktRparmNames;
@@ -687,6 +699,12 @@ private:
     std::map<wxString, wxString> m_gseimSubcktSparmValues;
 
     wxString m_gseimSubcktCCode;
+
+
+    wxString m_gseimGlobalRparms;
+    wxString m_gseimGlobalIparms;
+    wxString m_gseimGlobalSparms;
+    wxString m_gseimGparmCCode;
 
 
     /**

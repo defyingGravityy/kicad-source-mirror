@@ -886,6 +886,24 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimSubcktCCode(), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
     pg->m_RightBoxSizer->Add( pg->m_GseimCCodeCtrl, 1, wxEXPAND | wxBOTTOM, 10 );
 
+    pg->m_GseimGlobalRparmsLabel = new wxStaticText( pg, wxID_ANY, "Rparms" );
+    pg->m_GseimGlobalRparmsCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimGlobalRparms() );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimGlobalRparmsLabel, 0, wxBOTTOM, 5 );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimGlobalRparmsCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
+
+
+    pg->m_GseimGlobalSparmsLabel = new wxStaticText( pg, wxID_ANY, "Sparms" );
+    pg->m_GseimGlobalSparmsCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimGlobalSparms() );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimGlobalSparmsLabel, 0, wxBOTTOM, 5 );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimGlobalSparmsCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
+
+
+    pg->m_GseimGlobalIparmsLabel = new wxStaticText( pg, wxID_ANY, "Iparms" );
+    pg->m_GseimGlobalIparmsCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimGlobalIparms() );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimGlobalIparmsLabel, 0, wxBOTTOM, 5 );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimGlobalIparmsCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
+
+
     // --- Parameters grid ---
     pg->m_GseimParametersGrid = new wxGrid( pg, wxID_ANY );
     pg->m_GseimParametersGrid->CreateGrid( 0, 2 );
@@ -977,7 +995,6 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 
     if( m_GseimSelectedBlock >= 0 )
         PopulateGseimControls( m_GseimSelectedBlock );
-    PopulateGseimSubcktParameters();
     PopulateGseimOutvars( pg );
     UpdateGseimControls();
 }
@@ -1927,6 +1944,11 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
                 }
             }
         }
+
+        m_editFrame->Schematic().SetGseimGlobalRparms( gseimPg->m_GseimGlobalRparmsCtrl->GetValue() );
+        m_editFrame->Schematic().SetGseimGlobalIparms( gseimPg->m_GseimGlobalIparmsCtrl->GetValue() );
+        m_editFrame->Schematic().SetGseimGlobalSparms( gseimPg->m_GseimGlobalSparmsCtrl->GetValue() );
+        m_editFrame->Schematic().SetGseimGlobalCCode( gseimPg->m_GseimGlobalCCodeCtrl->GetValue() );
 
         m_editFrame->Schematic().SetGseimExplicitOutvars( explicitOutvars );
 

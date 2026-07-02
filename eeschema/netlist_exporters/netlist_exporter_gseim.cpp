@@ -470,6 +470,36 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
         }
     }
 
+    const auto& rparms = m_schematic->GetGseimGparmRparmValues();
+    const auto& iparms = m_schematic->GetGseimGparmIparmValues();
+    const auto& sparms = m_schematic->GetGseimGparmSparmValues();
+    const wxString& cCode = m_schematic->GetGseimGparmCCode();
+
+    if( !rparms.empty()
+        || !iparms.empty()
+        || !sparms.empty()
+        || !cCode.IsEmpty() )
+    {
+        formatter.Print( 0, "begin_gparms\n" );
+
+        formatter.Print( 0, "  rparms: %s\n", TO_UTF8( m_schematic->GetGseimGlobalRparms() ) );
+        formatter.Print( 0, "  iparms: %s\n", TO_UTF8( m_schematic->GetGseimGlobalIparms() ) );
+        formatter.Print( 0, "  sparms: %s\n", TO_UTF8( m_schematic->GetGseimGlobalSparms() ) );
+
+        formatter.Print( 0, "  C:\n" );
+
+        if( !cCode.IsEmpty() )
+        {
+            wxStringTokenizer tok( cCode, "\n", wxTOKEN_RET_EMPTY );
+
+            while( tok.HasMoreTokens() )
+                formatter.Print( 0, "    %s\n", TO_UTF8( tok.GetNextToken() ) );
+        }
+
+        formatter.Print( 0, "  endC\n" );
+        formatter.Print( 0, "end_gparms\n\n" );
+    }
+
     for( const wxString& subType : includedSubckts )
         formatter.Print( 0, ".include %s.sub\n", TO_UTF8( subType ) );
 
