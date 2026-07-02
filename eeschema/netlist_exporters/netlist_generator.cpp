@@ -96,17 +96,33 @@ bool SCH_EDIT_FRAME::WriteNetListFile( int aFormat, const wxString& aFullFileNam
 
         wxString solveBlock = sch->GetGseimSolveBlock();
         gseim->SetSolveBlock( solveBlock );
-        gseim->SetSubcktName( sch->GetGseimSubcktName() );
-        gseim->SetExportAsSubcircuit( sch->GetGseimExportAsSubcircuit() );
-        const std::vector<GSEIM_OUTVAR>& explicitOutvars = sch->GetGseimExplicitOutvars();
+
+        const std::vector<GSEIM_OUTVAR>& explicitOutvars =
+            sch->GetGseimExplicitOutvars();
+
         if( !explicitOutvars.empty() )
             gseim->SetExplicitOutvars( explicitOutvars );
 
         helper = gseim;
-
         break;
     }
 
+    case NET_TYPE_GSEIM_SUBCKT:
+    {
+        auto* gseim = new NETLIST_EXPORTER_GSEIM( sch );
+
+        gseim->SetSubcktName( sch->GetGseimSubcktName() );
+
+        const std::vector<GSEIM_OUTVAR>& explicitOutvars =
+            sch->GetGseimExplicitOutvars();
+
+        if( !explicitOutvars.empty() )
+            gseim->SetExplicitOutvars( explicitOutvars );
+
+        helper = gseim;
+        break;
+    }
+    
     case NET_TYPE_SPICE_MODEL:
         helper = new NETLIST_EXPORTER_SPICE_MODEL( sch );
         break;

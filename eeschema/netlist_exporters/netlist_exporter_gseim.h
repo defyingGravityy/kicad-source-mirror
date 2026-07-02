@@ -30,8 +30,6 @@ public:
     bool ExportSubcircuit( const wxString& aSubcktName, const wxString& aOutFileName,
                             unsigned aNetlistOptions, REPORTER& aReporter );
 
-    void SetExportAsSubcircuit( bool aValue ) { m_exportAsSubcircuit = aValue; }
-
     void SetSubcktName( const wxString& aName ) { m_subcktName = aName; }
     
 
@@ -39,8 +37,6 @@ private:
     wxString m_solveBlock;
     std::set<wxString> m_outvars;
     std::vector<GSEIM_OUTVAR> m_explicitOutvars;
-
-    bool m_exportAsSubcircuit = false;
 
 private:
     struct GSEIM_PORT

@@ -52,6 +52,7 @@ private:
                                            NETLIST_TYPE_ID aNetTypeId );
     void                 InstallPageSpice();
     void                 InstallPageGseim();
+    void                 InstallPageGseimSubckt();
     void                 InstallPageSpiceModel();
 
     void OnGseimSolveTypeChanged( wxCommandEvent& event );
@@ -84,8 +85,9 @@ private:
     void OnGseimPasteBlock( wxCommandEvent& event );
 
     void BindGseimChangeHandlers( bool bind );
-    void PopulateGseimSubcktRparms();
+    void PopulateGseimSubcktParameters();
     void PopulateGseimOutvars();
+    void PopulateGseimOutvars( EXPORT_NETLIST_PAGE* pg );
     std::vector<GSEIM_OUTVAR> m_GseimAllOutvars;
 
     bool m_GseimUpdating = false;

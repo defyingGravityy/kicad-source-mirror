@@ -550,10 +550,6 @@ public:
         m_GseimSolveBlocks = aBlocks;
     }
 
-    bool GetGseimExportAsSubcircuit() const { return m_gseimExportAsSubcircuit; }
-    void SetGseimExportAsSubcircuit( bool aValue ) { m_gseimExportAsSubcircuit = aValue; }
-
-
     const wxString& GetGseimSubcktName() const { return m_gseimSubcktName; }
     void SetGseimSubcktName( const wxString& aName ) { m_gseimSubcktName = aName; }
 
@@ -566,6 +562,24 @@ public:
     std::map<wxString, wxString>& GetGseimSubcktRparmValues() { return m_gseimSubcktRparmValues; }
     const std::map<wxString, wxString>& GetGseimSubcktRparmValues() const { return m_gseimSubcktRparmValues; }
     void SetGseimSubcktRparmValues( const std::map<wxString, wxString>& v ) { m_gseimSubcktRparmValues = v; }
+
+
+
+    const std::vector<wxString>& GetGseimSubcktSparmNames() const { return m_gseimSubcktSparmNames; }
+    void SetGseimSubcktSparmNames( const std::vector<wxString>& v ) { m_gseimSubcktSparmNames = v; }
+
+    std::map<wxString, wxString>& GetGseimSubcktSparmValues() { return m_gseimSubcktSparmValues; }
+    const std::map<wxString, wxString>& GetGseimSubcktSparmValues() const { return m_gseimSubcktSparmValues; }
+    void SetGseimSubcktSparmValues( const std::map<wxString, wxString>& v ) { m_gseimSubcktSparmValues = v; }
+
+
+
+    const std::vector<wxString>& GetGseimSubcktIparmNames() const { return m_gseimSubcktIparmNames; }
+    void SetGseimSubcktIparmNames( const std::vector<wxString>& v ) { m_gseimSubcktIparmNames = v; }
+
+    std::map<wxString, wxString>& GetGseimSubcktIparmValues() { return m_gseimSubcktIparmValues; }
+    const std::map<wxString, wxString>& GetGseimSubcktIparmValues() const { return m_gseimSubcktIparmValues; }
+    void SetGseimSubcktIparmValues( const std::map<wxString, wxString>& v ) { m_gseimSubcktIparmValues = v; }
 
     // Free-text C: / endC block content
     const wxString& GetGseimSubcktCCode() const { return m_gseimSubcktCCode; }
@@ -660,12 +674,18 @@ private:
 
     std::vector<GSEIM_SOLVE_BLOCK> m_GseimSolveBlocks;
 
-    bool m_gseimExportAsSubcircuit = false;
 
     wxString m_gseimSubcktName;
 
     std::vector<wxString> m_gseimSubcktRparmNames;
     std::map<wxString, wxString> m_gseimSubcktRparmValues;
+
+    std::vector<wxString> m_gseimSubcktIparmNames;
+    std::map<wxString, wxString> m_gseimSubcktIparmValues;
+
+    std::vector<wxString> m_gseimSubcktSparmNames;
+    std::map<wxString, wxString> m_gseimSubcktSparmValues;
+
     wxString m_gseimSubcktCCode;
 
 

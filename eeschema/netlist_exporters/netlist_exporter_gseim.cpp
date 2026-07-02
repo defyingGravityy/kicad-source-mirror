@@ -295,6 +295,40 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         formatter.Print( 0, "\n" );
     }
 
+    const auto& iparms = m_schematic->GetGseimSubcktIparmValues();
+
+    if( !iparms.empty() )
+    {
+        formatter.Print( 0, "  iparms:\n" );
+
+        for( const auto& [name, value] : iparms )
+        {
+            if( !value.IsEmpty() )
+                formatter.Print( 0, "+ %s=%s\n",
+                                TO_UTF8( name ),
+                                TO_UTF8( value ) );
+        }
+
+        formatter.Print( 0, "\n" );
+    }
+
+    const auto& sparms = m_schematic->GetGseimSubcktSparmValues();
+
+    if( !sparms.empty() )
+    {
+        formatter.Print( 0, "  sparms:\n" );
+
+        for( const auto& [name, value] : sparms )
+        {
+            if( !value.IsEmpty() )
+                formatter.Print( 0, "+ %s=%s\n",
+                                TO_UTF8( name ),
+                                TO_UTF8( value ) );
+        }
+
+        formatter.Print( 0, "\n" );
+    }
+
     const auto& outvars = m_schematic->GetGseimExplicitOutvars();
     if( !outvars.empty() )
     {
@@ -368,8 +402,23 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 
         formatter.Print( 0, "\n" );
     }
+    const wxString& cCode = m_schematic->GetGseimSubcktCCode();
 
-    formatter.Print( 0, "\nend_subckt\n" );
+    formatter.Print( 0, "  C:\n" );
+
+    if( !cCode.IsEmpty() )
+    {
+        wxStringTokenizer lines( cCode, "\n", wxTOKEN_RET_EMPTY );
+
+        while( lines.HasMoreTokens() )
+        {
+            wxString line = lines.GetNextToken();
+            formatter.Print( 0, "    %s\n", TO_UTF8( line ) );
+        }
+    }
+
+    formatter.Print( 0, "  endC" );
+    formatter.Print( 0, "end_subckt\n" );
 
     return true;
 }
@@ -377,17 +426,13 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigned aNetlistOptions, REPORTER& aReporter )
 {
 
-    if( m_exportAsSubcircuit )
+    if( !m_subcktName.IsEmpty() )
     {
-        wxString subcktName = m_subcktName;
-
-        if( subcktName.IsEmpty() )
-        {
-            wxFileName fn( m_schematic->GetFileName() );
-            subcktName = fn.GetName();
-        }
-
-        return ExportSubcircuit( subcktName, aOutFileName, aNetlistOptions, aReporter );
+        return ExportSubcircuit(
+            m_subcktName,
+            aOutFileName,
+            aNetlistOptions,
+            aReporter );
     }
 
     if( !ReadSchematicAndLibraries( aNetlistOptions, aReporter ) )
