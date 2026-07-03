@@ -237,6 +237,22 @@ public:
     wxStaticText* m_GseimCCodeLabel = nullptr;
     wxTextCtrl*   m_GseimCCodeCtrl  = nullptr;
 
+
+
+    wxStaticText* m_GseimGlobalRparmsLabel = nullptr;
+    wxTextCtrl*   m_GseimGlobalRparmsCtrl  = nullptr;
+
+    wxStaticText* m_GseimGlobalIparmsLabel = nullptr;
+    wxTextCtrl*   m_GseimGlobalIparmsCtrl  = nullptr;
+
+    wxStaticText* m_GseimGlobalSparmsLabel = nullptr;
+    wxTextCtrl*   m_GseimGlobalSparmsCtrl  = nullptr;
+
+    wxStaticText* m_GseimGlobalCCodeLabel = nullptr;
+    wxTextCtrl*   m_GseimGlobalCCodeCtrl  = nullptr;
+
+
+
     wxStaticText* m_GseimOutputLabel;
     wxStaticText* m_GseimOutvarsLabel;
 
@@ -881,10 +897,20 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_RightBoxSizer->Add( pg->m_GseimAddParameterBtn, 0, wxEXPAND | wxTOP, 5 );
     pg->m_GseimAddParameterBtn->Bind( wxEVT_BUTTON, &DIALOG_EXPORT_NETLIST::OnGseimAddParameter, this );
 
-    pg->m_GseimCCodeLabel = new wxStaticText( pg, wxID_ANY, "C Block" );
-    pg->m_RightBoxSizer->Add( pg->m_GseimCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
-    pg->m_GseimCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimSubcktCCode(), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
-    pg->m_RightBoxSizer->Add( pg->m_GseimCCodeCtrl, 1, wxEXPAND | wxBOTTOM, 10 );
+    pg->m_GseimGlobalCCodeLabel = new wxStaticText( pg, wxID_ANY, "C Block" );
+    pg->m_RightBoxSizer->Add( pg->m_GseimGlobalCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
+    pg->m_GseimGlobalCCodeCtrl = new wxTextCtrl(
+    pg,
+    wxID_ANY,
+    m_editFrame->Schematic().GetGseimGparmCCode(),
+    wxDefaultPosition,
+    wxSize( -1, 120 ),
+    wxTE_MULTILINE );
+    pg->m_RightBoxSizer->Add(
+    pg->m_GseimGlobalCCodeCtrl,
+    0,
+    wxEXPAND | wxBOTTOM,
+    10 );
 
     pg->m_GseimGlobalRparmsLabel = new wxStaticText( pg, wxID_ANY, "Rparms" );
     pg->m_GseimGlobalRparmsCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimGlobalRparms() );
@@ -911,7 +937,8 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimParametersGrid->SetColLabelValue( 1, "Value" );
     pg->m_GseimParametersGrid->SetColSize( 0, 180 );
     pg->m_GseimParametersGrid->SetColSize( 1, 180 );
-    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimParametersGrid, 1, wxEXPAND | wxBOTTOM, 10 );
+    pg->m_GseimParametersGrid->SetMinSize( wxSize( -1, 180 ) );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimParametersGrid, 0, wxEXPAND | wxBOTTOM, 10 );
  
     // --- Output Variables ---
     pg->m_GseimOutvarsLabel = new wxStaticText( pg, wxID_ANY, _( "Output Variables:" ) );
@@ -925,7 +952,8 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimOutvarsGrid->SetColLabelValue( 3, "_orig" );
     pg->m_GseimOutvarsGrid->SetRowLabelSize( 0 );
     pg->m_GseimOutvarsGrid->HideCol( 3 );
-    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 1, wxEXPAND | wxBOTTOM, 5 );
+    pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 0, wxEXPAND | wxBOTTOM, 5 );
     pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_LEFT_CLICK, [this]( wxGridEvent& event )
     {
         EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIM];
@@ -1004,9 +1032,9 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     EXPORT_NETLIST_PAGE* pg = new EXPORT_NETLIST_PAGE( m_NoteBook, "GSEIM Subcircuit", NET_TYPE_GSEIM_SUBCKT, false );
 
     pg->m_GseimCCodeLabel = new wxStaticText( pg, wxID_ANY, "C Block" );
-    pg->m_RightBoxSizer->Add( pg->m_GseimCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
-    pg->m_GseimCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimSubcktCCode(), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
-    pg->m_RightBoxSizer->Add( pg->m_GseimCCodeCtrl, 1, wxEXPAND | wxBOTTOM, 10 );
+    pg->m_RightBoxSizer->Add( pg->m_GseimGlobalCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
+    pg->m_GseimCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimSubcktCCode(), wxDefaultPosition, wxSize( -1, 120 ), wxTE_MULTILINE );
+    pg->m_RightBoxSizer->Add( pg->m_GseimCCodeCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
 
     pg->m_GseimRparmsLabel = new wxStaticText( pg, wxID_ANY, _( "Rparms:" ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimRparmsLabel, 0, wxBOTTOM, 5 );
@@ -1058,7 +1086,8 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     pg->m_GseimOutvarsGrid->SetColLabelValue( 3, "_orig" );
     pg->m_GseimOutvarsGrid->SetRowLabelSize( 0 );
     pg->m_GseimOutvarsGrid->HideCol( 3 );
-    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 1, wxEXPAND | wxBOTTOM, 5 );
+    pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 0, wxEXPAND | wxBOTTOM, 5 );
     pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_LEFT_CLICK, [this]( wxGridEvent& event )
     {
         EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIMSUBCKT];
@@ -1948,7 +1977,7 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
         m_editFrame->Schematic().SetGseimGlobalRparms( gseimPg->m_GseimGlobalRparmsCtrl->GetValue() );
         m_editFrame->Schematic().SetGseimGlobalIparms( gseimPg->m_GseimGlobalIparmsCtrl->GetValue() );
         m_editFrame->Schematic().SetGseimGlobalSparms( gseimPg->m_GseimGlobalSparmsCtrl->GetValue() );
-        m_editFrame->Schematic().SetGseimGlobalCCode( gseimPg->m_GseimGlobalCCodeCtrl->GetValue() );
+        m_editFrame->Schematic().SetGseimGparmCCode( gseimPg->m_GseimGlobalCCodeCtrl->GetValue() );
 
         m_editFrame->Schematic().SetGseimExplicitOutvars( explicitOutvars );
 
@@ -2055,6 +2084,7 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
         m_editFrame->Schematic().SetGseimSubcktRparmValues( rparms );
         m_editFrame->Schematic().SetGseimSubcktIparmValues( iparms );
         m_editFrame->Schematic().SetGseimSubcktSparmValues( sparms );
+        m_editFrame->Schematic().SetGseimSubcktCCode( gseimPg->m_GseimCCodeCtrl->GetValue() );
 
         break;
     }

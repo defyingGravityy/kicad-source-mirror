@@ -587,16 +587,19 @@ public:
 
 
 
-    const wxString& GetGseimGlobalRparms() const;
-    const wxString& GetGseimGlobalIparms() const;
-    const wxString& GetGseimGlobalSparms() const;
+    const wxString& GetGseimGlobalRparms() const { return m_gseimGlobalRparms; }
+    const wxString& GetGseimGlobalIparms() const { return m_gseimGlobalIparms; }
+    const wxString& GetGseimGlobalSparms() const { return m_gseimGlobalSparms; }
+    const wxString& GetGseimGparmCCode() const { return m_gseimGparmCCode; }
+    
+    void SetGseimGlobalRparms( const wxString& aText ) { m_gseimGlobalRparms = aText; }
+    void SetGseimGlobalIparms( const wxString& aText ) { m_gseimGlobalIparms = aText; }
+    void SetGseimGlobalSparms( const wxString& aText ) { m_gseimGlobalSparms = aText; }
+    void SetGseimGparmCCode( const wxString& aText ){ m_gseimGparmCCode = aText; }
 
-    void SetGseimGlobalRparms( const wxString& );
-    void SetGseimGlobalIparms( const wxString& );
-    void SetGseimGlobalSparms( const wxString& );
+    
 
-    const wxString& GetGseimGparmCCode() const;
-    void SetGseimGparmCCode( const wxString& );
+    
 
     /**
      * This is a throw away method for variant testing.

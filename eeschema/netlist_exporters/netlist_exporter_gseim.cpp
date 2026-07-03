@@ -408,16 +408,13 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 
     if( !cCode.IsEmpty() )
     {
-        wxStringTokenizer lines( cCode, "\n", wxTOKEN_RET_EMPTY );
+        wxStringTokenizer tok( cCode, "\n", wxTOKEN_RET_EMPTY );
 
-        while( lines.HasMoreTokens() )
-        {
-            wxString line = lines.GetNextToken();
-            formatter.Print( 0, "    %s\n", TO_UTF8( line ) );
-        }
+        while( tok.HasMoreTokens() )
+            formatter.Print( 0, "    %s\n", TO_UTF8( tok.GetNextToken() ) );
     }
 
-    formatter.Print( 0, "  endC" );
+    formatter.Print( 0, "  endC\n" );
     formatter.Print( 0, "end_subckt\n" );
 
     return true;
@@ -470,21 +467,21 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
         }
     }
 
-    const auto& rparms = m_schematic->GetGseimGparmRparmValues();
-    const auto& iparms = m_schematic->GetGseimGparmIparmValues();
-    const auto& sparms = m_schematic->GetGseimGparmSparmValues();
-    const wxString& cCode = m_schematic->GetGseimGparmCCode();
+    const wxString& rparms = m_schematic->GetGseimGlobalRparms();
+    const wxString& iparms = m_schematic->GetGseimGlobalIparms();
+    const wxString& sparms = m_schematic->GetGseimGlobalSparms();
+    const wxString& cCode  = m_schematic->GetGseimGparmCCode();
 
-    if( !rparms.empty()
-        || !iparms.empty()
-        || !sparms.empty()
+    if( !rparms.IsEmpty()
+        || !iparms.IsEmpty()
+        || !sparms.IsEmpty()
         || !cCode.IsEmpty() )
     {
         formatter.Print( 0, "begin_gparms\n" );
 
-        formatter.Print( 0, "  rparms: %s\n", TO_UTF8( m_schematic->GetGseimGlobalRparms() ) );
-        formatter.Print( 0, "  iparms: %s\n", TO_UTF8( m_schematic->GetGseimGlobalIparms() ) );
-        formatter.Print( 0, "  sparms: %s\n", TO_UTF8( m_schematic->GetGseimGlobalSparms() ) );
+        formatter.Print( 0, "  iparms: %s\n", TO_UTF8( iparms ) );
+        formatter.Print( 0, "  sparms: %s\n", TO_UTF8( sparms ) );
+        formatter.Print( 0, "  rparms: %s\n", TO_UTF8( rparms ) );
 
         formatter.Print( 0, "  C:\n" );
 
