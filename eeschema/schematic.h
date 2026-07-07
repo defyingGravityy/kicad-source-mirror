@@ -592,6 +592,9 @@ public:
     const wxString& GetGseimGlobalSparms() const { return m_gseimGlobalSparms; }
     const wxString& GetGseimGparmCCode() const { return m_gseimGparmCCode; }
     
+    const wxString& GetGseimTitle() const { return m_gseimTitle; }
+    void SetGseimTitle( const wxString& aTitle ) { m_gseimTitle = aTitle; }
+
     void SetGseimGlobalRparms( const wxString& aText ) { m_gseimGlobalRparms = aText; }
     void SetGseimGlobalIparms( const wxString& aText ) { m_gseimGlobalIparms = aText; }
     void SetGseimGlobalSparms( const wxString& aText ) { m_gseimGlobalSparms = aText; }
@@ -700,6 +703,8 @@ private:
 
     std::vector<wxString> m_gseimSubcktSparmNames;
     std::map<wxString, wxString> m_gseimSubcktSparmValues;
+
+    wxString m_gseimTitle;
 
     wxString m_gseimSubcktCCode;
 

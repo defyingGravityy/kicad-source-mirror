@@ -468,6 +468,13 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
     const SCH_SHEET_PATH& rootPath = sheetList[0];
     SCH_SCREEN* rootScreen = rootPath.LastScreen();
 
+    for( SCH_ITEM* item : rootScreen->Items().OfType( SCH_SHEET_T ) )
+    {
+        SCH_SHEET* sheet = static_cast<SCH_SHEET*>( item );
+        wxFileName fn( sheet->GetFileName() );
+        includedSubckts.insert( fn.GetName() );
+    }
+
     GROUND_NETS groundNets;
 
     for( const SPICE_ITEM& item : GetItems() )
@@ -496,6 +503,11 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
     const wxString& iparms = m_schematic->GetGseimGlobalIparms();
     const wxString& sparms = m_schematic->GetGseimGlobalSparms();
     const wxString& cCode  = m_schematic->GetGseimGparmCCode();
+
+    wxString title = m_schematic->GetGseimTitle();
+
+    if( !title.IsEmpty() )
+        formatter.Print( 0, "title: %s\n\n", TO_UTF8( title ) );
 
     if( !rparms.IsEmpty()
         || !iparms.IsEmpty()

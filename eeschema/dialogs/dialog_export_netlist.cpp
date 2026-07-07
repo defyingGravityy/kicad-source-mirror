@@ -251,6 +251,8 @@ public:
     wxStaticText* m_GseimGlobalCCodeLabel = nullptr;
     wxTextCtrl*   m_GseimGlobalCCodeCtrl  = nullptr;
 
+    wxTextCtrl* m_GseimTitleCtrl = nullptr;
+
 
 
     wxStaticText* m_GseimOutputLabel;
@@ -764,8 +766,8 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimOutvars( EXPORT_NETLIST_PAGE* pg )
         wxString editDesc = userDescs.count( ov.name ) ? userDescs[ov.name] : ov.expr;
         grid->SetCellValue( row, 2, editDesc );
 
-        grid->SetReadOnly( row, 1, !hasSolveBlocks );
-        grid->SetReadOnly( row, 2, !hasSolveBlocks );
+        grid->SetReadOnly( row, 1, false );
+        grid->SetReadOnly( row, 2, false );
 
         // Col 3: hidden original name for tracking identity across edits
         grid->SetCellValue( row, 3, ov.name );
@@ -825,6 +827,13 @@ void DIALOG_EXPORT_NETLIST::InstallPageSpice()
 void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 {
     EXPORT_NETLIST_PAGE* pg = new EXPORT_NETLIST_PAGE( m_NoteBook, wxT( "GSEIM" ), NET_TYPE_GSEIM, false );
+
+
+    wxStaticText* titleLabel = new wxStaticText( pg, wxID_ANY, "Title" );
+    pg->m_RightOptionsBoxSizer->Add( titleLabel, 0, wxBOTTOM, 5 );
+    pg->m_GseimTitleCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimTitle() );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimTitleCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
+
 
     // --- Solve Block selector ---
     wxStaticText* blockLabel = new wxStaticText( pg, wxID_ANY, _( "Solve Block" ) );
@@ -1022,7 +1031,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     EXPORT_NETLIST_PAGE* pg = new EXPORT_NETLIST_PAGE( m_NoteBook, "GSEIM Subcircuit", NET_TYPE_GSEIM_SUBCKT, false );
 
     pg->m_GseimCCodeLabel = new wxStaticText( pg, wxID_ANY, "C Block" );
-    pg->m_RightBoxSizer->Add( pg->m_GseimGlobalCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
+    pg->m_RightBoxSizer->Add( pg->m_GseimCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
     pg->m_GseimCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimSubcktCCode(), wxDefaultPosition, wxSize( -1, 70 ), wxTE_MULTILINE );
     pg->m_RightBoxSizer->Add( pg->m_GseimCCodeCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
 
@@ -1891,8 +1900,12 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
 
     case NET_TYPE_GSEIM:
     {
+        EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIM];
+
         if( m_GseimSelectedBlock >= 0 )
             CommitGseimControls( m_GseimSelectedBlock );
+
+        m_editFrame->Schematic().SetGseimTitle( gseimPg->m_GseimTitleCtrl->GetValue() );
 
         wxString solveText;
 
@@ -1935,8 +1948,6 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
         }
 
         m_editFrame->Schematic().SetGseimSolveBlock( solveText );
-
-        EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIM];
 
         std::vector<GSEIM_OUTVAR> explicitOutvars;
 
