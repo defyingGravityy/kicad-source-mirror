@@ -7,11 +7,12 @@ GSEIM_XBE_DATABASE::Instance()
     return db;
 }
 
-bool GSEIM_XBE_DATABASE::Load(
-    const wxString& aDirectory )
+bool GSEIM_XBE_DATABASE::Load( const wxString& aDirectory )
 {
-    m_db = LoadXbeDatabase( aDirectory );
+    if( !m_db.empty() )
+        return true;
 
+    m_db = LoadXbeDatabase( aDirectory );
     return !m_db.empty();
 }
 

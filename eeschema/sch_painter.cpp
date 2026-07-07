@@ -73,6 +73,12 @@
 #include "sch_painter.h"
 #include "common.h"
 
+#include <gseim/gseim_paths.h>
+#include <gseim/gseim_xbe_db.h>
+#include <gseim/gseim_xbe_parser.h>
+#include <gseim/gseim_component_db.h>
+#include <gseim/gseim_ebe_parser.h>
+
 #include "symb_transforms_utils.h"
 
 namespace KIGFX
@@ -1846,6 +1852,46 @@ void SCH_PAINTER::draw( const SCH_LINE* aLine, int aLayer )
     COLOR4D    color = getRenderColor( aLine, aLine->GetLayer(), drawingShadows );
     float      width = getLineWidth( aLine, drawingShadows, drawingNetColorHighlights );
     LINE_STYLE lineStyle = aLine->GetEffectiveLineStyle();
+
+    SCH_CONNECTION* wireconn = !aLine->IsConnectivityDirty() ? aLine->Connection() : nullptr;
+
+    if( wireconn && m_schematic )
+    {
+        CONNECTION_GRAPH* graph = m_schematic->ConnectionGraph();
+
+        if( CONNECTION_SUBGRAPH* sg =
+                graph->GetSubgraphForItem( const_cast<SCH_LINE*>( aLine ) ) )
+        {
+            GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
+
+            for( SCH_ITEM* item : sg->GetItems() )
+            {
+                if( item->Type() != SCH_PIN_T )
+                    continue;
+
+                SCH_PIN* pin = static_cast<SCH_PIN*>( item );
+
+                SCH_SYMBOL* symbol = dynamic_cast<SCH_SYMBOL*>( pin->GetParentSymbol() );
+
+                if( !symbol )
+                    continue;
+
+                if( !symbol )
+                    continue;
+
+                SCH_FIELD* field = symbol->GetField( "Gseim.Type" );
+
+                if( !field )
+                    continue;
+
+                if( GSEIM_XBE_DATABASE::Instance().Find( field->GetText() ) )
+                {
+                    color = COLOR4D( 0.0, 0.6, 1.0, color.a );
+                    break;
+                }
+            }
+        }
+    }
 
     if( highlightNetclassColors )
     {
