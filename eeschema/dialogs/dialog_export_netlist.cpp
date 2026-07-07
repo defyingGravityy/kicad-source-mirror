@@ -49,7 +49,7 @@
 #include <netlist_exporters/netlist_exporter_spice.h>
 #include <netlist_exporters/gseim_solver_parameter_database.h>
 #include <netlist_exporters/netlist_exporter_gseim.h>
-#include <gseim_ebe_parser.h>
+#include <../gseim/gseim_ebe_parser.h>
 #include "../gseim/gseim_component_db.h"
 #include "../gseim/gseim_param_parser.h"
 #include <reporter.h>

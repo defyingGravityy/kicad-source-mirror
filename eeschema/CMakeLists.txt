@@ -486,18 +486,22 @@ set( EESCHEMA_SRCS
     netlist_exporters/netlist_exporter_gseim.cpp
     netlist_exporters/netlist_exporter_xml.cpp
     netlist_exporters/netlist_generator.cpp
-    netlist_exporters/gseim_ebe_parser.cpp
-    netlist_exporters/gseim_ebe_parser.h
     netlist_exporters/netlist_exporter_gseim.cpp
     netlist_exporters/gseim_solver_parameter_database.cpp
     netlist_exporters/gseim_solver_parameter_database.h
     gseim/gseim_component_db.h
     gseim/gseim_component_db.cpp
     gseim/gseim_component_db.cpp
+    gseim/gseim_xbe_db.cpp
+    gseim/gseim_xbe_db.h
     gseim/gseim_subckt_db.cpp
     gseim/gseim_sub_parser.cpp
     gseim/gseim_param_parser.cpp
     gseim/gseim_paths.cpp
+    gseim/gseim_ebe_parser.cpp
+    gseim/gseim_ebe_parser.h
+    gseim/gseim_xbe_parser.cpp
+    gseim/gseim_xbe_parser.h
 
     tools/assign_footprints.cpp
     tools/backannotate.cpp

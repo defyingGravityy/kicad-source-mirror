@@ -82,7 +82,8 @@
 #include <wx/button.h>
 
 #include <netlist_exporters/netlist_exporter_gseim.h>
-#include <gseim_ebe_parser.h>
+#include <../gseim/gseim_ebe_parser.h>
+#include <gseim/gseim_xbe_db.h>
 #include "../gseim/gseim_component_db.h"
 #include "../gseim/gseim_param_parser.h"
 #include "../gseim/gseim_paths.h"
@@ -3912,8 +3913,21 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
 
     // Device outparms
     wxString refName = symbol->GetRef( &sheet );
+    std::map<wxString, wxString> overrides;
+
+    if( SCH_FIELD* paramsField = symbol->GetField( "Gseim.Params" ) )
+        overrides = ParseGseimParams( paramsField->GetText() );
     for( const wxString& outparm : info->outparms )
-        available.push_back( refName + "_" + outparm );
+    {
+        wxString name = outparm;
+
+        auto it = overrides.find( outparm );
+
+        if( it != overrides.end() && !it->second.IsEmpty() )
+            name = it->second;
+
+        available.push_back( name );
+    }
 
     for( const wxString& outparm : info->outparms_ac )
     {
@@ -4010,6 +4024,7 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 
     const GSEIM_COMPONENT_INFO* componentInfo = nullptr;
     const GSEIM_COMPONENT_INFO* subcktInfo = nullptr;
+    const GSEIM_XBE_INFO*       xbeInfo = nullptr;
 
     if( symbol )
     {
@@ -4024,6 +4039,13 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         componentInfo = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
 
         if( !componentInfo )
+        {
+            GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
+            if( !xbeInfo )
+                return 0;
+        }
+
+        if( !componentInfo && !xbeInfo )
             return 0;
 
         SCH_FIELD* paramsField = symbol->GetField( "Gseim.Params" );
@@ -4055,10 +4077,10 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         return 0;
     }
 
-    const auto& rparms = symbol ? componentInfo->rparms : subcktInfo->rparms;
-    const auto& iparms = symbol ? componentInfo->iparms : subcktInfo->iparms;
-    const auto& sparms = symbol ? componentInfo->sparms : subcktInfo->sparms;
-    const auto& stparms = symbol ? componentInfo->stparms : subcktInfo->stparms;
+    const auto& rparms = symbol ? ( componentInfo ? componentInfo->rparms : xbeInfo->rparms ) : subcktInfo->rparms;
+    const auto& iparms = symbol ? ( componentInfo ? componentInfo->iparms : xbeInfo->iparms ) : subcktInfo->iparms;
+    const auto& sparms = symbol ? ( componentInfo ? componentInfo->sparms : xbeInfo->sparms ) : subcktInfo->sparms;
+    const auto& stparms = symbol ? ( componentInfo ? componentInfo->stparms : xbeInfo->stparms ) : subcktInfo->stparms;
 
 
     class PARAM_DIALOG : public DIALOG_SHIM
@@ -4153,6 +4175,16 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 
     for( const auto& [name, param] : stparms )
         params.push_back( { name, param } );
+
+    if( symbol && componentInfo)
+    {
+        for( const wxString& name : componentInfo->xVars )
+        {
+            GSEIM_PARAMETER param;
+            param.defaultValue.clear();
+            params.push_back( { name, param } );
+        }
+    }
 
     std::sort(
         params.begin(),

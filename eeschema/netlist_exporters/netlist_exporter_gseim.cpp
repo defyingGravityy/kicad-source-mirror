@@ -1,5 +1,5 @@
 #include <netlist_exporter_gseim.h>
-#include <gseim_ebe_parser.h>
+
 #include <sim/sim_model.h>
 #include <sim/spice_generator.h>
 #include <wx/tokenzr.h>
@@ -9,6 +9,8 @@
 #include <set>
 #include "../gseim/gseim_component_db.h"
 #include "../gseim/gseim_param_parser.h"
+#include <../gseim/gseim_ebe_parser.h>
+
 
 #include "gseim_outvar.h"
 #include "../gseim/gseim_paths.h"

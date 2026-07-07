@@ -12,7 +12,8 @@ enum class PARSE_SECTION
     RPARMS,
     IPARMS,
     SPARMS,
-    STPARMS
+    STPARMS,
+    XVARS
 };
 
 static void SplitTokens(
@@ -37,25 +38,25 @@ GSEIM_COMPONENT_INFO ParseEbeFile( const wxString& aFilename )
     if( !file.Open( aFilename ) )
         return info;
 
-    auto ParseParameter = []( const wxString& aText,
-                              auto& aMap )
+    auto ParseParameters = []( const wxString& aText, auto& aMap )
     {
-        wxString text = aText;
-        text.Trim( true );
-        text.Trim( false );
+        wxStringTokenizer tok( aText, " \t", wxTOKEN_STRTOK );
 
-        if( text.IsEmpty() )
-            return;
+        while( tok.HasMoreTokens() )
+        {
+            wxString text = tok.GetNextToken();
 
-        wxString name  = text.BeforeFirst( '=' );
-        wxString value = text.AfterFirst( '=' );
+            wxString name  = text.BeforeFirst( '=' );
+            wxString value = text.AfterFirst( '=' );
 
-        name.Trim( true );
-        name.Trim( false );
-        value.Trim( true );
-        value.Trim( false );
+            name.Trim( true );
+            name.Trim( false );
+            value.Trim( true );
+            value.Trim( false );
 
-        aMap[name].defaultValue = value;
+            if( !name.IsEmpty() )
+                aMap[name].defaultValue = value;
+        }
     };
 
     PARSE_SECTION section = PARSE_SECTION::NONE;
@@ -85,6 +86,13 @@ GSEIM_COMPONENT_INFO ParseEbeFile( const wxString& aFilename )
             continue;
         }
 
+        if( line.StartsWith( "x_vars:" ) )
+        {
+            section = PARSE_SECTION::XVARS;
+            SplitTokens( line.AfterFirst( ':' ), info.xVars );
+            continue;
+        }
+
         if( line.StartsWith( "outparms:" ) )
         {
             section = PARSE_SECTION::NONE;
@@ -102,28 +110,28 @@ GSEIM_COMPONENT_INFO ParseEbeFile( const wxString& aFilename )
         if( line.StartsWith( "rparms:" ) )
         {
             section = PARSE_SECTION::RPARMS;
-            ParseParameter( line.AfterFirst( ':' ), info.rparms );
+            ParseParameters( line.AfterFirst( ':' ), info.rparms );
             continue;
         }
 
         if( line.StartsWith( "iparms:" ) )
         {
             section = PARSE_SECTION::IPARMS;
-            ParseParameter( line.AfterFirst( ':' ), info.iparms );
+            ParseParameters( line.AfterFirst( ':' ), info.iparms );
             continue;
         }
 
         if( line.StartsWith( "sparms:" ) )
         {
             section = PARSE_SECTION::SPARMS;
-            ParseParameter( line.AfterFirst( ':' ), info.sparms );
+            ParseParameters( line.AfterFirst( ':' ), info.sparms );
             continue;
         }
 
         if( line.StartsWith( "stparms:" ) )
         {
             section = PARSE_SECTION::STPARMS;
-            ParseParameter( line.AfterFirst( ':' ), info.stparms );
+            ParseParameters( line.AfterFirst( ':' ), info.stparms );
             continue;
         }
 
@@ -135,19 +143,23 @@ GSEIM_COMPONENT_INFO ParseEbeFile( const wxString& aFilename )
         switch( section )
         {
         case PARSE_SECTION::RPARMS:
-            ParseParameter( text, info.rparms );
+            ParseParameters( text, info.rparms );
             break;
 
         case PARSE_SECTION::IPARMS:
-            ParseParameter( text, info.iparms );
+            ParseParameters( text, info.iparms );
             break;
 
         case PARSE_SECTION::SPARMS:
-            ParseParameter( text, info.sparms );
+            ParseParameters( text, info.sparms );
             break;
 
         case PARSE_SECTION::STPARMS:
-            ParseParameter( text, info.stparms );
+            ParseParameters( text, info.stparms );
+            break;
+
+        case PARSE_SECTION::XVARS:
+            SplitTokens( text, info.xVars );
             break;
 
         default:
