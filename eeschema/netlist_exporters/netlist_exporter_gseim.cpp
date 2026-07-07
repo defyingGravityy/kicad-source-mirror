@@ -13,6 +13,9 @@
 #include "gseim_outvar.h"
 #include "../gseim/gseim_paths.h"
 
+#include <paths.h>
+#include <wx/dir.h>
+
 #include <sch_sheet_path.h>
 #include <sch_sheet.h>
 #include <sch_sheet_pin.h>
@@ -127,16 +130,33 @@ std::vector<NETLIST_EXPORTER_GSEIM::GSEIM_SUBCKT> NETLIST_EXPORTER_GSEIM::Popula
         {
             GSEIM_PORT port;
             port.name = pin->GetText();
+            SCH_CONNECTION* conn = pin->Connection( &path );
+            if( conn )
+                port.net = conn->Name( true );
             subckt.ports.push_back( port );
         }
 
         for( SCH_ITEM* item : screen->Items().OfType( SCH_SHEET_T ) )
         {
             SCH_SHEET* child = static_cast<SCH_SHEET*>( item );
-
             GSEIM_INSTANCE inst;
+
+            wxString paramText;
+
+            for( SCH_FIELD& field : child->GetFields() )
+            {
+                if( field.GetName() == "Gseim.Params" )
+                {
+                    paramText = field.GetText();
+                    break;
+                }
+            }
+
+            inst.params = ParseGseimParams( paramText );
+
+            wxFileName fn( child->GetFileName() );
             inst.name = child->GetName();
-            inst.type = child->GetName();
+            inst.type = fn.GetName();
 
             for( SCH_SHEET_PIN* pin : child->GetPins() )
             {
@@ -422,7 +442,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 
 bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigned aNetlistOptions, REPORTER& aReporter )
 {
-
+    std::set<wxString> includedSubckts;
     if( !m_subcktName.IsEmpty() )
     {
         return ExportSubcircuit(
@@ -444,18 +464,23 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
         GetGseimSubPath() );
     
     FILE_OUTPUTFORMATTER formatter( aOutFileName );
+    SCH_SHEET_LIST sheetList = m_schematic->Hierarchy();
+    const SCH_SHEET_PATH& rootPath = sheetList[0];
+    SCH_SCREEN* rootScreen = rootPath.LastScreen();
 
     GROUND_NETS groundNets;
-    std::set<wxString> includedSubckts;
 
     for( const SPICE_ITEM& item : GetItems() )
     {
-        wxString gseimType = GetFieldValue( item, wxT( "Gseim.Type" ) );
+        if( item.sheetPath.size() != rootPath.size() )
+            continue;   
+        wxString gseimType = GetFieldValue( item, "Gseim.Type" );
 
         if( gseimType == "gnd" )
         {
             if( !item.pinNetNames.empty() )
                 groundNets.insert( NetNameToGseim( item.pinNetNames[0] ) );
+
             continue;
         }
 
@@ -503,41 +528,57 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
     if( !includedSubckts.empty() )
         formatter.Print( 0, "\n" );
 
-    formatter.Print( 0, "begin_circuit\n\n" );
+    formatter.Print( 0, "begin_circuit\n" );
+
+    for( SCH_ITEM* subcircuit_item : rootScreen->Items().OfType( SCH_SHEET_T ) )
+    {
+        SCH_SHEET* sheet = static_cast<SCH_SHEET*>( subcircuit_item );
+
+        std::map<wxString, wxString> params;
+
+        params.insert( sheet->GetGseimRparmValues().begin(), sheet->GetGseimRparmValues().end() );
+        params.insert( sheet->GetGseimIparmValues().begin(), sheet->GetGseimIparmValues().end() );
+        params.insert( sheet->GetGseimSparmValues().begin(), sheet->GetGseimSparmValues().end() );
+
+        wxFileName fn( sheet->GetFileName() );
+
+        wxString instanceName = sheet->GetName();
+        wxString subcktType   = fn.GetName();
+
+        formatter.Print( 0, "   subckt name=%s type=%s\n", TO_UTF8( instanceName ), TO_UTF8( subcktType ) );
+
+        for( SCH_SHEET_PIN* pin : sheet->GetPins() )
+        {
+            wxString portName = pin->GetText();
+            wxString netName;
+
+            SCH_CONNECTION* conn = pin->Connection( &rootPath );
+
+            if( conn )
+                netName = NormalizeNet( conn->Name( true ), groundNets );
+
+            formatter.Print( 0, "+    %s=%s\n", TO_UTF8( portName ), TO_UTF8( netName ) );
+        }
+
+        for( const auto& [name, value] : params )
+        {
+            formatter.Print(
+                0,
+                "+    %s=%s\n",
+                TO_UTF8( name ),
+                TO_UTF8( value ) );
+        }
+    }
 
     for( const SPICE_ITEM& item : GetItems() )
-        {
-            wxString gseimType = GetFieldValue( item, wxT( "Gseim.Type" ) );
+    {
+        if( item.sheetPath.size() != rootPath.size() )
+            continue;
+
+        wxString gseimType = GetFieldValue( item, wxT( "Gseim.Type" ) );
 
             if( gseimType == "gnd" )
                 continue;
-
-            if( !gseimType.IsEmpty() && !GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType ) )
-            {
-                const GSEIM_COMPONENT_INFO* subInfo =
-                    GSEIM_SUBCKT_DATABASE::Instance().Find( gseimType );
-
-                if( subInfo )
-                {
-                    formatter.Print( 0, "   subckt name=%s type=%s\n",
-                        item.refName.c_str(), TO_UTF8( gseimType ) );
-
-                    int pinNumber = 1;
-                    for( const wxString& nodeName : subInfo->nodes )
-                    {
-                        wxString net = NormalizeNet(
-                            GetNetForPin( item, std::to_string( pinNumber ) ), groundNets );
-
-                        if( net != "0" )
-                            m_outvars.insert( net );
-
-                        formatter.Print( 0, "+    %s=%s\n", TO_UTF8( nodeName ), TO_UTF8( net ) );
-                        ++pinNumber;
-                    }
-
-                    continue;
-                }
-            }
 
             if( !gseimType.IsEmpty() )
             {

@@ -86,6 +86,7 @@
 #include "../gseim/gseim_component_db.h"
 #include "../gseim/gseim_param_parser.h"
 #include "../gseim/gseim_paths.h"
+#include <gseim/gseim_subckt_db.h>
 
 class SYMBOL_UNIT_MENU : public ACTION_MENU
 {
@@ -654,13 +655,31 @@ bool SCH_EDIT_TOOL::Init()
                 }
             };
 
-    auto isGseimSymbol = []( const SELECTION& sel ) {
+    // auto isGseimSymbol = []( const SELECTION& sel ) {
+    //     if( sel.Size() != 1 )
+    //         return false;
+    //     SCH_SYMBOL* sym = dynamic_cast<SCH_SYMBOL*>( sel.Front() );
+    //     if( !sym )
+    //         return false;
+    //     return sym->GetField( wxT( "Gseim.Type" ) ) != nullptr;
+    // };
+
+    auto isGseimSymbol = []( const SELECTION& sel )
+    {
         if( sel.Size() != 1 )
             return false;
-        SCH_SYMBOL* sym = dynamic_cast<SCH_SYMBOL*>( sel.Front() );
-        if( !sym )
-            return false;
-        return sym->GetField( wxT( "Gseim.Type" ) ) != nullptr;
+
+        if( SCH_SYMBOL* sym = dynamic_cast<SCH_SYMBOL*>( sel.Front() ) )
+            return sym->GetField( "Gseim.Type" ) != nullptr;
+
+        if( SCH_SHEET* sheet = dynamic_cast<SCH_SHEET*>( sel.Front() ) )
+        {
+            GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
+            wxFileName fn( sheet->GetFileName() );
+            return GSEIM_SUBCKT_DATABASE::Instance().Find( fn.GetName() ) != nullptr;
+        }
+
+        return false;
     };
 
     auto autoplaceCondition =
@@ -3978,50 +3997,69 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
 
 int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 {
-    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SYMBOL_T } );
+    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SYMBOL_T, SCH_SHEET_T } );
 
     if( selection.Empty() )
         return 0;
 
     SCH_SYMBOL* symbol = dynamic_cast<SCH_SYMBOL*>( selection.Front() );
+    SCH_SHEET*  sheet  = dynamic_cast<SCH_SHEET*>( selection.Front() );
 
-    if( !symbol )
-        return 0;
+    wxString gseimType;
+    std::map<wxString, wxString> overrides;
 
-    SCH_FIELD* typeField = symbol->GetField( wxT( "Gseim.Type" ) );
+    const GSEIM_COMPONENT_INFO* componentInfo = nullptr;
+    const GSEIM_COMPONENT_INFO* subcktInfo = nullptr;
 
-    if( !typeField )
-        return 0;
-
-    wxString gseimType = typeField->GetText();
-
-    GSEIM_COMPONENT_DATABASE::Instance().Load(
-        GetGseimEbePath() );
-
-    const GSEIM_COMPONENT_INFO* info =
-        GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
-
-    if( !info )
+    if( symbol )
     {
-        wxMessageBox(
-            wxString::Format(
-                _( "No GSEIM component info found for type '%s'." ),
-                gseimType ),
-            _( "GSEIM" ),
-            wxOK | wxICON_WARNING );
+        SCH_FIELD* typeField = symbol->GetField( "Gseim.Type" );
 
+        if( !typeField )
+            return 0;
+
+        gseimType = typeField->GetText();
+
+        GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
+        componentInfo = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+
+        if( !componentInfo )
+            return 0;
+
+        SCH_FIELD* paramsField = symbol->GetField( "Gseim.Params" );
+
+        if( paramsField )
+            overrides = ParseGseimParams( paramsField->GetText() );
+    }
+    else if( sheet )
+    {
+        wxFileName fn( sheet->GetFileName() );
+        gseimType = fn.GetName();
+
+        GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
+        subcktInfo = GSEIM_SUBCKT_DATABASE::Instance().Find( gseimType );
+
+        if( !subcktInfo )
+            return 0;
+
+        overrides = sheet->GetGseimRparmValues();
+
+        const auto& ip = sheet->GetGseimIparmValues();
+        overrides.insert( ip.begin(), ip.end() );
+
+        const auto& sp = sheet->GetGseimSparmValues();
+        overrides.insert( sp.begin(), sp.end() );
+    }
+    else
+    {
         return 0;
     }
 
-    SCH_FIELD* paramsField = symbol->GetField( wxT( "Gseim.Params" ) );
+    const auto& rparms = symbol ? componentInfo->rparms : subcktInfo->rparms;
+    const auto& iparms = symbol ? componentInfo->iparms : subcktInfo->iparms;
+    const auto& sparms = symbol ? componentInfo->sparms : subcktInfo->sparms;
+    const auto& stparms = symbol ? componentInfo->stparms : subcktInfo->stparms;
 
-    wxString stored;
-
-    if( paramsField )
-        stored = paramsField->GetText();
-
-    std::map<wxString, wxString> overrides =
-        ParseGseimParams( stored );
 
     class PARAM_DIALOG : public DIALOG_SHIM
     {
@@ -4104,16 +4142,16 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 
     std::vector<PARAM_ENTRY> params;
 
-    for( const auto& [name, param] : info->rparms )
+    for( const auto& [name, param] : rparms )
         params.push_back( { name, param } );
 
-    for( const auto& [name, param] : info->iparms )
+    for( const auto& [name, param] : iparms )
         params.push_back( { name, param } );
 
-    for( const auto& [name, param] : info->sparms )
+    for( const auto& [name, param] : sparms )
         params.push_back( { name, param } );
 
-    for( const auto& [name, param] : info->stparms )
+    for( const auto& [name, param] : stparms )
         params.push_back( { name, param } );
 
     std::sort(
@@ -4183,27 +4221,46 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         modified[name] = cur;
     }
 
-    wxString newStored =
-        SerializeGseimParams( modified );
-
     SCH_COMMIT commit( m_toolMgr );
-    commit.Modify( symbol, m_frame->GetScreen() );
 
-    if( paramsField )
+    if( symbol )
     {
-        paramsField->SetText( newStored );
+        wxString newStored = SerializeGseimParams( modified );
+        commit.Modify( symbol, m_frame->GetScreen() );
+        SCH_FIELD* paramsField = symbol->GetField( "Gseim.Params" );
+        if( paramsField )
+        {
+            paramsField->SetText( newStored );
+        }
+        else
+        {
+            SCH_FIELD newField( symbol, FIELD_T::USER, "Gseim.Params" );
+            newField.SetText( newStored );
+            newField.SetVisible( false );
+            symbol->AddField( newField );
+        }
     }
     else
     {
-        SCH_FIELD newField(
-            symbol,
-            FIELD_T::USER,
-            wxT( "Gseim.Params" ) );
+        std::map<wxString, wxString> r;
+        std::map<wxString, wxString> i;
+        std::map<wxString, wxString> s;
 
-        newField.SetText( newStored );
-        newField.SetVisible( false );
+        for( const auto& [name, value] : modified )
+        {
+            if( rparms.count( name ) )
+                r[name] = value;
+            else if( iparms.count( name ) )
+                i[name] = value;
+            else if( sparms.count( name ) )
+                s[name] = value;
+        }
 
-        symbol->AddField( newField );
+        commit.Modify( sheet, m_frame->GetScreen() );
+
+        sheet->SetGseimRparmValues( r );
+        sheet->SetGseimIparmValues( i );
+        sheet->SetGseimSparmValues( s );
     }
 
     commit.Push( _( "Modify GSEIM Parameters" ) );

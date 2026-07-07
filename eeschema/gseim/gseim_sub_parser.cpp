@@ -14,6 +14,15 @@ void SplitTokens( const wxString& aText, std::vector<wxString>& aOutput )
 }
 }
 
+enum class PARSE_SECTION
+{
+    NONE,
+    RPARMS,
+    IPARMS,
+    SPARMS,
+    STPARMS
+};
+
 GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
 {
     GSEIM_COMPONENT_INFO info;
@@ -21,6 +30,8 @@ GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
 
     if( !file.Open( aFilename ) )
         return info;
+
+    PARSE_SECTION section = PARSE_SECTION::NONE;
 
     for( size_t i = 0; i < file.GetLineCount(); ++i )
     {
@@ -43,11 +54,82 @@ GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
             SplitTokens( line.AfterFirst( ':' ), info.nodes );
             continue;
         }
+
+        if( line.StartsWith( "rparms:" ) )
+        {
+            section = PARSE_SECTION::RPARMS;
+            continue;
+        }
+
+        if( line.StartsWith( "iparms:" ) )
+        {
+            section = PARSE_SECTION::IPARMS;
+            continue;
+        }
+
+        if( line.StartsWith( "sparms:" ) )
+        {
+            section = PARSE_SECTION::SPARMS;
+            continue;
+        }
+
+        if( line.StartsWith( "stparms:" ) )
+        {
+            section = PARSE_SECTION::STPARMS;
+            continue;
+        }
+
+        if( line.StartsWith( "outvar:" )
+            || line.StartsWith( "ebe " )
+            || line.StartsWith( "aux_nodes:" )
+            || line.StartsWith( "C:" )
+            || line.StartsWith( "endC" )
+            || line.StartsWith( "end_subckt" ) )
+        {
+            section = PARSE_SECTION::NONE;
+            continue;
+        }
+
+        if( section != PARSE_SECTION::NONE && line.StartsWith( "+" ) )
+        {
+            wxString s = line.AfterFirst( '+' );
+            s.Trim( true );
+            s.Trim( false );
+
+            wxString name  = s.BeforeFirst( '=' );
+            wxString value = s.AfterFirst( '=' );
+
+            GSEIM_PARAMETER param;
+            param.defaultValue = value;
+
+            switch( section )
+            {
+            case PARSE_SECTION::RPARMS:
+                info.rparms.emplace( name, param );
+                break;
+
+            case PARSE_SECTION::IPARMS:
+                info.iparms.emplace( name, param );
+                break;
+
+            case PARSE_SECTION::SPARMS:
+                info.sparms.emplace( name, param );
+                break;
+
+            case PARSE_SECTION::STPARMS:
+                info.stparms.emplace( name, param );
+                break;
+
+            default:
+                break;
+            }
+
+            continue;
+        }
     }
 
     return info;
 }
-
 GSEIM_COMPONENT_DB LoadSubDatabase( const wxString& aDirectory )
 {
     GSEIM_COMPONENT_DB db;

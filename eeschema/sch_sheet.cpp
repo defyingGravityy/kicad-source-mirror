@@ -1763,6 +1763,20 @@ const SCH_SHEET_INSTANCE* SCH_SHEET::getInstance( const KIID_PATH& aSheetPath ) 
 }
 
 
+
+
+const std::map<wxString, wxString>& SCH_SHEET::GetGseimRparmValues() const { return m_gseimRparmValues; }
+void SCH_SHEET::SetGseimRparmValues( const std::map<wxString, wxString>& aMap ) { m_gseimRparmValues = aMap; }
+
+const std::map<wxString, wxString>& SCH_SHEET::GetGseimSparmValues() const { return m_gseimSparmValues; }
+void SCH_SHEET::SetGseimSparmValues( const std::map<wxString, wxString>& aMap ) { m_gseimSparmValues = aMap; }
+
+const std::map<wxString, wxString>& SCH_SHEET::GetGseimIparmValues() const { return m_gseimIparmValues; }
+void SCH_SHEET::SetGseimIparmValues( const std::map<wxString, wxString>& aMap ) { m_gseimIparmValues = aMap; }
+
+
+
+
 bool SCH_SHEET::HasRootInstance() const
 {
     for( const SCH_SHEET_INSTANCE& instance : m_instances )

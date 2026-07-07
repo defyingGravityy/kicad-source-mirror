@@ -32,7 +32,6 @@ public:
 
     void SetSubcktName( const wxString& aName ) { m_subcktName = aName; }
     
-
 private:
     wxString m_solveBlock;
     std::set<wxString> m_outvars;
@@ -42,13 +41,17 @@ private:
     struct GSEIM_PORT
     {
         wxString name;
+        wxString net;
     };
 
     struct GSEIM_INSTANCE
     {
         wxString name;
         wxString type;
-        std::vector<std::pair<wxString, wxString>> portNets;  // port name -> connected net
+
+        std::vector<std::pair<wxString, wxString>> portNets;
+
+        std::map<wxString, wxString> params;
     };
 
     struct GSEIM_SUBCKT

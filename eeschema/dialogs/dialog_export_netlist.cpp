@@ -899,18 +899,8 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
 
     pg->m_GseimGlobalCCodeLabel = new wxStaticText( pg, wxID_ANY, "C Block" );
     pg->m_RightBoxSizer->Add( pg->m_GseimGlobalCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
-    pg->m_GseimGlobalCCodeCtrl = new wxTextCtrl(
-    pg,
-    wxID_ANY,
-    m_editFrame->Schematic().GetGseimGparmCCode(),
-    wxDefaultPosition,
-    wxSize( -1, 120 ),
-    wxTE_MULTILINE );
-    pg->m_RightBoxSizer->Add(
-    pg->m_GseimGlobalCCodeCtrl,
-    0,
-    wxEXPAND | wxBOTTOM,
-    10 );
+    pg->m_GseimGlobalCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimGparmCCode(), wxDefaultPosition, wxSize( -1, 70 ), wxTE_MULTILINE ); 
+    pg->m_RightBoxSizer->Add( pg->m_GseimGlobalCCodeCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
 
     pg->m_GseimGlobalRparmsLabel = new wxStaticText( pg, wxID_ANY, "Rparms" );
     pg->m_GseimGlobalRparmsCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimGlobalRparms() );
@@ -944,7 +934,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimOutvarsLabel = new wxStaticText( pg, wxID_ANY, _( "Output Variables:" ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsLabel, 0, wxBOTTOM, 5 );
 
-    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 250 ) );
+    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 120 ) );
     pg->m_GseimOutvarsGrid->CreateGrid( 0, 4 );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 0, "" );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 1, "Variable" );
@@ -952,7 +942,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimOutvarsGrid->SetColLabelValue( 3, "_orig" );
     pg->m_GseimOutvarsGrid->SetRowLabelSize( 0 );
     pg->m_GseimOutvarsGrid->HideCol( 3 );
-    pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
+    // pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 0, wxEXPAND | wxBOTTOM, 5 );
     pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_LEFT_CLICK, [this]( wxGridEvent& event )
     {
@@ -1033,7 +1023,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
 
     pg->m_GseimCCodeLabel = new wxStaticText( pg, wxID_ANY, "C Block" );
     pg->m_RightBoxSizer->Add( pg->m_GseimGlobalCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
-    pg->m_GseimCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimSubcktCCode(), wxDefaultPosition, wxSize( -1, 120 ), wxTE_MULTILINE );
+    pg->m_GseimCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimSubcktCCode(), wxDefaultPosition, wxSize( -1, 70 ), wxTE_MULTILINE );
     pg->m_RightBoxSizer->Add( pg->m_GseimCCodeCtrl, 0, wxEXPAND | wxBOTTOM, 10 );
 
     pg->m_GseimRparmsLabel = new wxStaticText( pg, wxID_ANY, _( "Rparms:" ) );
@@ -1078,7 +1068,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     pg->m_GseimOutvarsLabel = new wxStaticText( pg, wxID_ANY, _( "Output Variables:" ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsLabel, 0, wxBOTTOM, 5 );
 
-    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 250 ) );
+    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 120 ) );
     pg->m_GseimOutvarsGrid->CreateGrid( 0, 4 );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 0, "" );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 1, "Variable" );
@@ -1086,7 +1076,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     pg->m_GseimOutvarsGrid->SetColLabelValue( 3, "_orig" );
     pg->m_GseimOutvarsGrid->SetRowLabelSize( 0 );
     pg->m_GseimOutvarsGrid->HideCol( 3 );
-    pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
+    // pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 0, wxEXPAND | wxBOTTOM, 5 );
     pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_LEFT_CLICK, [this]( wxGridEvent& event )
     {
@@ -1157,49 +1147,56 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
     if( hierarchy.empty() )
         return;
 
-    const SCH_SHEET_PATH& path = hierarchy[0];
-    SCH_SCREEN* screen = path.LastScreen();
 
     std::set<wxString> rparms;
     std::set<wxString> iparms;
     std::set<wxString> sparms;
     GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
-    for( SCH_ITEM* item : screen->Items().OfType( SCH_SYMBOL_T ) )
+    for( const SCH_SHEET_PATH& path : hierarchy )
     {
-        SCH_SYMBOL* sym = static_cast<SCH_SYMBOL*>( item );
+        // if( path.size() == 1 )
+        //     continue;        
 
-        wxString gseimType;
-        wxString paramText;
+        SCH_SCREEN* screen = path.LastScreen();
 
-        for( SCH_FIELD& field : sym->GetFields() )
+        
+        for( SCH_ITEM* item : screen->Items().OfType( SCH_SYMBOL_T ) )
         {
-            if( field.GetName() == "Gseim.Type" )
-                gseimType = field.GetText();
-            else if( field.GetName() == "Gseim.Params" )
-                paramText = field.GetText();
-        }
+            SCH_SYMBOL* sym = static_cast<SCH_SYMBOL*>( item );
 
-        if( gseimType.IsEmpty() || gseimType == "gnd" )
-            continue;
+            wxString gseimType;
+            wxString paramText;
 
-        const GSEIM_COMPONENT_INFO* info = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+            for( SCH_FIELD& field : sym->GetFields() )
+            {
+                if( field.GetName() == "Gseim.Type" )
+                    gseimType = field.GetText();
+                else if( field.GetName() == "Gseim.Params" )
+                    paramText = field.GetText();
+            }
 
-        if( !info )
-            continue;
+            if( gseimType.IsEmpty() || gseimType == "gnd" )
+                continue;
 
-        auto params = ParseGseimParams( paramText );
+            const GSEIM_COMPONENT_INFO* info = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
 
-    
-        for( const auto& [key, value] : params )
-        {
-            if( info->rparms.count( key ) )
-                rparms.insert( value );
+            if( !info )
+                continue;
 
-            if( info->iparms.count( key ) )
-                iparms.insert( value );
+            auto params = ParseGseimParams( paramText );
 
-            if( info->sparms.count( key ) )
-                sparms.insert( value );
+        
+            for( const auto& [key, value] : params )
+            {
+                if( info->rparms.count( key ) )
+                    rparms.insert( value );
+
+                if( info->iparms.count( key ) )
+                    iparms.insert( value );
+
+                if( info->sparms.count( key ) )
+                    sparms.insert( value );
+            }
         }
     }
 
@@ -1952,6 +1949,9 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
 
             for( int row = 0; row < ovGrid->GetNumberRows(); ++row )
             {
+                if( ovGrid->GetCellValue( row, 0 ) != "1" )
+                    continue;
+
                 wxString origName = ovGrid->GetCellValue( row, 3 );
 
                 auto it = std::find_if(
@@ -1962,15 +1962,15 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
                         return x.name == origName;
                     } );
 
-                if( it != m_GseimAllOutvars.end() )
-                {
-                    GSEIM_OUTVAR ov = *it;
+                if( it == m_GseimAllOutvars.end() )
+                    continue;
 
-                    ov.name = ovGrid->GetCellValue( row, 1 );
-                    ov.expr = ovGrid->GetCellValue( row, 2 );
+                GSEIM_OUTVAR ov = *it;
 
-                    explicitOutvars.push_back( ov );
-                }
+                ov.name = ovGrid->GetCellValue( row, 1 );
+                ov.expr = ovGrid->GetCellValue( row, 2 );
+
+                explicitOutvars.push_back( ov );
             }
         }
 
@@ -1999,6 +1999,9 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
 
             for( int row = 0; row < ovGrid->GetNumberRows(); ++row )
             {
+                if( ovGrid->GetCellValue( row, 0 ) != "1" )
+                    continue;
+
                 wxString origName = ovGrid->GetCellValue( row, 3 );
 
                 auto it = std::find_if(
@@ -2009,15 +2012,15 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
                         return x.name == origName;
                     } );
 
-                if( it != m_GseimAllOutvars.end() )
-                {
-                    GSEIM_OUTVAR ov = *it;
+                if( it == m_GseimAllOutvars.end() )
+                    continue;
 
-                    ov.name = ovGrid->GetCellValue( row, 1 );
-                    ov.expr = ovGrid->GetCellValue( row, 2 );
+                GSEIM_OUTVAR ov = *it;
 
-                    explicitOutvars.push_back( ov );
-                }
+                ov.name = ovGrid->GetCellValue( row, 1 );
+                ov.expr = ovGrid->GetCellValue( row, 2 );
+
+                explicitOutvars.push_back( ov );
             }
         }
 

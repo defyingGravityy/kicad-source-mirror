@@ -577,6 +577,16 @@ public:
 
     bool operator==( const SCH_ITEM& aOther ) const override;
 
+
+
+    const std::map<wxString, wxString>& GetGseimRparmValues() const;
+    const std::map<wxString, wxString>& GetGseimIparmValues() const;
+    const std::map<wxString, wxString>& GetGseimSparmValues() const;
+
+    void SetGseimRparmValues( const std::map<wxString, wxString>& );
+    void SetGseimIparmValues( const std::map<wxString, wxString>& );
+    void SetGseimSparmValues( const std::map<wxString, wxString>& );
+
 #if defined(DEBUG)
     void Show( int nestLevel, std::ostream& os ) const override;
 #endif
@@ -677,6 +687,12 @@ private:
     KIGFX::COLOR4D              m_backgroundColor;
 
     std::vector<SCH_SHEET_INSTANCE> m_instances;
+
+
+private:
+    std::map<wxString, wxString> m_gseimRparmValues;
+    std::map<wxString, wxString> m_gseimIparmValues;
+    std::map<wxString, wxString> m_gseimSparmValues;
 };
 
 

@@ -196,6 +196,7 @@ bool NETLIST_EXPORTER_SPICE::ReadSchematicAndLibraries( unsigned aNetlistOptions
             try
             {
                 SPICE_ITEM            spiceItem;
+                spiceItem.sheetPath = sheet;
                 std::vector<PIN_INFO> pins = CreatePinList( symbol, sheet, true );
 
                 for( const SCH_FIELD& field : symbol->GetFields() )

@@ -26,6 +26,7 @@
 #define SPICE_GENERATOR_H
 
 #include <sim/sim_model.h>
+#include <sch_sheet_path.h>
 
 class SCH_FIELD;
 
@@ -38,6 +39,9 @@ struct SPICE_ITEM
     std::string              baseModelName;
     std::string              modelName;
     const SIM_MODEL*         model = nullptr;
+
+    SCH_SHEET_PATH           sheetPath;
+
     std::vector<SCH_FIELD>   fields;
 };
 
