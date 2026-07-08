@@ -14,7 +14,9 @@ enum class PARSE_SECTION
     IPARMS,
     SPARMS,
     STPARMS,
-    OUTPARMS
+    IGPARMS,
+    OUTPARMS,
+    OUTPARMS_AC
 };
 
 static void SplitTokens( const wxString& aText,
@@ -79,14 +81,14 @@ GSEIM_XBE_INFO ParseXbeFile( const wxString& aFilename )
         if( line.StartsWith( "input_vars:" ) )
         {
             section = PARSE_SECTION::INPUT_VARS;
-            SplitTokens( line.AfterFirst( ':' ), info.inputs );
+            SplitTokens( line.AfterFirst( ':' ), info.input_vars );
             continue;
         }
 
         if( line.StartsWith( "output_vars:" ) )
         {
             section = PARSE_SECTION::OUTPUT_VARS;
-            SplitTokens( line.AfterFirst( ':' ), info.outputs );
+            SplitTokens( line.AfterFirst( ':' ), info.output_vars );
             continue;
         }
 
@@ -94,6 +96,13 @@ GSEIM_XBE_INFO ParseXbeFile( const wxString& aFilename )
         {
             section = PARSE_SECTION::OUTPARMS;
             SplitTokens( line.AfterFirst( ':' ), info.outparms );
+            continue;
+        }
+
+        if( line.StartsWith( "outparms_ac:" ) )
+        {
+            section = PARSE_SECTION::OUTPARMS_AC;
+            SplitTokens( line.AfterFirst( ':' ), info.outparms_ac );
             continue;
         }
 
@@ -125,6 +134,13 @@ GSEIM_XBE_INFO ParseXbeFile( const wxString& aFilename )
             continue;
         }
 
+        if( line.StartsWith( "igparms:" ) )
+        {
+            section = PARSE_SECTION::IGPARMS;
+            ParseParameters( line.AfterFirst( ':' ), info.igparms );
+            continue;
+        }
+
         if( !line.StartsWith( "+" ) )
             continue;
 
@@ -133,15 +149,19 @@ GSEIM_XBE_INFO ParseXbeFile( const wxString& aFilename )
         switch( section )
         {
         case PARSE_SECTION::INPUT_VARS:
-            SplitTokens( text, info.inputs );
+            SplitTokens( text, info.input_vars );
             break;
 
         case PARSE_SECTION::OUTPUT_VARS:
-            SplitTokens( text, info.outputs );
+            SplitTokens( text, info.output_vars );
             break;
 
         case PARSE_SECTION::OUTPARMS:
             SplitTokens( text, info.outparms );
+            break;
+
+        case PARSE_SECTION::OUTPARMS_AC:
+            SplitTokens( text, info.outparms_ac );
             break;
 
         case PARSE_SECTION::RPARMS:
@@ -158,6 +178,10 @@ GSEIM_XBE_INFO ParseXbeFile( const wxString& aFilename )
 
         case PARSE_SECTION::STPARMS:
             ParseParameters( text, info.stparms );
+            break;
+
+        case PARSE_SECTION::IGPARMS:
+            ParseParameters( text, info.igparms );
             break;
 
         default:

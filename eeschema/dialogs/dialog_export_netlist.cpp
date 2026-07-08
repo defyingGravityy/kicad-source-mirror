@@ -869,6 +869,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimSolveTypeCtrl->Append( "dc" );
     pg->m_GseimSolveTypeCtrl->Append( "trns" );
     pg->m_GseimSolveTypeCtrl->Append( "ac" );
+    pg->m_GseimSolveTypeCtrl->Append( "sss" );
     pg->m_GseimSolveTypeCtrl->SetSelection( 2 );
     pg->m_GseimSolveTypeCtrl->Bind( wxEVT_CHOICE, &DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged, this );
     pg->m_RightBoxSizer->Add( pg->m_GseimSolveTypeCtrl, 0, wxEXPAND | wxBOTTOM, 8 );

@@ -13,7 +13,8 @@ enum class PARSE_SECTION
     IPARMS,
     SPARMS,
     STPARMS,
-    XVARS
+    XVARS,
+    IGPARMS
 };
 
 static void SplitTokens(
@@ -135,6 +136,13 @@ GSEIM_COMPONENT_INFO ParseEbeFile( const wxString& aFilename )
             continue;
         }
 
+        if( line.StartsWith( "igparms:" ) )
+        {
+            section = PARSE_SECTION::IGPARMS;
+            ParseParameters( line.AfterFirst( ':' ), info.igparms );
+            continue;
+        }
+
         if( !line.StartsWith( "+" ) )
             continue;
 
@@ -156,6 +164,10 @@ GSEIM_COMPONENT_INFO ParseEbeFile( const wxString& aFilename )
 
         case PARSE_SECTION::STPARMS:
             ParseParameters( text, info.stparms );
+            break;
+
+        case PARSE_SECTION::IGPARMS:
+            ParseParameters( text, info.igparms );
             break;
 
         case PARSE_SECTION::XVARS:

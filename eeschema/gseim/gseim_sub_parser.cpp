@@ -20,7 +20,8 @@ enum class PARSE_SECTION
     RPARMS,
     IPARMS,
     SPARMS,
-    STPARMS
+    STPARMS,
+    IGPARMS
 };
 
 GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
@@ -79,6 +80,12 @@ GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
             continue;
         }
 
+        if( line.StartsWith( "igparms:" ) )
+        {
+            section = PARSE_SECTION::IGPARMS;
+            continue;
+        }
+
         if( line.StartsWith( "outvar:" )
             || line.StartsWith( "ebe " )
             || line.StartsWith( "aux_nodes:" )
@@ -118,6 +125,10 @@ GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
 
             case PARSE_SECTION::STPARMS:
                 info.stparms.emplace( name, param );
+                break;
+
+            case PARSE_SECTION::IGPARMS:
+                info.igparms.emplace( name, param );
                 break;
 
             default:

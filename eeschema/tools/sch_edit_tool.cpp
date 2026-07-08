@@ -3863,14 +3863,20 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     GSEIM_COMPONENT_DATABASE::Instance().Load(
         GetGseimEbePath() );
 
-    const GSEIM_COMPONENT_INFO* info =
-        GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+    const GSEIM_COMPONENT_INFO* componentInfo = nullptr;
+    const GSEIM_XBE_INFO* xbeInfo = nullptr;
 
-    if( !info )
+    GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
+    GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
+
+    componentInfo = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+
+    if( !componentInfo )
+        xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
+
+    if( !componentInfo && !xbeInfo )
     {
-        wxMessageBox( wxString::Format( _( "No GSEIM component info found for type '%s'." ),
-                                        gseimType ),
-                      _( "GSEIM" ), wxOK | wxICON_WARNING );
+        wxMessageBox( wxString::Format( _( "No GSEIM component info found for type '%s'." ), gseimType ), _( "GSEIM" ), wxOK | wxICON_WARNING );
         return 0;
     }
 
@@ -3917,7 +3923,10 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
 
     if( SCH_FIELD* paramsField = symbol->GetField( "Gseim.Params" ) )
         overrides = ParseGseimParams( paramsField->GetText() );
-    for( const wxString& outparm : info->outparms )
+    
+    const auto& outparms = componentInfo ? componentInfo->outparms : xbeInfo->outparms;
+
+    for( const wxString& outparm : outparms )
     {
         wxString name = outparm;
 
@@ -3929,12 +3938,32 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         available.push_back( name );
     }
 
-    for( const wxString& outparm : info->outparms_ac )
+    if( componentInfo )
     {
-        wxString base = refName + "_" + outparm;
+        for( const wxString& outparm : componentInfo->outparms_ac )
+        {
+            wxString base = refName + "_" + outparm;
+            available.push_back( "mag_of_" + base );
+            available.push_back( "phase_of_" + base );
+        }
+    }
+    else
+    {
+        for( const wxString& outparm : xbeInfo->outparms_ac )
+        {
+            wxString base = refName + "_" + outparm;
+            available.push_back( "mag_of_" + base );
+            available.push_back( "phase_of_" + base );
+        }
+    }
 
-        available.push_back( "mag_of_" + base );
-        available.push_back( "phase_of_" + base );
+    if( xbeInfo )
+    {
+        for( const wxString& var : xbeInfo->output_vars )
+        {
+            if( std::find( available.begin(), available.end(), var ) == available.end() )
+                available.push_back( var );
+        }
     }
 
     if( available.empty() )
@@ -4041,6 +4070,8 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         if( !componentInfo )
         {
             GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
+            xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
+
             if( !xbeInfo )
                 return 0;
         }
@@ -4081,6 +4112,7 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
     const auto& iparms = symbol ? ( componentInfo ? componentInfo->iparms : xbeInfo->iparms ) : subcktInfo->iparms;
     const auto& sparms = symbol ? ( componentInfo ? componentInfo->sparms : xbeInfo->sparms ) : subcktInfo->sparms;
     const auto& stparms = symbol ? ( componentInfo ? componentInfo->stparms : xbeInfo->stparms ) : subcktInfo->stparms;
+    const auto& igparms = symbol ? ( componentInfo ? componentInfo->igparms : xbeInfo->igparms ) : subcktInfo->igparms;
 
 
     class PARAM_DIALOG : public DIALOG_SHIM
@@ -4174,6 +4206,9 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         params.push_back( { name, param } );
 
     for( const auto& [name, param] : stparms )
+        params.push_back( { name, param } );
+
+    for( const auto& [name, param] : igparms )
         params.push_back( { name, param } );
 
     if( symbol && componentInfo)

@@ -21,6 +21,7 @@ struct GSEIM_COMPONENT_INFO
     std::unordered_map<wxString, GSEIM_PARAMETER> iparms;
     std::unordered_map<wxString, GSEIM_PARAMETER> sparms;
     std::unordered_map<wxString, GSEIM_PARAMETER> stparms;
+    std::unordered_map<wxString, GSEIM_PARAMETER> igparms;
 
     std::vector<wxString> xVars;
 
