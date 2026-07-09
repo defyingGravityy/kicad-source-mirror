@@ -11,7 +11,6 @@
 #include "../gseim/gseim_param_parser.h"
 #include <../gseim/gseim_ebe_parser.h>
 
-
 #include "gseim_outvar.h"
 #include "../gseim/gseim_paths.h"
 
@@ -25,6 +24,7 @@
  #include <sch_pin.h>
  #include <wx/filename.h>
  #include "../gseim/gseim_subckt_db.h"
+ #include <../gseim/gseim_xbe_db.h>
 
 namespace
 {
@@ -107,6 +107,46 @@ wxString MakeOutvarName( const wxString& aNet )
     return "V" + name;
 }
 
+wxString GetNetForXbeVar( const SPICE_ITEM& aItem, const GSEIM_XBE_INFO& aXbeInfo,
+                           const wxString& aVarName )
+{
+    int pinNumber = 1;
+
+    for( const wxString& v : aXbeInfo.input_vars )
+    {
+        if( v == aVarName )
+            return GetNetForPin( aItem, std::to_string( pinNumber ) );
+
+        ++pinNumber;
+    }
+
+    for( const wxString& v : aXbeInfo.output_vars )
+    {
+        if( v == aVarName )
+            return GetNetForPin( aItem, std::to_string( pinNumber ) );
+
+        ++pinNumber;
+    }
+
+    return wxEmptyString;
+}
+
+wxString GetNetForEbeXVar( const SPICE_ITEM& aItem, const GSEIM_COMPONENT_INFO& aInfo,
+                            const wxString& aVarName )
+{
+    int pinNumber = static_cast<int>( aInfo.nodes.size() ) + 1;
+
+    for( const wxString& v : aInfo.xVars )
+    {
+        if( v == aVarName )
+            return GetNetForPin( aItem, std::to_string( pinNumber ) );
+
+        ++pinNumber;
+    }
+
+    return wxEmptyString;
+}
+
 } // anonymous namespace
 
 std::vector<NETLIST_EXPORTER_GSEIM::GSEIM_SUBCKT> NETLIST_EXPORTER_GSEIM::PopulateSubckts()
@@ -179,6 +219,57 @@ std::vector<NETLIST_EXPORTER_GSEIM::GSEIM_SUBCKT> NETLIST_EXPORTER_GSEIM::Popula
     }
 
     return subckts;
+}
+
+
+bool NETLIST_EXPORTER_GSEIM::ExportXbeElement( const SPICE_ITEM& aItem,
+                                                const GSEIM_XBE_INFO& aXbeInfo,
+                                                FILE_OUTPUTFORMATTER& aFormatter )
+{
+    wxString paramText = GetFieldValue( aItem, "Gseim.Params" );
+    std::map<wxString, wxString> overrides = ParseGseimParams( paramText );
+
+    aFormatter.Print( 0, "   xelement type=%s", TO_UTF8( aXbeInfo.name ) );
+
+    auto emitVar = [&]( const wxString& varName )
+    {
+        wxString val = GetNetForXbeVar( aItem, aXbeInfo, varName );
+
+        if( val.IsEmpty() )
+        {
+            auto it = overrides.find( varName );
+            if( it != overrides.end() )
+                val = it->second;
+        }
+
+        aFormatter.Print( 0, " %s=%s", TO_UTF8( varName ), TO_UTF8( val ) );
+    };
+
+    for( const wxString& v : aXbeInfo.input_vars )
+        emitVar( v );
+
+    for( const wxString& v : aXbeInfo.output_vars )
+        emitVar( v );
+
+    aFormatter.Print( 0, "\n" );
+
+    bool any = false;
+
+    for( const auto& [name, param] : aXbeInfo.rparms )
+    {
+        auto it = overrides.find( name );
+
+        if( it != overrides.end() )
+        {
+            if( !any ) { aFormatter.Print( 0, "+   " ); any = true; }
+            aFormatter.Print( 0, " %s=%s", TO_UTF8( name ), TO_UTF8( it->second ) );
+        }
+    }
+
+    if( any )
+        aFormatter.Print( 0, "\n" );
+
+    return true;
 }
 
 bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
@@ -464,6 +555,9 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
 
     GSEIM_SUBCKT_DATABASE::Instance().Load(
         GetGseimSubPath() );
+
+    GSEIM_XBE_DATABASE::Instance().Load(
+        GetGseimXbePath() );
     
     FILE_OUTPUTFORMATTER formatter( aOutFileName );
     SCH_SHEET_LIST sheetList = m_schematic->Hierarchy();
@@ -601,6 +695,14 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
                 
             if( !info )
             {
+                const GSEIM_XBE_INFO* xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
+
+                if( xbeInfo )
+                {
+                    ExportXbeElement( item, *xbeInfo, formatter );
+                    continue;
+                }
+
                 formatter.Print( 0, "* missing ebe definition for %s\n", item.refName.c_str() );
                 continue;
             }
@@ -625,8 +727,27 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
                 ++pinNumber;
             }
 
+            for( const wxString& varName : info->xVars )
+            {
+                wxString val = GetNetForEbeXVar( item, *info, varName );
+
+                if( val.IsEmpty() )
+                {
+                    auto it = params.find( varName );
+                    if( it != params.end() )
+                        val = it->second;
+                }
+
+                formatter.Print( 0, " %s=%s", TO_UTF8( varName ), TO_UTF8( val ) );
+            }
+
             for( const auto& p : params )
+            {
+                if( std::find( info->xVars.begin(), info->xVars.end(), p.first ) != info->xVars.end() )
+                    continue;
+
                 formatter.Print( 0, " %s=%s", TO_UTF8( p.first ), TO_UTF8( p.second ) );
+            }
 
             formatter.Print( 0, "\n" );
             continue;

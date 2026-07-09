@@ -542,29 +542,34 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                         }
                     }
                 }
+                // Element output (R1_i, R1_v, VM1_v_fb, etc.)
                 else if( var.StartsWith( ref + "_" ) )
                 {
                     wxString outparm = var.Mid( ref.Length() + 1 );
-
                     ov.expr = outparm + "_of_" + ref;
                 }
-                else
+                // Node voltage (VB, VC, VOUT, ...)
+                else if( var.StartsWith( "V" ) )
                 {
+                    wxString net = var.Mid( 1 );
+
                     if( var.EndsWith( "_ac" ) )
                     {
                         ov.isAc = true;
                         ov.baseName = var;
-
-                        wxString net = var.Mid( 1 );
-                        net.RemoveLast( 3 );     // remove "_ac"
+                        net.RemoveLast( 3 );
 
                         ov.expr = "nodev_ac_of_" + net;
                     }
                     else
                     {
-                        wxString net = var.Mid( 1 );
                         ov.expr = "nodev_of_" + net;
                     }
+                }
+                // XBE output (x1, x2, y, ...)
+                else
+                {
+                    ov.expr = "xvar_of_" + var;
                 }
 
                 outvars.push_back( ov );
@@ -1488,8 +1493,8 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
 
     for( int row = 0; row < grid->GetNumberRows(); ++row )
     {
-        wxString varName = grid->GetCellValue( row, 1 );
-        grid->SetCellValue( row, 0, checked.count( varName ) ? "1" : "" );
+        wxString origName = grid->GetCellValue( row, 3 );   // was column 1
+        grid->SetCellValue( row, 0, checked.count( origName ) ? "1" : "" );
     }
 
     BindGseimChangeHandlers( true );
@@ -1548,7 +1553,7 @@ void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
     for( int i = 0; i < ovGrid->GetNumberRows(); ++i )
     {
         if( ovGrid->GetCellValue( i, 0 ) == "1" )
-            output.outputVars.push_back( ovGrid->GetCellValue( i, 1 ) );
+            output.outputVars.push_back( ovGrid->GetCellValue( i, 3 ) );   // was column 1
     }
 
     m_editFrame->Schematic().SetGseimSolveBlocks( m_GseimSolveBlocks );

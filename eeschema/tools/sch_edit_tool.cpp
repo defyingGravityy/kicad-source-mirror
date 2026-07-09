@@ -3925,17 +3925,9 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         overrides = ParseGseimParams( paramsField->GetText() );
     
     const auto& outparms = componentInfo ? componentInfo->outparms : xbeInfo->outparms;
-
     for( const wxString& outparm : outparms )
     {
-        wxString name = outparm;
-
-        auto it = overrides.find( outparm );
-
-        if( it != overrides.end() && !it->second.IsEmpty() )
-            name = it->second;
-
-        available.push_back( name );
+        available.push_back( refName + "_" + outparm );
     }
 
     if( componentInfo )
@@ -4210,16 +4202,6 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 
     for( const auto& [name, param] : igparms )
         params.push_back( { name, param } );
-
-    if( symbol && componentInfo)
-    {
-        for( const wxString& name : componentInfo->xVars )
-        {
-            GSEIM_PARAMETER param;
-            param.defaultValue.clear();
-            params.push_back( { name, param } );
-        }
-    }
 
     std::sort(
         params.begin(),

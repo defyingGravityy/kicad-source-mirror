@@ -4,6 +4,8 @@
 #include "gseim_solve_block.h"
 #include <netlist_exporters/gseim_outvar.h>
 #include <sch_symbol.h>
+#include "../gseim/gseim_xbe_db.h"
+#include <richio.h>
 
 class NETLIST_EXPORTER_GSEIM : public NETLIST_EXPORTER_SPICE
 {
@@ -29,6 +31,9 @@ public:
 
     bool ExportSubcircuit( const wxString& aSubcktName, const wxString& aOutFileName,
                             unsigned aNetlistOptions, REPORTER& aReporter );
+
+    bool ExportXbeElement( const SPICE_ITEM& aItem, const GSEIM_XBE_INFO& aXbeInfo,
+                            FILE_OUTPUTFORMATTER& aFormatter );
 
     void SetSubcktName( const wxString& aName ) { m_subcktName = aName; }
     
