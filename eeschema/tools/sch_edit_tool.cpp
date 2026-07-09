@@ -3898,14 +3898,14 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         if( net.IsEmpty() )
             continue;
 
-        wxString varName = net.Upper();
+        wxString varName = net;
         for( size_t i = 0; i < varName.Length(); ++i )
         {
             wxChar c = varName[i];
             if( !( wxIsalnum( c ) || c == '_' ) )
                 varName[i] = '_';
         }
-        wxString vVar   = "V" + varName;
+        wxString vVar   = "v" + varName;
         wxString vVarAc = vVar + "_ac";
 
         // DC / transient node voltage
@@ -3949,12 +3949,50 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         }
     }
 
+    auto resolveXbeVar = [&]( const wxString& varName ) -> wxString
+    {
+        for( SCH_PIN* pin : symbol->GetPins( &sheet ) )
+        {
+            if( pin->GetName() == varName )
+            {
+                SCH_CONNECTION* conn = pin->Connection( &sheet );
+                if( conn )
+                {
+                    wxString net = conn->GetNetName();
+                    if( net.StartsWith( "/" ) )
+                        net = net.Mid( 1 );
+                    if( !net.IsEmpty() )
+                        return net;
+                }
+
+                break;
+            }
+        }
+
+        auto it = overrides.find( varName );
+
+        if( it != overrides.end() && !it->second.IsEmpty() )
+            return it->second;
+
+        return varName;   
+    };
+
     if( xbeInfo )
     {
+        for( const wxString& var : xbeInfo->input_vars )
+        {
+            wxString resolved = resolveXbeVar( var );
+
+            if( std::find( available.begin(), available.end(), resolved ) == available.end() )
+                available.push_back( resolved );
+        }
+
         for( const wxString& var : xbeInfo->output_vars )
         {
-            if( std::find( available.begin(), available.end(), var ) == available.end() )
-                available.push_back( var );
+            wxString resolved = resolveXbeVar( var );
+
+            if( std::find( available.begin(), available.end(), resolved ) == available.end() )
+                available.push_back( resolved );
         }
     }
 

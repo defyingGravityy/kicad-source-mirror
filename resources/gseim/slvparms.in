@@ -404,6 +404,11 @@ begin_file
     default: yes
   end_parm
   begin_parm
+    keyword: ss_skip_first_startup
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
     keyword: vary_parm_init_always
     options: yes no
     default: yes

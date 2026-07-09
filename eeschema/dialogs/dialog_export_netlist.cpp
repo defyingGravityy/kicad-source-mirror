@@ -1462,18 +1462,19 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddParameter( wxCommandEvent& event )
         return;
 
     block.parameters[ info->keyword ] = info->defaultValue;
-
     PopulateGseimControls( m_GseimSelectedBlock );
 }
 
 void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
 {   
+    if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
+        return;
+
+    m_GseimUpdating = true;
+
     EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
     const GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[index];
     const GSEIM_OUTPUT_BLOCK& output = blk.outputs[m_GseimSelectedOutput];
-
-    if( index < 0 || index >= (int)m_GseimSolveBlocks.size() )
-    return;
 
     BindGseimChangeHandlers( false );
 
@@ -1484,16 +1485,14 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
 
     setChoice( pg->m_GseimSolveTypeCtrl,  blk.solveType  );
     setChoice( pg->m_GseimInitialSolCtrl, blk.initialSol );
-    pg->m_GseimOutputFileCtrl->SetValue( output.outputFile );
-    wxGrid* grid = pg->m_GseimOutvarsGrid;
+    pg->m_GseimOutputFileCtrl->ChangeValue( output.outputFile );
 
-    std::unordered_set<wxString> checked(
-        output.outputVars.begin(),
-        output.outputVars.end() );
+    wxGrid* grid = pg->m_GseimOutvarsGrid;
+    std::unordered_set<wxString> checked( output.outputVars.begin(), output.outputVars.end() );
 
     for( int row = 0; row < grid->GetNumberRows(); ++row )
     {
-        wxString origName = grid->GetCellValue( row, 3 );   // was column 1
+        wxString origName = grid->GetCellValue( row, 3 );
         grid->SetCellValue( row, 0, checked.count( origName ) ? "1" : "" );
     }
 
@@ -1501,6 +1500,8 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
 
     PopulateGseimParameterGrid( blk );
     UpdateGseimControls();
+
+    m_GseimUpdating = false;
 }
 
 void DIALOG_EXPORT_NETLIST::BindGseimChangeHandlers( bool bind )
@@ -1561,6 +1562,11 @@ void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
 
 void DIALOG_EXPORT_NETLIST::OnGseimControlChanged( wxCommandEvent& event )
 {   
+    if( m_GseimUpdating )
+    {
+        event.Skip();
+        return;
+    }
 
     if( m_GseimSelectedBlock >= 0 )
     {
@@ -1732,8 +1738,9 @@ void DIALOG_EXPORT_NETLIST::UpdateGseimControls()
     bool isAc   = ( solveType == "ac" );
     bool isTrns = ( solveType == "trns" );
     bool isDc   = ( solveType == "dc" );
+    bool isSss   = ( solveType == "sss" );
 
-    bool hasOutput = isTrns || isDc || isAc;
+    bool hasOutput = isTrns || isDc || isAc || isSss;
 
     pg->m_GseimOutputLabel->Show( hasOutput );
     pg->m_GseimOutputFileCtrl->Show( hasOutput );
@@ -1913,12 +1920,27 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
 
         m_editFrame->Schematic().SetGseimTitle( gseimPg->m_GseimTitleCtrl->GetValue() );
 
+        std::unordered_map<wxString, wxString> origToRenamed;
+
+        if( gseimPg && gseimPg->m_GseimOutvarsGrid )
+        {
+            wxGrid* ovGrid = gseimPg->m_GseimOutvarsGrid;
+
+            for( int row = 0; row < ovGrid->GetNumberRows(); ++row )
+            {
+                wxString origName = ovGrid->GetCellValue( row, 3 );
+                wxString curName  = ovGrid->GetCellValue( row, 1 );
+
+                if( !origName.IsEmpty() )
+                    origToRenamed[origName] = curName;
+            }
+        }
+
         wxString solveText;
 
         for( const auto& block : m_GseimSolveBlocks )
         {
             solveText += "begin_solve\n";
-
             solveText += "   solve_type=" + block.solveType + "\n";
             solveText += "   initial_sol=" + block.initialSol + "\n";
 
@@ -1944,7 +1966,15 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
                     solveText += "      variables:\n";
 
                     for( const auto& var : output.outputVars )
-                        solveText += "+         " + var + "\n";
+                    {
+                        wxString display = var;
+                        auto it = origToRenamed.find( var );
+
+                        if( it != origToRenamed.end() && !it->second.IsEmpty() )
+                            display = it->second;
+
+                        solveText += "+         " + display + "\n";
+                    }
                 }
 
                 solveText += "   end_output\n";
@@ -1964,10 +1994,17 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
             ovGrid->SaveEditControlValue();
             ovGrid->DisableCellEditControl();
 
+            bool restrictSelection =
+                gseimPg->m_GseimFilterBySelectionCtrl &&
+                gseimPg->m_GseimFilterBySelectionCtrl->IsChecked();
+
             for( int row = 0; row < ovGrid->GetNumberRows(); ++row )
             {
-                if( ovGrid->GetCellValue( row, 0 ) != "1" )
+                if( restrictSelection &&
+                    ovGrid->GetCellValue( row, 0 ) != "1" )
+                {
                     continue;
+                }
 
                 wxString origName = ovGrid->GetCellValue( row, 3 );
 
@@ -1985,19 +2022,27 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
                 GSEIM_OUTVAR ov = *it;
 
                 ov.name = ovGrid->GetCellValue( row, 1 );
-                ov.expr = ovGrid->GetCellValue( row, 2 );
+
+                if( ov.name.Contains( "=" ) )
+                {
+                    // XBE output: "y=x2" -> user variable is "x2"
+                    ov.name = ov.name.AfterFirst( '=' );
+                    ov.expr = "xvar_of_" + ov.name;
+                }
+                else
+                {
+                    ov.expr = ovGrid->GetCellValue( row, 2 );
+                }
 
                 explicitOutvars.push_back( ov );
-            }
-        }
 
+            }
+            m_editFrame->Schematic().SetGseimExplicitOutvars( explicitOutvars );
+        }
         m_editFrame->Schematic().SetGseimGlobalRparms( gseimPg->m_GseimGlobalRparmsCtrl->GetValue() );
         m_editFrame->Schematic().SetGseimGlobalIparms( gseimPg->m_GseimGlobalIparmsCtrl->GetValue() );
         m_editFrame->Schematic().SetGseimGlobalSparms( gseimPg->m_GseimGlobalSparmsCtrl->GetValue() );
         m_editFrame->Schematic().SetGseimGparmCCode( gseimPg->m_GseimGlobalCCodeCtrl->GetValue() );
-
-        m_editFrame->Schematic().SetGseimExplicitOutvars( explicitOutvars );
-
         break;
     }
 
@@ -2014,25 +2059,16 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
             ovGrid->SaveEditControlValue();
             ovGrid->DisableCellEditControl();
 
+            bool restrictSelection = gseimPg->m_GseimFilterBySelectionCtrl && gseimPg->m_GseimFilterBySelectionCtrl->IsChecked();
+
             for( int row = 0; row < ovGrid->GetNumberRows(); ++row )
             {
-                if( ovGrid->GetCellValue( row, 0 ) != "1" )
+                if( restrictSelection &&
+                    ovGrid->GetCellValue( row, 0 ) != "1" )
+                {
                     continue;
-
-                wxString origName = ovGrid->GetCellValue( row, 3 );
-
-                auto it = std::find_if(
-                    m_GseimAllOutvars.begin(),
-                    m_GseimAllOutvars.end(),
-                    [&]( const GSEIM_OUTVAR& x )
-                    {
-                        return x.name == origName;
-                    } );
-
-                if( it == m_GseimAllOutvars.end() )
-                    continue;
-
-                GSEIM_OUTVAR ov = *it;
+                }
+                GSEIM_OUTVAR ov;
 
                 ov.name = ovGrid->GetCellValue( row, 1 );
                 ov.expr = ovGrid->GetCellValue( row, 2 );

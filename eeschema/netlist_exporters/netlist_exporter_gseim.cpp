@@ -35,9 +35,6 @@ using GROUND_NETS = std::unordered_set<wxString>;
 wxString NormalizeNet( const wxString& aNet,
                        const GROUND_NETS& aGroundNets )
 {
-    if( aGroundNets.count( aNet ) )
-        return "0";
-
     return aNet;
 }
 
@@ -441,7 +438,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 
         formatter.Print( 0, "\n" );
     }
-
+    
     const auto& outvars = m_schematic->GetGseimExplicitOutvars();
     if( !outvars.empty() )
     {
@@ -805,45 +802,44 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
         }
     }
 
-    formatter.Print( 0, "   ref_node=0\n" );
+    wxString refNode = groundNets.empty() ? wxString( "0" ) : *groundNets.begin();
+    formatter.Print( 0, "   ref_node=%s\n", TO_UTF8( refNode ) );
 
     // outvar: section
-    bool useExplicit = !m_explicitOutvars.empty();
+    const std::vector<GSEIM_OUTVAR>& explicitOutvars =
+        m_schematic->GetGseimExplicitOutvars();
 
-    if( useExplicit || !m_outvars.empty() )
+    if( !explicitOutvars.empty() )
     {
         formatter.Print( 0, "   outvar:\n" );
-
-        if( useExplicit )
+        std::map<wxString, GSEIM_OUTVAR> acMerged;
+        for( const GSEIM_OUTVAR& ov : explicitOutvars )
         {
-            std::set<wxString> emittedAcBases;
-
-
-            for( const GSEIM_OUTVAR& ov : m_explicitOutvars )
+            if( ov.isAc )
             {
-                if( ov.isAc )
+                auto it = acMerged.find( ov.baseName );
+                if( it == acMerged.end() )
                 {
-                    if( emittedAcBases.count( ov.baseName ) )
-                        continue;
-
-                    emittedAcBases.insert( ov.baseName );
-
-                    formatter.Print( 0, "+    %s=%s\n", TO_UTF8( ov.baseName ), TO_UTF8( ov.expr ) );
+                    acMerged[ ov.baseName ] = ov;
                 }
                 else
                 {
-                    formatter.Print( 0, "+    %s=%s\n", TO_UTF8( ov.name ), TO_UTF8( ov.expr ) );
-                }
-            }
-        }
-        else
-        {
-            for( const auto& net : m_outvars )
-            {
-                wxString varName = MakeOutvarName( net );
+                    if( !ov.name.IsEmpty() )
+                        it->second.name = ov.name;
 
-                formatter.Print( 0, "+    %s=nodev_of_%s\n", TO_UTF8( varName ), TO_UTF8( net ) );
+                    if( !ov.expr.IsEmpty() )
+                        it->second.expr = ov.expr;
+                }
+
+                continue;
             }
+
+            formatter.Print( 0, "+    %s=%s\n", TO_UTF8( ov.name ), TO_UTF8( ov.expr ) );
+        }
+
+        for( const auto& [base, ov] : acMerged )
+        {
+            formatter.Print( 0, "+    %s=%s\n", TO_UTF8( ov.name ), TO_UTF8( ov.expr ) );
         }
     }
 
