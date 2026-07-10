@@ -95,7 +95,7 @@ public:
     void FixERCError( const std::shared_ptr<RC_ITEM>& aERCItem );
 
     int SelectGseimOutvars( const TOOL_EVENT& aEvent );
-
+    int SelectGseimNonElecVars( const TOOL_EVENT& aEvent );
     int ModifyGseimParameters( const TOOL_EVENT& aEvent );
 
 private:

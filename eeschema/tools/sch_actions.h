@@ -140,6 +140,7 @@ public:
 
     static TOOL_ACTION selectGseimOutvars;
     static TOOL_ACTION modifyGseimParameters;
+    static TOOL_ACTION selectGseimNonElecVars;
 
     static TOOL_ACTION autoplaceFields;
     static TOOL_ACTION cycleBodyStyle;

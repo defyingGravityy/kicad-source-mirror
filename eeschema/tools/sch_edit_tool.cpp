@@ -897,6 +897,7 @@ bool SCH_EDIT_TOOL::Init()
     moveMenu.AddItem( SCH_ACTIONS::properties,        propertiesCondition, 200 );
     moveMenu.AddMenu( makeEditFieldsMenu(),           S_C::SingleSymbol, 200 );
     moveMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
+    moveMenu.AddItem( SCH_ACTIONS::selectGseimNonElecVars, isGseimSymbol, 200 );
     moveMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
 
     moveMenu.AddSeparator();
@@ -925,6 +926,7 @@ bool SCH_EDIT_TOOL::Init()
     drawMenu.AddItem( SCH_ACTIONS::properties,        propertiesCondition, 200 );
     drawMenu.AddMenu( makeEditFieldsMenu(),           S_C::SingleSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
+    drawMenu.AddItem( SCH_ACTIONS::selectGseimNonElecVars, isGseimSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::autoplaceFields,   autoplaceCondition, 200 );
 
@@ -951,7 +953,8 @@ bool SCH_EDIT_TOOL::Init()
     selToolMenu.AddItem( SCH_ACTIONS::swap,            swapSelectionCondition, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::properties,      propertiesCondition, 200 );
     selToolMenu.AddMenu( makeEditFieldsMenu(),         S_C::SingleSymbol, 200 );
-    selToolMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );  
+    selToolMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
+    selToolMenu.AddItem( SCH_ACTIONS::selectGseimNonElecVars, isGseimSymbol, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::autoplaceFields, autoplaceCondition, 200 );
 
@@ -3860,33 +3863,26 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
 
     wxString gseimType = typeField->GetText();
 
-    GSEIM_COMPONENT_DATABASE::Instance().Load(
-        GetGseimEbePath() );
-
-    const GSEIM_COMPONENT_INFO* componentInfo = nullptr;
-    const GSEIM_XBE_INFO* xbeInfo = nullptr;
-
     GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
     GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
 
-    componentInfo = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+    const GSEIM_COMPONENT_INFO* componentInfo = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
 
     if( !componentInfo )
-        xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
-
-    if( !componentInfo && !xbeInfo )
     {
-        wxMessageBox( wxString::Format( _( "No GSEIM component info found for type '%s'." ), gseimType ), _( "GSEIM" ), wxOK | wxICON_WARNING );
+        wxMessageBox( wxString::Format( _( "'%s' is not an EBE component. Use "
+                                            "\"Select GSEIM XBE Output Variables\" instead." ),
+                                        gseimType ),
+                      _( "GSEIM" ), wxOK | wxICON_WARNING );
         return 0;
     }
 
-    // Build the list of available output variables for this symbol
     const SCH_SHEET_PATH& sheet = m_frame->GetCurrentSheet();
-    std::unordered_set<wxString> groundNets;  // simplified: not filtering ground here
+    wxString refName = symbol->GetRef( &sheet );
 
     std::vector<wxString> available;
 
-    // Voltage vars from pins
+    // Node voltages from pins
     for( SCH_PIN* pin : symbol->GetPins( &sheet ) )
     {
         SCH_CONNECTION* conn = pin->Connection( &sheet );
@@ -3908,46 +3904,144 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         wxString vVar   = "v" + varName;
         wxString vVarAc = vVar + "_ac";
 
-        // DC / transient node voltage
         if( std::find( available.begin(), available.end(), vVar ) == available.end() )
             available.push_back( vVar );
 
-        // AC node voltage
         if( std::find( available.begin(), available.end(), vVarAc ) == available.end() )
             available.push_back( vVarAc );
     }
 
-    // Device outparms
-    wxString refName = symbol->GetRef( &sheet );
-    std::map<wxString, wxString> overrides;
-
-    if( SCH_FIELD* paramsField = symbol->GetField( "Gseim.Params" ) )
-        overrides = ParseGseimParams( paramsField->GetText() );
-    
-    const auto& outparms = componentInfo ? componentInfo->outparms : xbeInfo->outparms;
-    for( const wxString& outparm : outparms )
+    // outparms — excluding anything that's actually an xVar (belongs under XBE-style non-elec selection)
+    for( const wxString& outparm : componentInfo->outparms )
     {
+        if( std::find( componentInfo->xVars.begin(), componentInfo->xVars.end(), outparm )
+            != componentInfo->xVars.end() )
+            continue;
+
         available.push_back( refName + "_" + outparm );
     }
 
-    if( componentInfo )
+    // outparms_ac
+    for( const wxString& outparm : componentInfo->outparms_ac )
     {
-        for( const wxString& outparm : componentInfo->outparms_ac )
-        {
-            wxString base = refName + "_" + outparm;
-            available.push_back( "mag_of_" + base );
-            available.push_back( "phase_of_" + base );
-        }
+        if( std::find( componentInfo->xVars.begin(), componentInfo->xVars.end(), outparm )
+            != componentInfo->xVars.end() )
+            continue;
+
+        wxString base = refName + "_" + outparm;
+        available.push_back( "mag_of_" + base );
+        available.push_back( "phase_of_" + base );
+    }
+
+    if( available.empty() )
+    {
+        wxMessageBox( _( "No output variables available for this component." ),
+                      _( "GSEIM" ), wxOK | wxICON_INFORMATION );
+        return 0;
+    }
+
+    wxArrayString availableArr;
+    for( const wxString& v : available )
+        availableArr.Add( v );
+
+    wxString stored;
+    SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
+    if( outVarsField )
+        stored = outVarsField->GetText();
+
+    std::unordered_set<wxString> storedSet;
+    wxStringTokenizer tok( stored, " " );
+    while( tok.HasMoreTokens() )
+        storedSet.insert( tok.GetNextToken() );
+
+    wxMultiChoiceDialog dlg( m_frame,
+                             wxString::Format( _( "Select output variables for %s:" ), refName ),
+                             _( "GSEIM Output Variables" ),
+                             availableArr );
+
+    wxArrayInt selections;
+    for( size_t i = 0; i < available.size(); ++i )
+    {
+        if( storedSet.count( available[i] ) )
+            selections.Add( i );
+    }
+    dlg.SetSelections( selections );
+
+    if( dlg.ShowModal() != wxID_OK )
+        return 0;
+
+    wxArrayInt chosen = dlg.GetSelections();
+    wxString newStored;
+
+    for( size_t i = 0; i < chosen.size(); ++i )
+    {
+        if( i > 0 ) newStored += " ";
+        newStored += available[ chosen[i] ];
+    }
+
+    SCH_COMMIT commit( m_toolMgr );
+    commit.Modify( symbol, m_frame->GetScreen() );
+
+    if( outVarsField )
+    {
+        outVarsField->SetText( newStored );
     }
     else
     {
-        for( const wxString& outparm : xbeInfo->outparms_ac )
-        {
-            wxString base = refName + "_" + outparm;
-            available.push_back( "mag_of_" + base );
-            available.push_back( "phase_of_" + base );
-        }
+        SCH_FIELD newField( symbol, FIELD_T::USER, wxT( "Gseim.OutVars" ) );
+        newField.SetText( newStored );
+        newField.SetVisible( false );
+        symbol->AddField( newField );
     }
+
+    commit.Push( _( "Set GSEIM Output Variables (ebe)" ) );
+
+    return 0;
+}
+
+int SCH_EDIT_TOOL::SelectGseimNonElecVars( const TOOL_EVENT& aEvent )
+{
+    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SYMBOL_T } );
+    if( selection.Empty() )
+        return 0;
+
+    SCH_SYMBOL* symbol = dynamic_cast<SCH_SYMBOL*>( selection.Front() );
+    if( !symbol )
+        return 0;
+
+    SCH_FIELD* typeField = symbol->GetField( wxT( "Gseim.Type" ) );
+    if( !typeField )
+        return 0;
+
+    wxString gseimType = typeField->GetText();
+
+    GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
+    GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
+
+    if( GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType ) )
+    {
+        wxMessageBox( wxString::Format( _( "'%s' is not an XBE component. Use "
+                                            "\"Select GSEIM Output Variables\" instead." ),
+                                        gseimType ),
+                      _( "GSEIM" ), wxOK | wxICON_WARNING );
+        return 0;
+    }
+
+    const GSEIM_XBE_INFO* xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
+
+    if( !xbeInfo )
+    {
+        wxMessageBox( wxString::Format( _( "No GSEIM XBE info found for type '%s'." ), gseimType ),
+                      _( "GSEIM" ), wxOK | wxICON_WARNING );
+        return 0;
+    }
+
+    const SCH_SHEET_PATH& sheet = m_frame->GetCurrentSheet();
+    wxString refName = symbol->GetRef( &sheet );
+
+    std::map<wxString, wxString> overrides;
+    if( SCH_FIELD* paramsField = symbol->GetField( "Gseim.Params" ) )
+        overrides = ParseGseimParams( paramsField->GetText() );
 
     auto resolveXbeVar = [&]( const wxString& varName ) -> wxString
     {
@@ -3974,26 +4068,35 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         if( it != overrides.end() && !it->second.IsEmpty() )
             return it->second;
 
-        return varName;   
+        return varName;
     };
 
-    if( xbeInfo )
+    std::vector<wxString> available;
+
+    for( const wxString& var : xbeInfo->input_vars )
     {
-        for( const wxString& var : xbeInfo->input_vars )
-        {
-            wxString resolved = resolveXbeVar( var );
+        wxString resolved = resolveXbeVar( var );
 
-            if( std::find( available.begin(), available.end(), resolved ) == available.end() )
-                available.push_back( resolved );
-        }
+        if( std::find( available.begin(), available.end(), resolved ) == available.end() )
+            available.push_back( resolved );
+    }
 
-        for( const wxString& var : xbeInfo->output_vars )
-        {
-            wxString resolved = resolveXbeVar( var );
+    for( const wxString& var : xbeInfo->output_vars )
+    {
+        wxString resolved = resolveXbeVar( var );
 
-            if( std::find( available.begin(), available.end(), resolved ) == available.end() )
-                available.push_back( resolved );
-        }
+        if( std::find( available.begin(), available.end(), resolved ) == available.end() )
+            available.push_back( resolved );
+    }
+
+    for( const wxString& outparm : xbeInfo->outparms )
+        available.push_back( refName + "_" + outparm );
+
+    for( const wxString& outparm : xbeInfo->outparms_ac )
+    {
+        wxString base = refName + "_" + outparm;
+        available.push_back( "mag_of_" + base );
+        available.push_back( "phase_of_" + base );
     }
 
     if( available.empty() )
@@ -4003,7 +4106,6 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         return 0;
     }
 
-    // Read currently stored selection from Gseim.OutVars field
     wxArrayString availableArr;
     for( const wxString& v : available )
         availableArr.Add( v );
@@ -4018,13 +4120,11 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     while( tok.HasMoreTokens() )
         storedSet.insert( tok.GetNextToken() );
 
-    // Show checklist dialog
     wxMultiChoiceDialog dlg( m_frame,
                              wxString::Format( _( "Select output variables for %s:" ), refName ),
-                             _( "GSEIM Output Variables" ),
+                             _( "GSEIM XBE Output Variables" ),
                              availableArr );
 
-    // Pre-check previously selected items
     wxArrayInt selections;
     for( size_t i = 0; i < available.size(); ++i )
     {
@@ -4036,7 +4136,6 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     if( dlg.ShowModal() != wxID_OK )
         return 0;
 
-    // Build new stored string from user selection
     wxArrayInt chosen = dlg.GetSelections();
     wxString newStored;
 
@@ -4046,7 +4145,6 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         newStored += available[ chosen[i] ];
     }
 
-    // Write back to Gseim.OutVars field, creating it if needed
     SCH_COMMIT commit( m_toolMgr );
     commit.Modify( symbol, m_frame->GetScreen() );
 
@@ -4062,11 +4160,10 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         symbol->AddField( newField );
     }
 
-    commit.Push( _( "Set GSEIM Output Variables" ) );
+    commit.Push( _( "Set GSEIM Output Variables (xbe)" ) );
 
     return 0;
 }
-
 
 int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 {
@@ -4380,6 +4477,7 @@ void SCH_EDIT_TOOL::setTransitions()
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editReference.MakeEvent() );
 
     Go( &SCH_EDIT_TOOL::SelectGseimOutvars, SCH_ACTIONS::selectGseimOutvars.MakeEvent() );
+    Go( &SCH_EDIT_TOOL::SelectGseimNonElecVars, SCH_ACTIONS::selectGseimNonElecVars.MakeEvent() );
     Go( &SCH_EDIT_TOOL::ModifyGseimParameters, SCH_ACTIONS::modifyGseimParameters.MakeEvent() );
 
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editValue.MakeEvent() );

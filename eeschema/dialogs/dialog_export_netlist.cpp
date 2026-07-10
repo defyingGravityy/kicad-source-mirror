@@ -457,32 +457,33 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
         for( SCH_ITEM* item : sheet.LastScreen()->Items().OfType( SCH_SYMBOL_T ) )
         {
             SCH_SYMBOL* symbol = static_cast<SCH_SYMBOL*>( item );
-
-            SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
-
-            if( !outVarsField )
-                continue;
-
-            wxString stored = outVarsField->GetText();
-
-            if( stored.IsEmpty() )
-                continue;
-
             wxString ref = symbol->GetRef( &sheet );
 
-            wxStringTokenizer tok( stored, " " );
-
-            while( tok.HasMoreTokens() )
+            for( const wxString& fieldName : { wxString( "Gseim.OutVars" ), wxString( "Gseim.NonElecVars" ) } )
             {
-                wxString var = tok.GetNextToken();
+                SCH_FIELD* varsField = symbol->GetField( fieldName );
 
-                if( var.IsEmpty() || seen.count( var ) )
+                if( !varsField )
                     continue;
 
-                seen.insert( var );
+                wxString stored = varsField->GetText();
 
-                GSEIM_OUTVAR ov;
-                ov.name = var;
+                if( stored.IsEmpty() )
+                    continue;
+
+                wxStringTokenizer tok( stored, " " );
+
+                while( tok.HasMoreTokens() )
+                {
+                    wxString var = tok.GetNextToken();
+
+                    if( var.IsEmpty() || seen.count( var ) )
+                        continue;
+
+                    seen.insert( var );
+
+                    GSEIM_OUTVAR ov;
+                    ov.name = var;
 
                 if( var.StartsWith( "mag_of_" ) )
                 {
@@ -549,7 +550,7 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                     ov.expr = outparm + "_of_" + ref;
                 }
                 // Node voltage (VB, VC, VOUT, ...)
-                else if( var.StartsWith( "V" ) )
+                else if( var.StartsWith( "v" ) )
                 {
                     wxString net = var.Mid( 1 );
 
@@ -573,6 +574,7 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                 }
 
                 outvars.push_back( ov );
+                }
             }
         }
     }
