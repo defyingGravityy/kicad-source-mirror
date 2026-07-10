@@ -579,6 +579,33 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
         }
     }
 
+    for( const SCH_SHEET_PATH& sheet : hierarchy )
+    {
+        for( SCH_ITEM* item : sheet.LastScreen()->Items().OfType( SCH_SHEET_T ) )
+        {
+            SCH_SHEET* childSheet = static_cast<SCH_SHEET*>( item );
+            wxString stored = childSheet->GetGseimSubcktOutVars();
+
+            if( stored.IsEmpty() )
+                continue;
+
+            wxString instanceName = childSheet->GetName();
+            wxStringTokenizer tok( stored, " " );
+
+            while( tok.HasMoreTokens() )
+            {
+                wxString var = tok.GetNextToken();
+                if( var.IsEmpty() || seen.count( var ) )
+                    continue;
+                seen.insert( var );
+                GSEIM_OUTVAR ov;
+                ov.name = var;
+                ov.expr = var + "_of_" + instanceName;
+                outvars.push_back( ov );
+            }
+        }
+    }
+
     return outvars;
 }
 

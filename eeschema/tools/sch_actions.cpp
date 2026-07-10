@@ -942,12 +942,19 @@ TOOL_ACTION SCH_ACTIONS::selectGseimOutvars( TOOL_ACTION_ARGS()
         .FriendlyName( _( "Select GSEIM Output Variables (ebe)" ) )
         .Icon( BITMAPS::sim_add_signal ) );
 
-TOOL_ACTION SCH_ACTIONS::selectGseimNonElecVars(
-    TOOL_ACTION_ARGS()
+TOOL_ACTION SCH_ACTIONS::selectGseimNonElecVars( TOOL_ACTION_ARGS()
         .Name( "eeschema.InteractiveEdit.selectGseimNonElecVars" )
         .Scope( AS_GLOBAL )
         .FriendlyName( _( "Select GSEIM Output Variables (xbe)" ) )
         .Tooltip( _( "Select GSEIM Output Variables (xbe)" ) )
+        .Icon( BITMAPS::sim_add_signal )
+);
+
+TOOL_ACTION SCH_ACTIONS::selectGseimSubCktOutVars( TOOL_ACTION_ARGS()
+        .Name( "eeschema.EditTool.selectGseimSubCktOutVars" )
+        .Scope( AS_GLOBAL )
+        .FriendlyName( _( "Select GSEIM Sub-circuit Output Variables" ) )
+        .Tooltip( _( "Select GSEIM Sub-circuit Output Variables" ) )
         .Icon( BITMAPS::sim_add_signal )
 );
 

@@ -582,10 +582,12 @@ public:
     const std::map<wxString, wxString>& GetGseimRparmValues() const;
     const std::map<wxString, wxString>& GetGseimIparmValues() const;
     const std::map<wxString, wxString>& GetGseimSparmValues() const;
+    const wxString& GetGseimSubcktOutVars() const;
 
     void SetGseimRparmValues( const std::map<wxString, wxString>& );
     void SetGseimIparmValues( const std::map<wxString, wxString>& );
     void SetGseimSparmValues( const std::map<wxString, wxString>& );
+    void SetGseimSubcktOutVars( const wxString& );
 
 #if defined(DEBUG)
     void Show( int nestLevel, std::ostream& os ) const override;
@@ -693,6 +695,7 @@ private:
     std::map<wxString, wxString> m_gseimRparmValues;
     std::map<wxString, wxString> m_gseimIparmValues;
     std::map<wxString, wxString> m_gseimSparmValues;
+    wxString                     m_gseimSubcktOutVars;
 };
 
 

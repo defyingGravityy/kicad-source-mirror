@@ -683,6 +683,18 @@ bool SCH_EDIT_TOOL::Init()
         return false;
     };
 
+    auto isGseimSubckt = []( const SELECTION& sel )
+    {
+        if( sel.Size() != 1 )
+            return false;
+        SCH_SHEET* sheet = dynamic_cast<SCH_SHEET*>( sel.Front() );
+
+        if( !sheet )
+            return false;
+
+        return !sheet->GetFileName().IsEmpty();
+    };
+
     auto autoplaceCondition =
             []( const SELECTION& aSel )
             {
@@ -899,6 +911,7 @@ bool SCH_EDIT_TOOL::Init()
     moveMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
     moveMenu.AddItem( SCH_ACTIONS::selectGseimNonElecVars, isGseimSymbol, 200 );
     moveMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
+    moveMenu.AddItem( SCH_ACTIONS::selectGseimSubCktOutVars, isGseimSubckt, 200 );
 
     moveMenu.AddSeparator();
     moveMenu.AddItem( ACTIONS::cut,                   S_C::IdleSelection );
@@ -928,6 +941,7 @@ bool SCH_EDIT_TOOL::Init()
     drawMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::selectGseimNonElecVars, isGseimSymbol, 200 );
     drawMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
+    drawMenu.AddItem( SCH_ACTIONS::selectGseimSubCktOutVars, isGseimSubckt, 200 );
     drawMenu.AddItem( SCH_ACTIONS::autoplaceFields,   autoplaceCondition, 200 );
 
     drawMenu.AddItem( SCH_ACTIONS::editWithLibEdit,   S_C::SingleSymbolOrPower && S_C::Idle, 200 );
@@ -956,6 +970,7 @@ bool SCH_EDIT_TOOL::Init()
     selToolMenu.AddItem( SCH_ACTIONS::selectGseimOutvars, isGseimSymbol, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::selectGseimNonElecVars, isGseimSymbol, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::modifyGseimParameters, isGseimSymbol, 200 );
+    selToolMenu.AddItem( SCH_ACTIONS::selectGseimSubCktOutVars, isGseimSubckt, 200 );
     selToolMenu.AddItem( SCH_ACTIONS::autoplaceFields, autoplaceCondition, 200 );
 
     selToolMenu.AddItem( SCH_ACTIONS::editWithLibEdit, S_C::SingleSymbolOrPower && S_C::Idle, 200 );
@@ -3999,6 +4014,87 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     return 0;
 }
 
+int SCH_EDIT_TOOL::SelectGseimSubcktOutvars( const TOOL_EVENT& aEvent )
+{
+    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SHEET_T } );
+    if( selection.Empty() )
+        return 0;
+
+    SCH_SHEET* sheet = dynamic_cast<SCH_SHEET*>( selection.Front() );
+    if( !sheet )
+        return 0;
+
+    wxString instanceName = sheet->GetName();
+
+    std::vector<wxString> available;
+
+    for( SCH_SHEET_PIN* pin : sheet->GetPins() )
+    {
+        if( pin->GetShape() != LABEL_FLAG_SHAPE::L_OUTPUT )
+            continue;
+
+        wxString name = pin->GetText();
+
+        if( !name.IsEmpty()
+            && std::find( available.begin(), available.end(), name ) == available.end() )
+        {
+            available.push_back( name );
+        }
+    }
+
+    if( available.empty() )
+    {
+        wxMessageBox( _( "No output-type hierarchical pins found on this subcircuit." ),
+                      _( "GSEIM" ), wxOK | wxICON_INFORMATION );
+        return 0;
+    }
+
+    wxArrayString availableArr;
+    for( const wxString& v : available )
+        availableArr.Add( v );
+
+    wxString stored = sheet->GetGseimSubcktOutVars();
+
+    std::unordered_set<wxString> storedSet;
+    wxStringTokenizer tok( stored, " " );
+    while( tok.HasMoreTokens() )
+        storedSet.insert( tok.GetNextToken() );
+
+    wxMultiChoiceDialog dlg( m_frame,
+                             wxString::Format( _( "Select output variables for %s:" ), instanceName ),
+                             _( "GSEIM Subcircuit Output Variables" ),
+                             availableArr );
+
+    wxArrayInt selections;
+    for( size_t i = 0; i < available.size(); ++i )
+    {
+        if( storedSet.count( available[i] ) )
+            selections.Add( i );
+    }
+    dlg.SetSelections( selections );
+
+    if( dlg.ShowModal() != wxID_OK )
+        return 0;
+
+    wxArrayInt chosen = dlg.GetSelections();
+    wxString newStored;
+
+    for( size_t i = 0; i < chosen.size(); ++i )
+    {
+        if( i > 0 ) newStored += " ";
+        newStored += available[ chosen[i] ];
+    }
+
+    SCH_COMMIT commit( m_toolMgr );
+    commit.Modify( sheet, m_frame->GetScreen() );
+
+    sheet->SetGseimSubcktOutVars( newStored );
+
+    commit.Push( _( "Set GSEIM Subcircuit Output Variables" ) );
+
+    return 0;
+}
+
 int SCH_EDIT_TOOL::SelectGseimNonElecVars( const TOOL_EVENT& aEvent )
 {
     SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SYMBOL_T } );
@@ -4479,6 +4575,7 @@ void SCH_EDIT_TOOL::setTransitions()
     Go( &SCH_EDIT_TOOL::SelectGseimOutvars, SCH_ACTIONS::selectGseimOutvars.MakeEvent() );
     Go( &SCH_EDIT_TOOL::SelectGseimNonElecVars, SCH_ACTIONS::selectGseimNonElecVars.MakeEvent() );
     Go( &SCH_EDIT_TOOL::ModifyGseimParameters, SCH_ACTIONS::modifyGseimParameters.MakeEvent() );
+    Go( &SCH_EDIT_TOOL::SelectGseimSubcktOutvars, SCH_ACTIONS::selectGseimSubCktOutVars.MakeEvent() );
 
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editValue.MakeEvent() );
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editFootprint.MakeEvent() );

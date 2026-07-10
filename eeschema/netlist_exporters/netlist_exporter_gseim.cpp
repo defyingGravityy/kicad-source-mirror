@@ -806,8 +806,32 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
     formatter.Print( 0, "   ref_node=%s\n", TO_UTF8( refNode ) );
 
     // outvar: section
-    const std::vector<GSEIM_OUTVAR>& explicitOutvars =
-        m_schematic->GetGseimExplicitOutvars();
+    std::vector<GSEIM_OUTVAR> explicitOutvars =
+    m_schematic->GetGseimExplicitOutvars();
+
+    // Add subcircuit output variables
+    for( SCH_ITEM* item : rootScreen->Items().OfType( SCH_SHEET_T ) )
+    {
+        SCH_SHEET* sheet = static_cast<SCH_SHEET*>( item );
+        wxString stored = sheet->GetGseimSubcktOutVars();
+
+        if( stored.IsEmpty() )
+            continue;
+
+        wxString instance = sheet->GetName();
+        wxStringTokenizer tok( stored, " " );
+
+        while( tok.HasMoreTokens() )
+        {
+            wxString var = tok.GetNextToken();
+
+            GSEIM_OUTVAR ov;
+            ov.name = var;
+            ov.expr = var + "_of_" + instance;
+
+            explicitOutvars.push_back( ov );
+        }
+    }
 
     if( !explicitOutvars.empty() )
     {

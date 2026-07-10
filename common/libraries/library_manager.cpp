@@ -556,39 +556,43 @@ void LIBRARY_MANAGER::LoadGlobalTables( std::initializer_list<LIBRARY_TABLE_TYPE
     }
 
     loadTables( PATHS::GetUserSettingsPath(), LIBRARY_TABLE_SCOPE::GLOBAL, aTablesToLoad );
-    if( aTablesToLoad.size() == 0 || std::ranges::find( aTablesToLoad.begin(), aTablesToLoad.end(), LIBRARY_TABLE_TYPE::SYMBOL ) != aTablesToLoad.end() )
+
+    if( aTablesToLoad.size()==0 || std::ranges::find( aTablesToLoad.begin(), aTablesToLoad.end(), LIBRARY_TABLE_TYPE::SYMBOL ) != aTablesToLoad.end() )
     {
-        LIBRARY_TABLE* table = Table( LIBRARY_TABLE_TYPE::SYMBOL, LIBRARY_TABLE_SCOPE::GLOBAL ).value_or( nullptr );
+        LIBRARY_TABLE* table = Table( LIBRARY_TABLE_TYPE::SYMBOL, LIBRARY_TABLE_SCOPE::GLOBAL ) .value_or( nullptr );
 
         if( table )
         {
-            const wxString uri = PATHS::GetStockDataPath() +
-                "/resources/gseim/sym-lib-table";
+            const wxString uri = PATHS::GetStockDataPath() + "/resources/gseim/GSEIM_Library.kicad_sym";
 
-            bool found = false;
+        bool found = false;
 
-            for( const LIBRARY_TABLE_ROW& row : table->Rows() )
+        for( const LIBRARY_TABLE_ROW& row : table->Rows() )
+        {
+            if( row.Type() == wxT( "KiCad" ) && row.URI() == uri )
             {
-                if( row.Type() == LIBRARY_TABLE_ROW::TABLE_TYPE_NAME && row.URI() == uri )
+                found = true;
+                break;
+            }
+        }
+
+        if( !found )
+        {
+            LIBRARY_TABLE_ROW lib = table->MakeRow();
+
+            lib.SetNickname( "GSEIM_Library" );
+            lib.SetType( wxT( "KiCad" ) );
+            lib.SetURI( uri );
+            lib.SetDescription( "GSEIM Symbols" );
+
+            table->Rows().push_back( lib );
+
+            table->Save().map_error(
+                []( const LIBRARY_ERROR& aError )
                 {
-                    found = true;
-                    break;
-                }
-            }
-
-            if( !found )
-            {
-                LIBRARY_TABLE_ROW chained = table->MakeRow();
-                chained.SetType( LIBRARY_TABLE_ROW::TABLE_TYPE_NAME );
-                chained.SetNickname( "GSEIM" );
-                chained.SetDescription( "GSEIM Libraries" );
-                chained.SetURI( uri );
-                table->Rows().push_back( chained );
-                table->Save().map_error( []( const LIBRARY_ERROR& aError )
-                    {
-                        wxLogTrace( traceLibraries, "Failed to save GSEIM chained table: %s", aError.message );
-                    } );
-            }
+                    wxLogTrace( traceLibraries, "Failed to save GSEIM library: %s", aError.message );
+                } );
+        }
         }
     }
 

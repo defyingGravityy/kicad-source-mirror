@@ -96,6 +96,7 @@ public:
 
     int SelectGseimOutvars( const TOOL_EVENT& aEvent );
     int SelectGseimNonElecVars( const TOOL_EVENT& aEvent );
+    int SelectGseimSubcktOutvars( const TOOL_EVENT& aEvent );
     int ModifyGseimParameters( const TOOL_EVENT& aEvent );
 
 private:

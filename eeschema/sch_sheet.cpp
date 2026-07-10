@@ -1774,7 +1774,8 @@ void SCH_SHEET::SetGseimSparmValues( const std::map<wxString, wxString>& aMap ) 
 const std::map<wxString, wxString>& SCH_SHEET::GetGseimIparmValues() const { return m_gseimIparmValues; }
 void SCH_SHEET::SetGseimIparmValues( const std::map<wxString, wxString>& aMap ) { m_gseimIparmValues = aMap; }
 
-
+const wxString& SCH_SHEET::GetGseimSubcktOutVars() const { return m_gseimSubcktOutVars; }
+void SCH_SHEET::SetGseimSubcktOutVars( const wxString& aValue ) { m_gseimSubcktOutVars = aValue; }
 
 
 bool SCH_SHEET::HasRootInstance() const

@@ -22,16 +22,16 @@ file(COPY
 )
 
 install(
-    FILES
-        slvparms.in
-        GSEIM_Library.kicad_sym
-    DESTINATION ${KICAD_DATA}/resources/gseim
-)
-
-install(
     DIRECTORY
         ebe
         xbe
         sub
+    DESTINATION ${KICAD_DATA}/resources/gseim
+)
+
+install(
+    FILES
+        slvparms.in
+        GSEIM_Library.kicad_sym
     DESTINATION ${KICAD_DATA}/resources/gseim
 )
