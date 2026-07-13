@@ -8,3 +8,4 @@ wxString GetGseimXbePath();
 wxString GetGseimSolverParameterPath();
 wxString GetGseimSubPath();
 wxString GetGseimRunPath();
+wxString GetGseimPlotterPath();

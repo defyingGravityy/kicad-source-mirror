@@ -4684,6 +4684,30 @@ int SCH_EDIT_TOOL::RunGseimSimulation( const TOOL_EVENT& )
     return 0;
 }
 
+int SCH_EDIT_TOOL::RunGseimPlotter( const TOOL_EVENT& aEvent )
+{
+    wxFileName exe( GetGseimPlotterPath() );
+
+    if( !exe.FileExists() )
+    {
+        wxMessageBox( wxString::Format( _( "Cannot find GSEIM plotter:\n%s" ), exe.GetFullPath() ),
+                      _( "GSEIM" ), wxOK | wxICON_ERROR, m_frame );
+        return 0;
+    }
+
+    wxExecuteEnv env;
+    env.cwd = exe.GetPath();
+
+    wxString command = wxString::Format( "\"%s\"", exe.GetFullPath() );
+
+    long pid = wxExecute( command, wxEXEC_ASYNC, nullptr, &env );
+
+    if( pid == 0 )
+        wxMessageBox( _( "Failed to start GSEIM plotter." ), _( "GSEIM" ), wxOK | wxICON_ERROR, m_frame );
+
+    return 0;
+}
+
 void SCH_EDIT_TOOL::setTransitions()
 {
     // clang-format off
@@ -4712,7 +4736,8 @@ void SCH_EDIT_TOOL::setTransitions()
     Go( &SCH_EDIT_TOOL::SelectGseimNonElecVars, SCH_ACTIONS::selectGseimNonElecVars.MakeEvent() );
     Go( &SCH_EDIT_TOOL::ModifyGseimParameters, SCH_ACTIONS::modifyGseimParameters.MakeEvent() );
     Go( &SCH_EDIT_TOOL::SelectGseimSubcktOutvars, SCH_ACTIONS::selectGseimSubCktOutVars.MakeEvent() );
-    Go( &SCH_EDIT_TOOL::RunGseimSimulation, SCH_ACTIONS::runGseimSimulation.MakeEvent() );    
+    Go( &SCH_EDIT_TOOL::RunGseimSimulation, SCH_ACTIONS::runGseimSimulation.MakeEvent() );   
+    Go( &SCH_EDIT_TOOL::RunGseimPlotter,    SCH_ACTIONS::runGseimPlotter.MakeEvent() );    // <-- new 
 
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editValue.MakeEvent() );
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editFootprint.MakeEvent() );

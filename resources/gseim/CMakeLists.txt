@@ -29,6 +29,7 @@ install(
         sub
         bin
     DESTINATION ${KICAD_DATA}/resources/gseim
+    USE_SOURCE_PERMISSIONS 
 )
 
 install(

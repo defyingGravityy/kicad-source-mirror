@@ -976,6 +976,15 @@ TOOL_ACTION SCH_ACTIONS::runGseimSimulation(
         .Icon( BITMAPS::simulator ) 
 );
 
+TOOL_ACTION SCH_ACTIONS::runGseimPlotter(
+    TOOL_ACTION_ARGS()
+        .Name( "eeschema.InteractiveEdit.runGseimPlotter" )
+        .Scope( AS_GLOBAL )
+        .FriendlyName( _( "GSEIM Plotter..." ) )
+        .Tooltip( _( "Open the GSEIM waveform plotter" ) )
+        .Icon( BITMAPS::sim_add_signal )   
+);                                         
+
 TOOL_ACTION SCH_ACTIONS::autoplaceFields( TOOL_ACTION_ARGS()
         .Name( "eeschema.InteractiveEdit.autoplaceFields" )
         .Scope( AS_GLOBAL )
