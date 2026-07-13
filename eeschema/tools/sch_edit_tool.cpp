@@ -4344,18 +4344,54 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         wxFileName fn( sheet->GetFileName() );
         gseimType = fn.GetName();
 
-        GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
-        subcktInfo = GSEIM_SUBCKT_DATABASE::Instance().Find( gseimType );
+        GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
 
-        if( !subcktInfo )
+        // Recompute live instead of trusting a possibly-stale exported .sub file
+        static GSEIM_COMPONENT_INFO liveSubcktInfo; // local storage, rebuilt below
+        liveSubcktInfo = GSEIM_COMPONENT_INFO();     // reset
+
+        for( SCH_ITEM* item : sheet->GetScreen()->Items().OfType( SCH_SYMBOL_T ) )
+        {
+            SCH_SYMBOL* sym = static_cast<SCH_SYMBOL*>( item );
+            wxString compType, paramText;
+
+            for( SCH_FIELD& field : sym->GetFields() )
+            {
+                if( field.GetName() == "Gseim.Type" )
+                    compType = field.GetText();
+                else if( field.GetName() == "Gseim.Params" )
+                    paramText = field.GetText();
+            }
+
+            if( compType.IsEmpty() || compType == "gnd" )
+                continue;
+
+            const GSEIM_COMPONENT_INFO* info = GSEIM_COMPONENT_DATABASE::Instance().Find( compType );
+            if( !info )
+                continue;
+
+            auto params = ParseGseimParams( paramText );
+
+            for( const auto& [key, value] : params )
+            {
+                if( info->rparms.count( key ) )
+                    liveSubcktInfo.rparms[value] = GSEIM_PARAMETER();
+                if( info->iparms.count( key ) )
+                    liveSubcktInfo.iparms[value] = GSEIM_PARAMETER();
+                if( info->sparms.count( key ) )
+                    liveSubcktInfo.sparms[value] = GSEIM_PARAMETER();
+            }
+        }
+
+        if( liveSubcktInfo.rparms.empty() && liveSubcktInfo.iparms.empty() && liveSubcktInfo.sparms.empty() )
             return 0;
 
-        overrides = m_frame->Schematic().GetGseimSubcktRparmValues();
+        subcktInfo = &liveSubcktInfo;
 
-        const auto& ip = m_frame->Schematic().GetGseimSubcktIparmValues();
+        overrides = sheet->GetGseimRparmValues();
+        const auto& ip = sheet->GetGseimIparmValues();
         overrides.insert( ip.begin(), ip.end() );
-
-        const auto& sp = m_frame->Schematic().GetGseimSubcktSparmValues();
+        const auto& sp = sheet->GetGseimSparmValues();
         overrides.insert( sp.begin(), sp.end() );
     }
     else
@@ -4570,9 +4606,9 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 
         commit.Modify( sheet, m_frame->GetScreen() );
 
-        m_frame->Schematic().SetGseimSubcktRparmValues( r );
-        m_frame->Schematic().SetGseimSubcktIparmValues( i );
-        m_frame->Schematic().SetGseimSubcktSparmValues( s );
+        sheet->SetGseimRparmValues( r );
+        sheet->SetGseimIparmValues( i );
+        sheet->SetGseimSparmValues( s );
     }
 
     commit.Push( _( "Modify GSEIM Parameters" ) );

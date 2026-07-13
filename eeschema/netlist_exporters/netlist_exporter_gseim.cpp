@@ -393,7 +393,8 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         formatter.Print( 0, "\n" );
     }
 
-    const auto& rparms = m_schematic->GetGseimSubcktRparmValues();
+    SCH_SHEET* sheet = path.Last();
+    const auto& rparms = sheet->GetGseimRparmValues();
     if( !rparms.empty() )
     {
         formatter.Print( 0, "  rparms:\n" );
@@ -405,7 +406,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         formatter.Print( 0, "\n" );
     }
 
-    const auto& iparms = m_schematic->GetGseimSubcktIparmValues();
+    const auto& iparms = sheet->GetGseimIparmValues();
 
     if( !iparms.empty() )
     {
@@ -422,7 +423,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         formatter.Print( 0, "\n" );
     }
 
-    const auto& sparms = m_schematic->GetGseimSubcktSparmValues();
+    const auto& sparms = sheet->GetGseimSparmValues();
 
     if( !sparms.empty() )
     {

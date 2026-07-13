@@ -1212,6 +1212,10 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
     if( !pg )
         return;
 
+    SCH_SHEET* sheet = m_editFrame->GetCurrentSheet().Last();
+    if( !sheet )
+        return;
+
     SCH_SHEET_LIST hierarchy = m_editFrame->Schematic().Hierarchy();
 
     if( hierarchy.empty() )
@@ -1224,8 +1228,8 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
     GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
     for( const SCH_SHEET_PATH& path : hierarchy )
     {        
-        if( path.size() == 1 )
-            continue;        
+        // if( path.size() == 1 )
+        //     continue;        
 
         SCH_SCREEN* screen = path.LastScreen();
 
@@ -1255,9 +1259,18 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
 
             auto params = ParseGseimParams( paramText );
 
-        
+            auto IsLiteral = []( const wxString& s )
+            {
+                if( s.IsEmpty() )
+                    return true;
+
+                return wxIsdigit( s[0] ) || s[0] == '.' || s[0] == '-' || s[0] == '+';
+            };
             for( const auto& [key, value] : params )
             {
+                if( IsLiteral( value ) )
+                    continue;
+
                 if( info->rparms.count( key ) )
                     rparms.insert( value );
 
@@ -1294,9 +1307,9 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
         }
     };
 
-    PopulateGrid( pg->m_GseimRparmsGrid, rparms, m_editFrame->Schematic().GetGseimSubcktRparmValues() );
-    PopulateGrid( pg->m_GseimIparmsGrid, iparms, m_editFrame->Schematic().GetGseimSubcktIparmValues() );
-    PopulateGrid( pg->m_GseimSparmsGrid, sparms, m_editFrame->Schematic().GetGseimSubcktSparmValues() );
+    PopulateGrid( pg->m_GseimRparmsGrid, rparms, sheet->GetGseimRparmValues() );
+    PopulateGrid( pg->m_GseimIparmsGrid, iparms, sheet->GetGseimIparmValues() );
+    PopulateGrid( pg->m_GseimSparmsGrid, sparms, sheet->GetGseimSparmValues() );
 
 }
 
@@ -1495,28 +1508,44 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddParameter( wxCommandEvent& event )
     CommitGseimControls( m_GseimSelectedBlock );
 
     GSEIM_SOLVE_BLOCK& block = m_GseimSolveBlocks[m_GseimSelectedBlock];
+
     if( block.solveType == "ac" )
         return;
+
     wxArrayString choices;
+    std::vector<wxString> keywords;
 
     for( const auto& [keyword, info] : m_GseimParameterDb.GetParameters() )
     {
+        if( block.parameters.count( keyword ) )
+            continue;
+
         choices.Add( keyword );
+        keywords.push_back( keyword );
     }
 
-    wxSingleChoiceDialog dlg( this, "Select parameter", "GSEIM Parameter", choices );
+    if( choices.IsEmpty() )
+    {
+        wxMessageBox( _( "No more parameters available." ) );
+        return;
+    }
+
+    wxMultiChoiceDialog dlg( this, _( "Select parameters to add" ), _( "GSEIM Parameters" ), choices );
 
     if( dlg.ShowModal() != wxID_OK )
         return;
 
-    wxString selectedKeyword = dlg.GetStringSelection();
+    wxArrayInt selections = dlg.GetSelections();
 
-    const GSEIM_PARAMETER_INFO* info = m_GseimParameterDb.Find( selectedKeyword );
+    for( int idx : selections )
+    {
+        const GSEIM_PARAMETER_INFO* info =
+            m_GseimParameterDb.Find( keywords[idx] );
 
-    if( !info )
-        return;
+        if( info )
+            block.parameters[ info->keyword ] = info->defaultValue;
+    }
 
-    block.parameters[ info->keyword ] = info->defaultValue;
     PopulateGseimControls( m_GseimSelectedBlock );
 }
 
@@ -2192,9 +2221,13 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
                     gseimPg->m_GseimCCodeCtrl->GetValue() );
         }
 
-        m_editFrame->Schematic().SetGseimSubcktRparmValues( rparms );
-        m_editFrame->Schematic().SetGseimSubcktIparmValues( iparms );
-        m_editFrame->Schematic().SetGseimSubcktSparmValues( sparms );
+        SCH_SHEET* sheet = m_editFrame->GetCurrentSheet().Last();
+        if( sheet )
+        {
+            sheet->SetGseimRparmValues( rparms );
+            sheet->SetGseimIparmValues( iparms );
+            sheet->SetGseimSparmValues( sparms );
+        }
         m_editFrame->Schematic().SetGseimSubcktCCode( gseimPg->m_GseimCCodeCtrl->GetValue() );
 
         break;
