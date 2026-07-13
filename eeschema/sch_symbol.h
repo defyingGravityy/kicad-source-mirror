@@ -1061,6 +1061,22 @@ private:
 
     /// @see SCH_SYMBOL::GetOrientation
     static std::unordered_map<TRANSFORM, int> s_transformToOrientationCache;
+
+
+private:
+    std::map<wxString, wxString> m_gseimOutVarsByInstance;   // keyed by KIID_PATH::AsString()
+
+public:
+    wxString GetGseimOutVarsForPath( const KIID_PATH& aPath ) const
+    {
+        auto it = m_gseimOutVarsByInstance.find( aPath.AsString() );
+        return it != m_gseimOutVarsByInstance.end() ? it->second : wxString();
+    }
+
+    void SetGseimOutVarsForPath( const KIID_PATH& aPath, const wxString& aValue )
+    {
+        m_gseimOutVarsByInstance[ aPath.AsString() ] = aValue;
+    }
 };
 
 

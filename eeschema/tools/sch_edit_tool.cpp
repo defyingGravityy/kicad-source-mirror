@@ -3903,7 +3903,7 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         SCH_CONNECTION* conn = pin->Connection( &sheet );
         if( !conn )
             continue;
-        wxString net = conn->GetNetName();
+        wxString net = conn->Name( true );
         if( net.StartsWith( "/" ) )
             net = net.Mid( 1 );
         if( net.IsEmpty() )
@@ -3959,10 +3959,16 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     for( const wxString& v : available )
         availableArr.Add( v );
 
-    wxString stored;
-    SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
-    if( outVarsField )
-        stored = outVarsField->GetText();
+    // wxString stored;
+    // SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
+    // if( outVarsField )
+    //     stored = outVarsField->GetText();
+
+    bool isSubckt = sheet.size() > 1;
+    wxString stored = isSubckt ? symbol->GetGseimOutVarsForPath( sheet.Path() )
+                                : ( symbol->GetField( wxT( "Gseim.OutVars" ) )
+                                    ? symbol->GetField( wxT( "Gseim.OutVars" ) )->GetText()
+                                    : wxString() );
 
     std::unordered_set<wxString> storedSet;
     wxStringTokenizer tok( stored, " " );
@@ -3994,19 +4000,45 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         newStored += available[ chosen[i] ];
     }
 
+    // SCH_COMMIT commit( m_toolMgr );
+    // commit.Modify( symbol, m_frame->GetScreen() );
+
+    // if( outVarsField )
+    // {
+    //     outVarsField->SetText( newStored );
+    // }
+    // else
+    // {
+    //     SCH_FIELD newField( symbol, FIELD_T::USER, wxT( "Gseim.OutVars" ) );
+    //     newField.SetText( newStored );
+    //     newField.SetVisible( false );
+    //     symbol->AddField( newField );
+    // }
+
+    // commit.Push( _( "Set GSEIM Output Variables (ebe)" ) );
+
     SCH_COMMIT commit( m_toolMgr );
     commit.Modify( symbol, m_frame->GetScreen() );
 
-    if( outVarsField )
+    if( isSubckt )
     {
-        outVarsField->SetText( newStored );
+        symbol->SetGseimOutVarsForPath( sheet.Path(), newStored );
     }
     else
     {
-        SCH_FIELD newField( symbol, FIELD_T::USER, wxT( "Gseim.OutVars" ) );
-        newField.SetText( newStored );
-        newField.SetVisible( false );
-        symbol->AddField( newField );
+        SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
+
+        if( outVarsField )
+        {
+            outVarsField->SetText( newStored );
+        }
+        else
+        {
+            SCH_FIELD newField( symbol, FIELD_T::USER, wxT( "Gseim.OutVars" ) );
+            newField.SetText( newStored );
+            newField.SetVisible( false );
+            symbol->AddField( newField );
+        }
     }
 
     commit.Push( _( "Set GSEIM Output Variables (ebe)" ) );
@@ -4148,7 +4180,7 @@ int SCH_EDIT_TOOL::SelectGseimNonElecVars( const TOOL_EVENT& aEvent )
                 SCH_CONNECTION* conn = pin->Connection( &sheet );
                 if( conn )
                 {
-                    wxString net = conn->GetNetName();
+                    wxString net = conn->Name( true );
                     if( net.StartsWith( "/" ) )
                         net = net.Mid( 1 );
                     if( !net.IsEmpty() )
@@ -4318,12 +4350,12 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         if( !subcktInfo )
             return 0;
 
-        overrides = sheet->GetGseimRparmValues();
+        overrides = m_frame->Schematic().GetGseimSubcktRparmValues();
 
-        const auto& ip = sheet->GetGseimIparmValues();
+        const auto& ip = m_frame->Schematic().GetGseimSubcktIparmValues();
         overrides.insert( ip.begin(), ip.end() );
 
-        const auto& sp = sheet->GetGseimSparmValues();
+        const auto& sp = m_frame->Schematic().GetGseimSubcktSparmValues();
         overrides.insert( sp.begin(), sp.end() );
     }
     else
@@ -4538,9 +4570,9 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 
         commit.Modify( sheet, m_frame->GetScreen() );
 
-        sheet->SetGseimRparmValues( r );
-        sheet->SetGseimIparmValues( i );
-        sheet->SetGseimSparmValues( s );
+        m_frame->Schematic().SetGseimSubcktRparmValues( r );
+        m_frame->Schematic().SetGseimSubcktIparmValues( i );
+        m_frame->Schematic().SetGseimSubcktSparmValues( s );
     }
 
     commit.Push( _( "Modify GSEIM Parameters" ) );

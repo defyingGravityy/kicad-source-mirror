@@ -454,10 +454,50 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
 
     for( const SCH_SHEET_PATH& sheet : hierarchy )
     {
+        bool isSubckt = sheet.size() > 1;
+        wxString instanceName = isSubckt ? sheet.Last()->GetName() : wxString();
+
+        // for( SCH_ITEM* item : sheet.LastScreen()->Items().OfType( SCH_SYMBOL_T ) )
+        // {
+        //     SCH_SYMBOL* symbol = static_cast<SCH_SYMBOL*>( item );
+        //     wxString ref = symbol->GetRef( &sheet );
+
         for( SCH_ITEM* item : sheet.LastScreen()->Items().OfType( SCH_SYMBOL_T ) )
         {
             SCH_SYMBOL* symbol = static_cast<SCH_SYMBOL*>( item );
             wxString ref = symbol->GetRef( &sheet );
+
+            if( isSubckt )
+            {
+                wxString stored = symbol->GetGseimOutVarsForPath( sheet.Path() );
+
+                if( stored.IsEmpty() )
+                    continue;
+
+                wxStringTokenizer tok( stored, " " );
+
+                while( tok.HasMoreTokens() )
+                {
+                    wxString var = tok.GetNextToken();
+
+                    if( var.IsEmpty() )
+                        continue;
+
+                    wxString dedupKey = var + "@" + instanceName;
+
+                    if( seen.count( dedupKey ) )
+                        continue;
+
+                    seen.insert( dedupKey );
+
+                    GSEIM_OUTVAR ov;
+                    ov.name = var + "_" + instanceName;
+                    ov.expr = var + "_of_" + instanceName;
+                    outvars.push_back( ov );
+                }
+
+                continue;   // subsheet symbols never read Gseim.OutVars/NonElecVars fields
+            }
 
             for( const wxString& fieldName : { wxString( "Gseim.OutVars" ), wxString( "Gseim.NonElecVars" ) } )
             {
@@ -477,131 +517,117 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                 {
                     wxString var = tok.GetNextToken();
 
-                    if( var.IsEmpty() || seen.count( var ) )
+                    if( var.IsEmpty() )
                         continue;
 
-                    seen.insert( var );
+                    wxString dedupKey = isSubckt ? ( var + "@" + instanceName ) : var;
+
+                    if( seen.count( dedupKey ) )
+                        continue;
+
+                    seen.insert( dedupKey );
 
                     GSEIM_OUTVAR ov;
                     ov.name = var;
 
-                if( var.StartsWith( "mag_of_" ) )
-                {
-                    ov.isAc = true;
-                    ov.isMagnitude = true;
-
-                    ov.baseName = var.Mid( 7 );   // remove "mag_of_"
-
-                    wxString tmp = ov.baseName;
-
-                    if( tmp.EndsWith( "_ac" ) )
-                        tmp.RemoveLast( 3 );
-
-                    int pos = tmp.Find( '_' );
-
-                    if( pos != wxNOT_FOUND )
+                    if( isSubckt )
                     {
-                        wxString refName = tmp.Left( pos );
-                        wxString outparm = tmp.Mid( pos + 1 );
-
-                        if( outparm == "S" )
-                        {
-                            ov.expr = "S_of_" + refName;
-                        }
-                        else
-                        {
-                            ov.expr = outparm + "_ac_of_" + refName;
-                        }
+                        ov.name = var + "_" + instanceName;   // e.g. "v_out_OA1", "v_out_OA2" — unique by default
+                        ov.expr = var + "_of_" + instanceName;
+                        outvars.push_back( ov );
+                        continue;
                     }
-                }
-                else if( var.StartsWith( "phase_of_" ) )
-                {
-                    ov.isAc = true;
-                    ov.isPhase = true;
 
-                    ov.baseName = var.Mid( 9 );   // remove "phase_of_"
-
-                    wxString tmp = ov.baseName;
-
-                    if( tmp.EndsWith( "_ac" ) )
-                        tmp.RemoveLast( 3 );
-
-                    int pos = tmp.Find( '_' );
-
-                    if( pos != wxNOT_FOUND )
-                    {
-                        wxString refName = tmp.Left( pos );
-                        wxString outparm = tmp.Mid( pos + 1 );
-
-                        if( outparm == "S" )
-                        {
-                            ov.expr = "S_of_" + refName;
-                        }
-                        else
-                        {
-                            ov.expr = outparm + "_ac_of_" + refName;
-                        }
-                    }
-                }
-                // Element output (R1_i, R1_v, VM1_v_fb, etc.)
-                else if( var.StartsWith( ref + "_" ) )
-                {
-                    wxString outparm = var.Mid( ref.Length() + 1 );
-                    ov.expr = outparm + "_of_" + ref;
-                }
-                // Node voltage (VB, VC, VOUT, ...)
-                else if( var.StartsWith( "v" ) )
-                {
-                    wxString net = var.Mid( 1 );
-
-                    if( var.EndsWith( "_ac" ) )
+                    if( var.StartsWith( "mag_of_" ) )
                     {
                         ov.isAc = true;
-                        ov.baseName = var;
-                        net.RemoveLast( 3 );
+                        ov.isMagnitude = true;
 
-                        ov.expr = "nodev_ac_of_" + net;
+                        ov.baseName = var.Mid( 7 );   // remove "mag_of_"
+
+                        wxString tmp = ov.baseName;
+
+                        if( tmp.EndsWith( "_ac" ) )
+                            tmp.RemoveLast( 3 );
+
+                        int pos = tmp.Find( '_' );
+
+                        if( pos != wxNOT_FOUND )
+                        {
+                            wxString refName = tmp.Left( pos );
+                            wxString outparm = tmp.Mid( pos + 1 );
+
+                            if( outparm == "S" )
+                            {
+                                ov.expr = "S_of_" + refName;
+                            }
+                            else
+                            {
+                                ov.expr = outparm + "_ac_of_" + refName;
+                            }
+                        }
                     }
+                    else if( var.StartsWith( "phase_of_" ) )
+                    {
+                        ov.isAc = true;
+                        ov.isPhase = true;
+
+                        ov.baseName = var.Mid( 9 );   // remove "phase_of_"
+
+                        wxString tmp = ov.baseName;
+
+                        if( tmp.EndsWith( "_ac" ) )
+                            tmp.RemoveLast( 3 );
+
+                        int pos = tmp.Find( '_' );
+
+                        if( pos != wxNOT_FOUND )
+                        {
+                            wxString refName = tmp.Left( pos );
+                            wxString outparm = tmp.Mid( pos + 1 );
+
+                            if( outparm == "S" )
+                            {
+                                ov.expr = "S_of_" + refName;
+                            }
+                            else
+                            {
+                                ov.expr = outparm + "_ac_of_" + refName;
+                            }
+                        }
+                    }
+                    // Element output (R1_i, R1_v, VM1_v_fb, etc.)
+                    else if( var.StartsWith( ref + "_" ) )
+                    {
+                        wxString outparm = var.Mid( ref.Length() + 1 );
+                        ov.expr = outparm + "_of_" + ref;
+                    }
+                    // Node voltage (vb, vc, vout, ...)
+                    else if( var.StartsWith( "v" ) )
+                    {
+                        wxString net = var.Mid( 1 );
+
+                        if( var.EndsWith( "_ac" ) )
+                        {
+                            ov.isAc = true;
+                            ov.baseName = var;
+                            net.RemoveLast( 3 );
+
+                            ov.expr = "nodev_ac_of_" + net;
+                        }
+                        else
+                        {
+                            ov.expr = "nodev_of_" + net;
+                        }
+                    }
+                    // XBE output (x1, x2, y, ...)
                     else
                     {
-                        ov.expr = "nodev_of_" + net;
+                        ov.expr = "xvar_of_" + var;
                     }
+
+                    outvars.push_back( ov );
                 }
-                // XBE output (x1, x2, y, ...)
-                else
-                {
-                    ov.expr = "xvar_of_" + var;
-                }
-
-                outvars.push_back( ov );
-                }
-            }
-        }
-    }
-
-    for( const SCH_SHEET_PATH& sheet : hierarchy )
-    {
-        for( SCH_ITEM* item : sheet.LastScreen()->Items().OfType( SCH_SHEET_T ) )
-        {
-            SCH_SHEET* childSheet = static_cast<SCH_SHEET*>( item );
-            wxString stored = childSheet->GetGseimSubcktOutVars();
-
-            if( stored.IsEmpty() )
-                continue;
-
-            wxString instanceName = childSheet->GetName();
-            wxStringTokenizer tok( stored, " " );
-
-            while( tok.HasMoreTokens() )
-            {
-                wxString var = tok.GetNextToken();
-                if( var.IsEmpty() || seen.count( var ) )
-                    continue;
-                seen.insert( var );
-                GSEIM_OUTVAR ov;
-                ov.name = var;
-                ov.expr = var + "_of_" + instanceName;
-                outvars.push_back( ov );
             }
         }
     }
@@ -1197,9 +1223,9 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
     std::set<wxString> sparms;
     GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
     for( const SCH_SHEET_PATH& path : hierarchy )
-    {
-        // if( path.size() == 1 )
-        //     continue;        
+    {        
+        if( path.size() == 1 )
+            continue;        
 
         SCH_SCREEN* screen = path.LastScreen();
 
