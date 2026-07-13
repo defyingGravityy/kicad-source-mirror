@@ -7,3 +7,4 @@ wxString GetGseimEbePath();
 wxString GetGseimXbePath();
 wxString GetGseimSolverParameterPath();
 wxString GetGseimSubPath();
+wxString GetGseimRunPath();

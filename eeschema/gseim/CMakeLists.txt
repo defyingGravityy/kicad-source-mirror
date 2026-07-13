@@ -13,3 +13,9 @@ install(
         ${CMAKE_CURRENT_SOURCE_DIR}/slvparms.in
     DESTINATION ${KICAD_DATA}/resources/gseim
 )
+
+install(
+    PROGRAMS
+        ${CMAKE_CURRENT_SOURCE_DIR}/bin/run_gseim
+    DESTINATION ${KICAD_DATA}/resources/gseim/bin
+)

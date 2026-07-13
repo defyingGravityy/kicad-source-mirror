@@ -26,3 +26,8 @@ wxString GetGseimSubPath()
 {
     return GetGseimResourcePath() + "/sub";
 }
+
+wxString GetGseimRunPath()
+{
+    return GetGseimResourcePath() + "/bin/run_gseim";
+}

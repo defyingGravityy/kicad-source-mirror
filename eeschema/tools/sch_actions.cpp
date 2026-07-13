@@ -967,6 +967,15 @@ TOOL_ACTION SCH_ACTIONS::modifyGseimParameters(
         .Icon( BITMAPS::edit )
 );
 
+TOOL_ACTION SCH_ACTIONS::runGseimSimulation(
+    TOOL_ACTION_ARGS()
+        .Name( "eeschema.InteractiveEdit.runGseimSimulation" )
+        .Scope( AS_GLOBAL )
+        .FriendlyName( _( "Run GSEIM Simulation" ) )
+        .Tooltip( _( "Run GSEIM Simulation" ) )
+        .Icon( BITMAPS::simulator ) 
+);
+
 TOOL_ACTION SCH_ACTIONS::autoplaceFields( TOOL_ACTION_ARGS()
         .Name( "eeschema.InteractiveEdit.autoplaceFields" )
         .Scope( AS_GLOBAL )

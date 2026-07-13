@@ -207,6 +207,7 @@ std::optional<TOOLBAR_CONFIGURATION> SCH_EDIT_TOOLBAR_SETTINGS::DefaultToolbarCo
               .AppendAction( SCH_ACTIONS::annotate )
               .AppendAction( SCH_ACTIONS::runERC )
               .AppendAction( SCH_ACTIONS::showSimulator )
+              .AppendAction( SCH_ACTIONS::runGseimSimulation )   
               .AppendAction( SCH_ACTIONS::assignFootprints )
               .AppendAction( SCH_ACTIONS::editSymbolFields )
               .AppendAction( SCH_ACTIONS::generateBOM );

@@ -18,6 +18,7 @@ file(COPY
     ebe
     xbe
     sub
+    bin
     DESTINATION ${GSEIM_BUILD_DIR}
 )
 
@@ -26,6 +27,7 @@ install(
         ebe
         xbe
         sub
+        bin
     DESTINATION ${KICAD_DATA}/resources/gseim
 )
 

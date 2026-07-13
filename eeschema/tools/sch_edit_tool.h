@@ -99,6 +99,8 @@ public:
     int SelectGseimSubcktOutvars( const TOOL_EVENT& aEvent );
     int ModifyGseimParameters( const TOOL_EVENT& aEvent );
 
+    int RunGseimSimulation( const TOOL_EVENT& aEvent );
+
 private:
     void editFieldText( SCH_FIELD* aField );
 

@@ -4616,6 +4616,74 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
     return 0;
 }
 
+int SCH_EDIT_TOOL::RunGseimSimulation( const TOOL_EVENT& )
+{
+    wxFileDialog fileDlg( m_frame, _( "Select GSEIM Circuit" ), wxEmptyString, wxEmptyString, _( "GSEIM Files (*.cir;*.in)|*.cir;*.in" ), wxFD_OPEN | wxFD_FILE_MUST_EXIST );
+
+    if( fileDlg.ShowModal() != wxID_OK )
+        return 0;
+
+    wxDirDialog dirDlg( m_frame, _( "Select Output Directory" ) );
+
+    if( dirDlg.ShowModal() != wxID_OK )
+        return 0;
+
+    wxFileName circuitFile( fileDlg.GetPath() );
+    wxString outputDir = dirDlg.GetPath();
+
+    wxTextFile netlist;
+
+    if( !netlist.Open( circuitFile.GetFullPath() ) )
+    {
+        wxMessageBox( _( "Failed to open netlist." ), _( "GSEIM" ), wxOK | wxICON_ERROR, m_frame );
+        return 0;
+    }
+
+    for( size_t i = 0; i < netlist.GetLineCount(); ++i )
+    {
+        wxString line = netlist.GetLine( i );
+
+        wxString trimmed = line;
+        trimmed.Trim( true ).Trim( false );
+
+        if( trimmed.StartsWith( "filename=" ) )
+        {
+            wxString filename = trimmed.AfterFirst( '=' );
+
+            wxFileName outFile( outputDir, filename );
+
+            wxString indent = line.BeforeFirst( 'f' );
+
+            netlist[i] = indent + "filename=" + outFile.GetFullPath();
+        }
+    }
+
+    netlist.Write();
+    netlist.Close();
+
+    wxFileName exe( GetGseimRunPath() );
+
+    if( !exe.FileExists() )
+    {
+        wxMessageBox( wxString::Format( _( "Cannot find run_gseim:\n%s" ), exe.GetFullPath() ), _( "GSEIM" ), wxOK | wxICON_ERROR, m_frame );
+        return 0;
+    }
+
+    wxExecuteEnv env;
+    env.cwd = exe.GetPath();
+
+    wxString command = wxString::Format( "\"%s\" \"%s\"", exe.GetFullPath(), circuitFile.GetFullPath() );
+
+    long result = wxExecute( command, wxEXEC_SYNC, nullptr, &env );
+
+    if( result == -1 )
+    {
+        wxMessageBox( _( "Failed to start run_gseim." ), _( "GSEIM" ), wxOK | wxICON_ERROR, m_frame );
+    }
+
+    return 0;
+}
+
 void SCH_EDIT_TOOL::setTransitions()
 {
     // clang-format off
@@ -4644,6 +4712,7 @@ void SCH_EDIT_TOOL::setTransitions()
     Go( &SCH_EDIT_TOOL::SelectGseimNonElecVars, SCH_ACTIONS::selectGseimNonElecVars.MakeEvent() );
     Go( &SCH_EDIT_TOOL::ModifyGseimParameters, SCH_ACTIONS::modifyGseimParameters.MakeEvent() );
     Go( &SCH_EDIT_TOOL::SelectGseimSubcktOutvars, SCH_ACTIONS::selectGseimSubCktOutVars.MakeEvent() );
+    Go( &SCH_EDIT_TOOL::RunGseimSimulation, SCH_ACTIONS::runGseimSimulation.MakeEvent() );    
 
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editValue.MakeEvent() );
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editFootprint.MakeEvent() );
