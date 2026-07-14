@@ -85,6 +85,12 @@
 #include <vector>
 #include <properties/property_mgr.h>
 
+namespace
+{
+    std::unordered_map<wxString, wxString> s_gseimOutvarNameCache;    // orig name -> user-edited name
+    std::unordered_map<wxString, wxString> s_gseimOutvarDescCache;    // orig name -> user-edited desc
+    std::unordered_set<wxString>           s_gseimOutvarCheckedCache; // orig names currently checked
+}
 
 namespace
 {
@@ -761,6 +767,19 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimOutvars( EXPORT_NETLIST_PAGE* pg )
         userDescs[origName] = editDesc;
     }
 
+    for( const auto& [origName, name] : s_gseimOutvarNameCache )
+    {
+        if( !userNames.count( origName ) )
+            userNames[origName] = name;
+    }
+    for( const auto& [origName, desc] : s_gseimOutvarDescCache )
+    {
+        if( !userDescs.count( origName ) )
+            userDescs[origName] = desc;
+    }
+    for( const wxString& origName : s_gseimOutvarCheckedCache )
+        checked.insert( origName );
+
     bool filterActive = pg->m_GseimFilterBySelectionCtrl
                         && pg->m_GseimFilterBySelectionCtrl->IsChecked();
 
@@ -838,6 +857,26 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimOutvars( EXPORT_NETLIST_PAGE* pg )
     grid->SetColSize( 1, 140 );
     grid->SetColSize( 2, 180 );
     grid->HideCol( 3 );
+}
+
+
+static void UpdateGseimOutvarCache( wxGrid* aGrid, int aRow )
+{
+    if( !aGrid || aRow < 0 || aRow >= aGrid->GetNumberRows() )
+        return;
+
+    wxString origName = aGrid->GetCellValue( aRow, 3 );
+
+    if( origName.IsEmpty() )
+        return;
+
+    s_gseimOutvarNameCache[origName] = aGrid->GetCellValue( aRow, 1 );
+    s_gseimOutvarDescCache[origName] = aGrid->GetCellValue( aRow, 2 );
+
+    if( aGrid->GetCellValue( aRow, 0 ) == "1" )
+        s_gseimOutvarCheckedCache.insert( origName );
+    else
+        s_gseimOutvarCheckedCache.erase( origName );
 }
 
 void DIALOG_EXPORT_NETLIST::InstallPageSpice()
@@ -960,6 +999,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_RightBoxSizer->Add( pg->m_GseimOutputLabel, 0, wxBOTTOM, 3 );
     pg->m_GseimOutputFileCtrl = new wxTextCtrl( pg, wxID_ANY, "output_file.dat" );
     pg->m_RightBoxSizer->Add( pg->m_GseimOutputFileCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
+    
 
     // --- Add Parameter button ---
     m_GseimParameterDb.Load( GetGseimSolverParameterPath() );
@@ -1022,12 +1062,20 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
         {
             wxString current = grid->GetCellValue( event.GetRow(), 0 );
             grid->SetCellValue( event.GetRow(), 0, current == "1" ? "" : "1" );
+            UpdateGseimOutvarCache( grid, event.GetRow() );
             event.Skip( false );
         }
         else
         {
             event.Skip();
         }
+    } );
+
+    pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_CHANGED, [this]( wxGridEvent& event )
+    {
+        EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIM];
+        UpdateGseimOutvarCache( gseimPg->m_GseimOutvarsGrid, event.GetRow() );
+        event.Skip();
     } );
 
     // Filter checkbox + Refresh button on one row
@@ -1156,12 +1204,20 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
         {
             wxString current = grid->GetCellValue( event.GetRow(), 0 );
             grid->SetCellValue( event.GetRow(), 0, current == "1" ? "" : "1" );
+            UpdateGseimOutvarCache( grid, event.GetRow() );
             event.Skip( false );
         }
         else
         {
             event.Skip();
         }
+    } );
+
+    pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_CHANGED, [this]( wxGridEvent& event )
+    {
+        EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIMSUBCKT];
+        UpdateGseimOutvarCache( gseimPg->m_GseimOutvarsGrid, event.GetRow() );
+        event.Skip();
     } );
  
 
@@ -1203,7 +1259,6 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     PopulateGseimSubcktParameters();
     PopulateGseimOutvars( pg );
 }
-
 
 void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
 {
