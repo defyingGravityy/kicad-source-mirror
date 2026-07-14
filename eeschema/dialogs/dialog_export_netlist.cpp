@@ -999,7 +999,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_RightBoxSizer->Add( pg->m_GseimOutputLabel, 0, wxBOTTOM, 3 );
     pg->m_GseimOutputFileCtrl = new wxTextCtrl( pg, wxID_ANY, "output_file.dat" );
     pg->m_RightBoxSizer->Add( pg->m_GseimOutputFileCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
-    
+
 
     // --- Add Parameter button ---
     m_GseimParameterDb.Load( GetGseimSolverParameterPath() );
@@ -1587,6 +1587,9 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddParameter( wxCommandEvent& event )
 
     wxMultiChoiceDialog dlg( this, _( "Select parameters to add" ), _( "GSEIM Parameters" ), choices );
 
+    wxSize sz = dlg.GetSize();
+    dlg.SetSize( sz.GetWidth() + 150, sz.GetHeight() + 100 );
+
     if( dlg.ShowModal() != wxID_OK )
         return;
 
@@ -2104,16 +2107,30 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
                 {
                     solveText += "      variables:\n";
 
-                    for( const auto& var : output.outputVars )
+                    wxString line = "+         ";
+
+                    for( size_t i = 0; i < output.outputVars.size(); ++i )
                     {
-                        wxString display = var;
-                        auto it = origToRenamed.find( var );
+                        wxString display = output.outputVars[i];
+                        auto it = origToRenamed.find( display );
 
                         if( it != origToRenamed.end() && !it->second.IsEmpty() )
                             display = it->second;
+                        wxString token = ( line.Length() > 10 ? " " : "" ) + display;
 
-                        solveText += "+         " + display + "\n";
+                        if( line.Length() + token.Length() > 60 )
+                        {
+                            solveText += line + "\n";
+                            line = "+         " + display;
+                        }
+                        else
+                        {
+                            line += token;
+                        }
                     }
+
+                    if( line.Length() > 10 )
+                        solveText += line + "\n";
                 }
 
                 solveText += "   end_output\n";

@@ -226,7 +226,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportXbeElement( const SPICE_ITEM& aItem,
     wxString paramText = GetFieldValue( aItem, "Gseim.Params" );
     std::map<wxString, wxString> overrides = ParseGseimParams( paramText );
 
-    aFormatter.Print( 0, "   xelement type=%s", TO_UTF8( aXbeInfo.name ) );
+    aFormatter.Print( 0, "   xelement name=%s type=%s", aItem.refName.c_str(), TO_UTF8( aXbeInfo.name ) );
 
     auto emitVar = [&]( const wxString& varName )
     {
