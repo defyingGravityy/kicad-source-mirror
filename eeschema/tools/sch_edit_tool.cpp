@@ -4418,7 +4418,7 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
                 _( "Modify GSEIM Parameters" ),
                 wxDefaultPosition,
                 wxSize( 650, 450 ),
-                wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER )
+                wxDEFAULT_DIALOG_STYLE )
         {
             wxBoxSizer* topSizer = new wxBoxSizer( wxVERTICAL );
 
@@ -4473,6 +4473,9 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
                 8 );
 
             SetSizer( topSizer );
+            SetMinSize( wxSize( 650, 450 ) );
+            SetMaxSize( wxSize( 650, 450 ) );
+            SetSize( wxSize( 650, 450 ) );
             Layout();
         }
     };
