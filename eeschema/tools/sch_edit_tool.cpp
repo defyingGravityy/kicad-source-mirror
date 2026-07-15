@@ -4674,7 +4674,16 @@ int SCH_EDIT_TOOL::RunGseimSimulation( const TOOL_EVENT& )
 
     wxString command = wxString::Format( "\"%s\" \"%s\"", exe.GetFullPath(), circuitFile.GetFullPath() );
 
-    long result = wxExecute( command, wxEXEC_SYNC, nullptr, &env );
+    wxArrayString output;
+    wxArrayString errors;
+
+    long result = wxExecute( command, output, errors, wxEXEC_SYNC, &env );
+    // long result = wxExecute( command, wxEXEC_SYNC, nullptr, &env );
+    for( const wxString& line : output )
+        wxLogMessage( "%s", line );
+
+    for( const wxString& line : errors )
+        wxLogError( "%s", line );
 
     if( result == -1 )
     {

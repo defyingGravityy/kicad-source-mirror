@@ -73,6 +73,7 @@ private:
     void RefreshGseimBlockList();
     void OnGseimControlChanged( wxCommandEvent& event );
     void OnGseimAddParameter( wxCommandEvent& event );
+    void OnGseimRemoveParameter( wxCommandEvent& event );
     void PopulateGseimParameterGrid( const GSEIM_SOLVE_BLOCK& blk );
     void ApplySolveTypePolicy( GSEIM_SOLVE_BLOCK& blk );
     void RefreshGseimOutputList();

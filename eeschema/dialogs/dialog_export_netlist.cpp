@@ -212,6 +212,7 @@ public:
     wxGrid* m_GseimOutvarsGrid = nullptr;
 
     wxButton* m_GseimAddParameterBtn = nullptr;
+    wxButton* m_GseimRemoveParameterBtn = nullptr;
 
     wxChoice*  m_GseimBlockChoiceCtrl = nullptr;
     wxButton*   m_GseimAddBlockBtn    = nullptr;
@@ -1007,6 +1008,11 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_RightBoxSizer->Add( pg->m_GseimAddParameterBtn, 0, wxEXPAND | wxTOP, 5 );
     pg->m_GseimAddParameterBtn->Bind( wxEVT_BUTTON, &DIALOG_EXPORT_NETLIST::OnGseimAddParameter, this );
 
+    pg->m_GseimRemoveParameterBtn = new wxButton( pg, wxID_ANY, "Remove Parameter" );
+    pg->m_RightBoxSizer->Add( pg->m_GseimRemoveParameterBtn, 0, wxEXPAND | wxTOP, 5 );
+    pg->m_GseimRemoveParameterBtn->Bind( wxEVT_BUTTON, &DIALOG_EXPORT_NETLIST::OnGseimRemoveParameter, this );
+
+
     pg->m_GseimGlobalCCodeLabel = new wxStaticText( pg, wxID_ANY, "C Block" );
     pg->m_RightBoxSizer->Add( pg->m_GseimGlobalCCodeLabel, 0, wxTOP | wxBOTTOM, 8 );
     pg->m_GseimGlobalCCodeCtrl = new wxTextCtrl( pg, wxID_ANY, m_editFrame->Schematic().GetGseimGparmCCode(), wxDefaultPosition, wxSize( -1, 70 ), wxTE_MULTILINE ); 
@@ -1602,6 +1608,48 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddParameter( wxCommandEvent& event )
 
         if( info )
             block.parameters[ info->keyword ] = info->defaultValue;
+    }
+
+    PopulateGseimControls( m_GseimSelectedBlock );
+}
+
+void DIALOG_EXPORT_NETLIST::OnGseimRemoveParameter( wxCommandEvent& event )
+{
+    if( m_GseimSelectedBlock < 0 )
+        return;
+
+    CommitGseimControls( m_GseimSelectedBlock );
+
+    GSEIM_SOLVE_BLOCK& block = m_GseimSolveBlocks[m_GseimSelectedBlock];
+
+    if( block.solveType == "ac" )
+        return;
+
+    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
+    wxGrid* grid = pg->m_GseimParametersGrid;
+
+    wxArrayInt selectedRows = grid->GetSelectedRows();
+
+    if( selectedRows.IsEmpty() )
+    {
+        int cursorRow = grid->GetGridCursorRow();
+
+        if( cursorRow >= 0 )
+            selectedRows.Add( cursorRow );
+    }
+
+    if( selectedRows.IsEmpty() )
+    {
+        wxMessageBox( _( "Select a parameter row to remove." ) );
+        return;
+    }
+
+    for( int row : selectedRows )
+    {
+        wxString key = grid->GetCellValue( row, 0 );
+
+        if( !key.IsEmpty() )
+            block.parameters.erase( key );
     }
 
     PopulateGseimControls( m_GseimSelectedBlock );
