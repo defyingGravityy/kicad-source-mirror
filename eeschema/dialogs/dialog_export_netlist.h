@@ -55,7 +55,7 @@ private:
     void                 InstallPageGseimSubckt();
     void                 InstallPageSpiceModel();
 
-    void OnGseimSolveTypeChanged( wxCommandEvent& event );
+    // void OnGseimSolveTypeChanged( wxCommandEvent& event );
     void UpdateGseimControls();
 
     std::vector<GSEIM_SOLVE_BLOCK>  m_GseimSolveBlocks;

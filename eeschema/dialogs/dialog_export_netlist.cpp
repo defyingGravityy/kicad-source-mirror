@@ -971,7 +971,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimSolveTypeCtrl->Append( "ac" );
     pg->m_GseimSolveTypeCtrl->Append( "sss" );
     pg->m_GseimSolveTypeCtrl->SetSelection( 2 );
-    pg->m_GseimSolveTypeCtrl->Bind( wxEVT_CHOICE, &DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged, this );
+    // pg->m_GseimSolveTypeCtrl->Bind( wxEVT_CHOICE, &DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged, this );
     pg->m_RightBoxSizer->Add( pg->m_GseimSolveTypeCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
 
     // --- Initial Solution ---
@@ -1379,16 +1379,18 @@ void DIALOG_EXPORT_NETLIST::OnGseimRemoveOutput( wxCommandEvent& )
     if( m_GseimSelectedBlock < 0 )
         return;
 
-    GSEIM_SOLVE_BLOCK& blk =
-        m_GseimSolveBlocks[m_GseimSelectedBlock];
+    GSEIM_SOLVE_BLOCK& blk = m_GseimSolveBlocks[m_GseimSelectedBlock];
 
     if( blk.outputs.size() <= 1 )
         return;
 
     CommitGseimControls( m_GseimSelectedBlock );
 
-    blk.outputs.erase(
-        blk.outputs.begin() + m_GseimSelectedOutput );
+    std::map<wxString, wxString> savedParameters = blk.parameters;
+
+    blk.outputs.erase( blk.outputs.begin() + m_GseimSelectedOutput );
+
+    blk.parameters = savedParameters;
 
     if( m_GseimSelectedOutput >= (int) blk.outputs.size() )
         m_GseimSelectedOutput = blk.outputs.size() - 1;
@@ -1449,14 +1451,17 @@ void DIALOG_EXPORT_NETLIST::OnGseimAddOutput( wxCommandEvent& )
 
     CommitGseimControls( m_GseimSelectedBlock );
 
+    std::map<wxString, wxString> savedParameters =
+        m_GseimSolveBlocks[m_GseimSelectedBlock].parameters;
+
     GSEIM_OUTPUT_BLOCK output;
 
-    m_GseimSolveBlocks[m_GseimSelectedBlock]
-        .outputs.push_back( output );
+    m_GseimSolveBlocks[m_GseimSelectedBlock].outputs.push_back( output );
+
+    m_GseimSolveBlocks[m_GseimSelectedBlock].parameters = savedParameters;
 
     m_GseimSelectedOutput =
-        m_GseimSolveBlocks[m_GseimSelectedBlock]
-            .outputs.size() - 1;
+        m_GseimSolveBlocks[m_GseimSelectedBlock].outputs.size() - 1;
 
     RefreshGseimOutputList();
     PopulateGseimControls( m_GseimSelectedBlock );
@@ -1761,8 +1766,13 @@ void DIALOG_EXPORT_NETLIST::OnGseimControlChanged( wxCommandEvent& event )
 
     if( m_GseimSelectedBlock >= 0 )
     {
+        wxString previousSolveType = m_GseimSolveBlocks[m_GseimSelectedBlock].solveType;
+
         CommitGseimControls( m_GseimSelectedBlock );
-        ApplySolveTypePolicy( m_GseimSolveBlocks[m_GseimSelectedBlock] );
+
+        if( m_GseimSolveBlocks[m_GseimSelectedBlock].solveType != previousSolveType )
+            ApplySolveTypePolicy( m_GseimSolveBlocks[m_GseimSelectedBlock] );
+
         PopulateGseimControls( m_GseimSelectedBlock );
         RefreshGseimBlockList();
         UpdateGseimControls();
@@ -1885,19 +1895,19 @@ void DIALOG_EXPORT_NETLIST::OnGseimRemoveBlock( wxCommandEvent& event )
     UpdateGseimBlockEditor();
 }
 
-void DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged( wxCommandEvent& event )
-{
-    if( m_GseimSelectedBlock < 0 )
-        return;
+// void DIALOG_EXPORT_NETLIST::OnGseimSolveTypeChanged( wxCommandEvent& event )
+// {
+//     if( m_GseimSelectedBlock < 0 )
+//         return;
 
-    CommitGseimControls( m_GseimSelectedBlock );
+//     CommitGseimControls( m_GseimSelectedBlock );
 
-    ApplySolveTypePolicy(
-        m_GseimSolveBlocks[m_GseimSelectedBlock] );
+//     ApplySolveTypePolicy(
+//         m_GseimSolveBlocks[m_GseimSelectedBlock] );
 
-    PopulateGseimControls(
-        m_GseimSelectedBlock );
-}
+//     PopulateGseimControls(
+//         m_GseimSelectedBlock );
+// }
 
 
 void DIALOG_EXPORT_NETLIST::UpdateGseimBlockEditor()
