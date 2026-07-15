@@ -1625,32 +1625,33 @@ void DIALOG_EXPORT_NETLIST::OnGseimRemoveParameter( wxCommandEvent& event )
     if( block.solveType == "ac" )
         return;
 
-    EXPORT_NETLIST_PAGE* pg = m_PanelNetType[PANELGSEIM];
-    wxGrid* grid = pg->m_GseimParametersGrid;
-
-    wxArrayInt selectedRows = grid->GetSelectedRows();
-
-    if( selectedRows.IsEmpty() )
+    if( block.parameters.empty() )
     {
-        int cursorRow = grid->GetGridCursorRow();
-
-        if( cursorRow >= 0 )
-            selectedRows.Add( cursorRow );
-    }
-
-    if( selectedRows.IsEmpty() )
-    {
-        wxMessageBox( _( "Select a parameter row to remove." ) );
+        wxMessageBox( _( "No parameters to remove." ) );
         return;
     }
 
-    for( int row : selectedRows )
-    {
-        wxString key = grid->GetCellValue( row, 0 );
+    wxArrayString choices;
+    std::vector<wxString> keys;
 
-        if( !key.IsEmpty() )
-            block.parameters.erase( key );
+    for( const auto& [key, value] : block.parameters )
+    {
+        choices.Add( key );
+        keys.push_back( key );
     }
+
+    wxMultiChoiceDialog dlg( this, _( "Select parameters to remove" ), _( "GSEIM Parameters" ), choices );
+
+    if( dlg.ShowModal() != wxID_OK )
+        return;
+
+    wxArrayInt selections = dlg.GetSelections();
+
+    if( selections.IsEmpty() )
+        return;
+
+    for( int idx : selections )
+        block.parameters.erase( keys[idx] );
 
     PopulateGseimControls( m_GseimSelectedBlock );
 }
