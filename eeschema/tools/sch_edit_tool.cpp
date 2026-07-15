@@ -4618,18 +4618,14 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
 
 int SCH_EDIT_TOOL::RunGseimSimulation( const TOOL_EVENT& )
 {
-    wxFileDialog fileDlg( m_frame, _( "Select GSEIM Circuit" ), wxEmptyString, wxEmptyString, _( "GSEIM Files (*.cir;*.in)|*.cir;*.in" ), wxFD_OPEN | wxFD_FILE_MUST_EXIST );
+    wxFileDialog fileDlg( m_frame, _( "Select GSEIM Circuit" ), wxEmptyString, wxEmptyString,
+                           _( "GSEIM Files (*.cir;*.in)|*.cir;*.in" ), wxFD_OPEN | wxFD_FILE_MUST_EXIST );
 
     if( fileDlg.ShowModal() != wxID_OK )
         return 0;
 
-    wxDirDialog dirDlg( m_frame, _( "Select Output Directory" ) );
-
-    if( dirDlg.ShowModal() != wxID_OK )
-        return 0;
-
     wxFileName circuitFile( fileDlg.GetPath() );
-    wxString outputDir = dirDlg.GetPath();
+    wxString outputDir = circuitFile.GetPath();
 
     wxTextFile netlist;
 
@@ -4678,7 +4674,7 @@ int SCH_EDIT_TOOL::RunGseimSimulation( const TOOL_EVENT& )
     wxArrayString errors;
 
     long result = wxExecute( command, output, errors, wxEXEC_SYNC, &env );
-    // long result = wxExecute( command, wxEXEC_SYNC, nullptr, &env );
+
     for( const wxString& line : output )
         wxLogMessage( "%s", line );
 
