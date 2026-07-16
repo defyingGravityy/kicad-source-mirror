@@ -252,16 +252,25 @@ bool NETLIST_EXPORTER_GSEIM::ExportXbeElement( const SPICE_ITEM& aItem,
 
     bool any = false;
 
-    for( const auto& [name, param] : aXbeInfo.rparms )
+    auto emitOverridesFrom = [&]( const auto& paramMap )
     {
-        auto it = overrides.find( name );
-
-        if( it != overrides.end() )
+        for( const auto& [name, param] : paramMap )
         {
-            if( !any ) { aFormatter.Print( 0, "+   " ); any = true; }
-            aFormatter.Print( 0, " %s=%s", TO_UTF8( name ), TO_UTF8( it->second ) );
+            auto it = overrides.find( name );
+
+            if( it != overrides.end() )
+            {
+                if( !any ) { aFormatter.Print( 0, "+   " ); any = true; }
+                aFormatter.Print( 0, " %s=%s", TO_UTF8( name ), TO_UTF8( it->second ) );
+            }
         }
-    }
+    };
+
+    emitOverridesFrom( aXbeInfo.rparms );
+    emitOverridesFrom( aXbeInfo.iparms );
+    emitOverridesFrom( aXbeInfo.sparms );
+    emitOverridesFrom( aXbeInfo.stparms );
+    emitOverridesFrom( aXbeInfo.igparms );
 
     if( any )
         aFormatter.Print( 0, "\n" );
