@@ -204,11 +204,11 @@ public:
 
     wxChoice*         m_GseimSolveTypeCtrl;
     wxChoice*         m_GseimInitialSolCtrl;
-    // wxChoice*         m_GseimAlgorithmCtrl;
-    // wxTextCtrl*       m_GseimTStartCtrl;
-    // wxTextCtrl*       m_GseimTEndCtrl;
-    // wxTextCtrl*       m_GseimDeltCtrl;
-    wxTextCtrl*       m_GseimOutputFileCtrl;
+
+    wxTextCtrl* m_GseimOutputFileCtrl;
+    wxTextCtrl* m_GseimLimitLinesCtrl = nullptr;
+    wxTextCtrl* m_GseimAppendCtrl = nullptr;
+    wxGrid*     m_GseimOutputControlsGrid = nullptr;
     wxGrid* m_GseimOutvarsGrid = nullptr;
 
     wxButton* m_GseimAddParameterBtn = nullptr;
@@ -1001,6 +1001,37 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimOutputFileCtrl = new wxTextCtrl( pg, wxID_ANY, "output_file.dat" );
     pg->m_RightBoxSizer->Add( pg->m_GseimOutputFileCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
 
+    wxStaticText* limitLinesLabel = new wxStaticText( pg, wxID_ANY, _( "Limit Lines" ) );
+    pg->m_RightBoxSizer->Add( limitLinesLabel, 0, wxBOTTOM, 3 );
+    pg->m_GseimLimitLinesCtrl = new wxTextCtrl( pg, wxID_ANY, wxEmptyString );
+    pg->m_RightBoxSizer->Add( pg->m_GseimLimitLinesCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
+
+    wxStaticText* appendLabel = new wxStaticText( pg, wxID_ANY, _( "Append" ) );
+    pg->m_RightBoxSizer->Add( appendLabel, 0, wxBOTTOM, 3 );
+    pg->m_GseimAppendCtrl = new wxTextCtrl( pg, wxID_ANY, wxEmptyString );
+    pg->m_RightBoxSizer->Add( pg->m_GseimAppendCtrl, 0, wxEXPAND | wxBOTTOM, 8 );
+
+    wxStaticText* controlsLabel = new wxStaticText( pg, wxID_ANY, _( "Output Controls" ) );
+    pg->m_RightBoxSizer->Add( controlsLabel, 0, wxBOTTOM, 3 );
+    pg->m_GseimOutputControlsGrid = new wxGrid( pg, wxID_ANY );
+    pg->m_GseimOutputControlsGrid->CreateGrid( 6, 2 );
+    pg->m_GseimOutputControlsGrid->SetColLabelValue( 0, "Control" );
+    pg->m_GseimOutputControlsGrid->SetColLabelValue( 1, "Value" );
+    pg->m_GseimOutputControlsGrid->SetRowLabelSize( 0 );
+    pg->m_GseimOutputControlsGrid->SetColSize( 0, 110 );
+    pg->m_GseimOutputControlsGrid->SetColSize( 1, 140 );
+    {
+        static const wxString controlKeys[6] =
+            { "out_tstart", "out_tend", "fixed_interval", "min_phase", "max_phase", "delta_phase" };
+
+        for( int i = 0; i < 6; ++i )
+        {
+            pg->m_GseimOutputControlsGrid->SetCellValue( i, 0, controlKeys[i] );
+            pg->m_GseimOutputControlsGrid->SetReadOnly( i, 0, true );
+        }
+    }
+    pg->m_RightBoxSizer->Add( pg->m_GseimOutputControlsGrid, 0, wxEXPAND | wxBOTTOM, 8 );
+
 
     // --- Add Parameter button ---
     m_GseimParameterDb.Load( GetGseimSolverParameterPath() );
@@ -1050,7 +1081,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimOutvarsLabel = new wxStaticText( pg, wxID_ANY, _( "Output Variables:" ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsLabel, 0, wxBOTTOM, 5 );
 
-    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 120 ) );
+    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 300 ) );
     pg->m_GseimOutvarsGrid->CreateGrid( 0, 4 );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 0, "" );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 1, "Variable" );
@@ -1059,7 +1090,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     pg->m_GseimOutvarsGrid->SetRowLabelSize( 0 );
     pg->m_GseimOutvarsGrid->HideCol( 3 );
     // pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
-    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 0, wxEXPAND | wxBOTTOM, 5 );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 1, wxEXPAND | wxBOTTOM, 5 );
     pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_LEFT_CLICK, [this]( wxGridEvent& event )
     {
         EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIM];
@@ -1138,6 +1169,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseim()
     if( m_GseimSelectedBlock >= 0 )
         PopulateGseimControls( m_GseimSelectedBlock );
     PopulateGseimOutvars( pg );
+    m_MessagesBox->Hide();
     UpdateGseimControls();
 }
 
@@ -1192,7 +1224,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     pg->m_GseimOutvarsLabel = new wxStaticText( pg, wxID_ANY, _( "Output Variables:" ) );
     pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsLabel, 0, wxBOTTOM, 5 );
 
-    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 120 ) );
+    pg->m_GseimOutvarsGrid = new wxGrid( pg, wxID_ANY, wxDefaultPosition, wxSize( 360, 300 ) );
     pg->m_GseimOutvarsGrid->CreateGrid( 0, 4 );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 0, "" );
     pg->m_GseimOutvarsGrid->SetColLabelValue( 1, "Variable" );
@@ -1201,7 +1233,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
     pg->m_GseimOutvarsGrid->SetRowLabelSize( 0 );
     pg->m_GseimOutvarsGrid->HideCol( 3 );
     // pg->m_GseimOutvarsGrid->SetMinSize( wxSize( -1, 220 ) );
-    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 0, wxEXPAND | wxBOTTOM, 5 );
+    pg->m_RightOptionsBoxSizer->Add( pg->m_GseimOutvarsGrid, 1, wxEXPAND | wxBOTTOM, 5 );
     pg->m_GseimOutvarsGrid->Bind( wxEVT_GRID_CELL_LEFT_CLICK, [this]( wxGridEvent& event )
     {
         EXPORT_NETLIST_PAGE* gseimPg = m_PanelNetType[PANELGSEIMSUBCKT];
@@ -1264,6 +1296,7 @@ void DIALOG_EXPORT_NETLIST::InstallPageGseimSubckt()
 
     PopulateGseimSubcktParameters();
     PopulateGseimOutvars( pg );
+    m_MessagesBox->Hide();
 }
 
 void DIALOG_EXPORT_NETLIST::PopulateGseimSubcktParameters()
@@ -1682,6 +1715,15 @@ void DIALOG_EXPORT_NETLIST::PopulateGseimControls( int index )
     setChoice( pg->m_GseimSolveTypeCtrl,  blk.solveType  );
     setChoice( pg->m_GseimInitialSolCtrl, blk.initialSol );
     pg->m_GseimOutputFileCtrl->ChangeValue( output.outputFile );
+    pg->m_GseimLimitLinesCtrl->ChangeValue( output.limitLines );
+    pg->m_GseimAppendCtrl->ChangeValue( output.append );
+
+    for( int row = 0; row < pg->m_GseimOutputControlsGrid->GetNumberRows(); ++row )
+    {
+        wxString key = pg->m_GseimOutputControlsGrid->GetCellValue( row, 0 );
+        auto it = output.controls.find( key );
+        pg->m_GseimOutputControlsGrid->SetCellValue( row, 1, it != output.controls.end() ? it->second : wxString() );
+    }
 
     wxGrid* grid = pg->m_GseimOutvarsGrid;
     std::unordered_set<wxString> checked( output.outputVars.begin(), output.outputVars.end() );
@@ -1732,6 +1774,19 @@ void DIALOG_EXPORT_NETLIST::CommitGseimControls( int index )
     blk.initialSol = pg->m_GseimInitialSolCtrl->GetStringSelection();
     GSEIM_OUTPUT_BLOCK& output = blk.outputs[m_GseimSelectedOutput];
     output.outputFile = pg->m_GseimOutputFileCtrl->GetValue();
+    output.limitLines = pg->m_GseimLimitLinesCtrl->GetValue();
+    output.append = pg->m_GseimAppendCtrl->GetValue();
+
+    output.controls.clear();
+    for( int row = 0; row < pg->m_GseimOutputControlsGrid->GetNumberRows(); ++row )
+    {
+        wxString key   = pg->m_GseimOutputControlsGrid->GetCellValue( row, 0 );
+        wxString value = pg->m_GseimOutputControlsGrid->GetCellValue( row, 1 );
+        value.Trim( true ).Trim( false );
+
+        if( !key.IsEmpty() && !value.IsEmpty() )
+            output.controls[key] = value;
+    }
 
     wxGrid* grid = pg->m_GseimParametersGrid;
     blk.parameters.clear();
@@ -1945,6 +2000,13 @@ void DIALOG_EXPORT_NETLIST::UpdateGseimControls()
 
     pg->m_GseimOutputLabel->Show( hasOutput );
     pg->m_GseimOutputFileCtrl->Show( hasOutput );
+
+    if( pg->m_GseimLimitLinesCtrl )
+        pg->m_GseimLimitLinesCtrl->Show( hasOutput );
+    if( pg->m_GseimAppendCtrl )
+        pg->m_GseimAppendCtrl->Show( hasOutput );
+    if( pg->m_GseimOutputControlsGrid )
+        pg->m_GseimOutputControlsGrid->Show( hasOutput );
 
     pg->m_GseimOutvarsLabel->Show( hasOutput );
     pg->m_GseimOutvarsGrid->Show( hasOutput );
@@ -2160,7 +2222,27 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
             for( const auto& output : block.outputs )
             {
                 solveText += "   begin_output\n";
-                solveText += "      filename=" + output.outputFile + "\n";
+
+                wxString filenameLine = "      filename=" + output.outputFile;
+
+                if( !output.limitLines.IsEmpty() )
+                    filenameLine += " limit_lines=" + output.limitLines;
+
+                if( !output.append.IsEmpty() )
+                    filenameLine += " append=" + output.append;
+
+                solveText += filenameLine + "\n";
+
+                static const wxString controlOrder[6] =
+                    { "out_tstart", "out_tend", "fixed_interval", "min_phase", "max_phase", "delta_phase" };
+
+                for( const wxString& key : controlOrder )
+                {
+                    auto it = output.controls.find( key );
+
+                    if( it != output.controls.end() && !it->second.IsEmpty() )
+                        solveText += "      control: " + key + "=" + it->second + "\n";
+                }
 
                 if( !output.outputVars.empty() )
                 {
@@ -2175,6 +2257,7 @@ bool DIALOG_EXPORT_NETLIST::TransferDataFromWindow()
 
                         if( it != origToRenamed.end() && !it->second.IsEmpty() )
                             display = it->second;
+
                         wxString token = ( line.Length() > 10 ? " " : "" ) + display;
 
                         if( line.Length() + token.Length() > 60 )

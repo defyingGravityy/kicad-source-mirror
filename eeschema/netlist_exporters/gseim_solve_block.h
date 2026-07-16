@@ -6,6 +6,9 @@
 struct GSEIM_OUTPUT_BLOCK
 {
     wxString outputFile;
+    wxString limitLines;
+    wxString append;
+    std::map<wxString, wxString> controls;   // out_tstart, out_tend, fixed_interval, min_phase, max_phase, delta_phase
     std::vector<wxString> outputVars;
 
     GSEIM_OUTPUT_BLOCK() :
