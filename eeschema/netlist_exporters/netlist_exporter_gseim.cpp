@@ -89,21 +89,6 @@ wxString GetFieldValue( const SPICE_ITEM& aItem, const wxString& aFieldName )
     return wxEmptyString;
 }
 
-wxString MakeOutvarName( const wxString& aNet )
-{
-    wxString name = aNet.Upper();
-
-    for( size_t i = 0; i < name.Length(); ++i )
-    {
-        wxChar c = name[i];
-
-        if( !( wxIsalnum( c ) || c == '_' ) )
-            name[i] = '_';
-    }
-
-    return "V" + name;
-}
-
 wxString GetNetForXbeVar( const SPICE_ITEM& aItem, const GSEIM_XBE_INFO& aXbeInfo,
                            const wxString& aVarName )
 {
@@ -226,54 +211,67 @@ bool NETLIST_EXPORTER_GSEIM::ExportXbeElement( const SPICE_ITEM& aItem,
     wxString paramText = GetFieldValue( aItem, "Gseim.Params" );
     std::map<wxString, wxString> overrides = ParseGseimParams( paramText );
 
-    aFormatter.Print( 0, "   xelement name=%s type=%s", aItem.refName.c_str(), TO_UTF8( aXbeInfo.name ) );
+    std::vector<wxString> tokens;
 
-    auto emitVar = [&]( const wxString& varName )
+    auto addVar = [&]( const wxString& varName )
     {
         wxString val = GetNetForXbeVar( aItem, aXbeInfo, varName );
 
         if( val.IsEmpty() )
         {
             auto it = overrides.find( varName );
+
             if( it != overrides.end() )
                 val = it->second;
         }
 
-        aFormatter.Print( 0, " %s=%s", TO_UTF8( varName ), TO_UTF8( val ) );
+        tokens.push_back( varName + "=" + val );
     };
 
     for( const wxString& v : aXbeInfo.input_vars )
-        emitVar( v );
+        addVar( v );
 
     for( const wxString& v : aXbeInfo.output_vars )
-        emitVar( v );
+        addVar( v );
 
-    aFormatter.Print( 0, "\n" );
-
-    bool any = false;
-
-    auto emitOverridesFrom = [&]( const auto& paramMap )
+    auto addOverridesFrom = [&]( const auto& paramMap )
     {
         for( const auto& [name, param] : paramMap )
         {
             auto it = overrides.find( name );
 
             if( it != overrides.end() )
-            {
-                if( !any ) { aFormatter.Print( 0, "+   " ); any = true; }
-                aFormatter.Print( 0, " %s=%s", TO_UTF8( name ), TO_UTF8( it->second ) );
-            }
+                tokens.push_back( name + "=" + it->second );
         }
     };
 
-    emitOverridesFrom( aXbeInfo.rparms );
-    emitOverridesFrom( aXbeInfo.iparms );
-    emitOverridesFrom( aXbeInfo.sparms );
-    emitOverridesFrom( aXbeInfo.stparms );
-    emitOverridesFrom( aXbeInfo.igparms );
+    addOverridesFrom( aXbeInfo.rparms );
+    addOverridesFrom( aXbeInfo.iparms );
+    addOverridesFrom( aXbeInfo.sparms );
+    addOverridesFrom( aXbeInfo.stparms );
+    addOverridesFrom( aXbeInfo.igparms );
 
-    if( any )
-        aFormatter.Print( 0, "\n" );
+    wxString header;
+    header << "   xelement name=" << aItem.refName.c_str() << " type=" << aXbeInfo.name;
+
+    wxString line = header;
+
+    for( const wxString& token : tokens )
+    {
+        wxString candidate = " " + token;
+
+        if( line.Length() + candidate.Length() > 60 )
+        {
+            aFormatter.Print( 0, "%s\n", TO_UTF8( line ) );
+            line = "+    " + token;
+        }
+        else
+        {
+            line += candidate;
+        }
+    }
+
+    aFormatter.Print( 0, "%s\n", TO_UTF8( line ) );
 
     return true;
 }
@@ -718,8 +716,7 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
 
             std::map<wxString, wxString> params = ParseGseimParams( paramText );
 
-            formatter.Print( 0, "   eelement name=%s type=%s",
-                item.refName.c_str(), TO_UTF8( gseimType ) );
+            std::vector<wxString> tokens;
 
             int pinNumber = 1;
             for( const wxString& nodeName : info->nodes )
@@ -730,7 +727,7 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
                 if( net != "0" )
                     m_outvars.insert( net );
 
-                formatter.Print( 0, " %s=%s", TO_UTF8( nodeName ), TO_UTF8( net ) );
+                tokens.push_back( nodeName + "=" + net );
                 ++pinNumber;
             }
 
@@ -745,7 +742,7 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
                         val = it->second;
                 }
 
-                formatter.Print( 0, " %s=%s", TO_UTF8( varName ), TO_UTF8( val ) );
+                tokens.push_back( varName + "=" + val );
             }
 
             for( const auto& p : params )
@@ -753,10 +750,30 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
                 if( std::find( info->xVars.begin(), info->xVars.end(), p.first ) != info->xVars.end() )
                     continue;
 
-                formatter.Print( 0, " %s=%s", TO_UTF8( p.first ), TO_UTF8( p.second ) );
+                tokens.push_back( p.first + "=" + p.second );
             }
 
-            formatter.Print( 0, "\n" );
+            wxString header;
+            header << "   eelement name=" << item.refName.c_str() << " type=" << TO_UTF8( gseimType );
+
+            wxString line = header;
+
+            for( const wxString& token : tokens )
+            {
+                wxString candidate = " " + token;
+
+                if( line.Length() + candidate.Length() > 60 )
+                {
+                    formatter.Print( 0, "%s\n", TO_UTF8( line ) );
+                    line = "+    " + token;
+                }
+                else
+                {
+                    line += candidate;
+                }
+            }
+
+            formatter.Print( 0, "%s\n", TO_UTF8( line ) );
             continue;
         }
 
