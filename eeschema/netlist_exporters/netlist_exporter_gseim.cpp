@@ -49,6 +49,46 @@ wxString NetNameToGseim( const std::string& aNetName )
 }
 
 
+wxString GetNetForPin( const SPICE_ITEM& aItem, const std::string& aPinNumber )
+{
+    for( size_t ii = 0; ii < aItem.pinNumbers.size() && ii < aItem.pinNetNames.size(); ++ii )
+    {
+        if( aItem.pinNumbers[ii] == aPinNumber )
+            return NetNameToGseim( aItem.pinNetNames[ii] );
+    }
+
+    return wxEmptyString;
+}
+
+
+wxString GetNetForPinName( const SPICE_ITEM& aItem, const wxString& aPinName )
+{
+    SCH_SCREEN* screen = aItem.sheetPath.LastScreen();
+
+    if( !screen )
+        return wxEmptyString;
+
+    wxString targetRef( aItem.refName );
+
+    for( SCH_ITEM* schItem : screen->Items().OfType( SCH_SYMBOL_T ) )
+    {
+        SCH_SYMBOL* sym = static_cast<SCH_SYMBOL*>( schItem );
+
+        if( sym->GetRef( &aItem.sheetPath ) != targetRef )
+            continue;
+
+        for( SCH_PIN* pin : sym->GetPins( &aItem.sheetPath ) )
+        {
+            if( pin->GetName() == aPinName )
+                return GetNetForPin( aItem, pin->GetNumber().ToStdString() );
+        }
+
+        break;
+    }
+
+    return wxEmptyString;
+}
+
 std::string GetParamValue( const SPICE_ITEM& aItem, const std::string& aParamName )
 {
     if( !aItem.model )
@@ -64,19 +104,6 @@ std::string GetParamValue( const SPICE_ITEM& aItem, const std::string& aParamNam
 
     return "";
 }
-
-
-wxString GetNetForPin( const SPICE_ITEM& aItem, const std::string& aPinNumber )
-{
-    for( size_t ii = 0; ii < aItem.pinNumbers.size() && ii < aItem.pinNetNames.size(); ++ii )
-    {
-        if( aItem.pinNumbers[ii] == aPinNumber )
-            return NetNameToGseim( aItem.pinNetNames[ii] );
-    }
-
-    return wxEmptyString;
-}
-
 
 wxString GetFieldValue( const SPICE_ITEM& aItem, const wxString& aFieldName )
 {
@@ -385,27 +412,32 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         continue;
     }
 
-    const GSEIM_XBE_INFO* xbeInfo =
-        GSEIM_XBE_DATABASE::Instance().Find( gseimType );
+    const GSEIM_XBE_INFO* xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
 
-    if( !xbeInfo )
-        continue;
+        if( !xbeInfo )
+            continue;
 
-    for( const wxString& x : xbeInfo->input_vars )
-        xVars.insert( x );
+        for( const wxString& x : xbeInfo->input_vars )
+            xVars.insert( x );
 
-    for( const wxString& x : xbeInfo->output_vars )
-        xVars.insert( x );
+        for( const wxString& x : xbeInfo->output_vars )
+            xVars.insert( x );
 
-        int pinNumber = 1;
+        std::vector<wxString> vars;
+        vars.insert( vars.end(),
+                    xbeInfo->input_vars.begin(),
+                    xbeInfo->input_vars.end() );
+        vars.insert( vars.end(),
+                    xbeInfo->output_vars.begin(),
+                    xbeInfo->output_vars.end() );
 
-        for( const wxString& nodeName : info->nodes )
+        for( const wxString& varName : vars )
         {
             wxString net;
 
             for( SCH_PIN* pin : sym->GetPins( &path ) )
             {
-                if( pin->GetNumber() == wxString::Format( "%d", pinNumber ) )
+                if( pin->GetName() == varName )
                 {
                     SCH_CONNECTION* conn = pin->Connection( &path );
 
@@ -421,8 +453,6 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
             {
                 auxNodes.insert( net );
             }
-
-            ++pinNumber;
         }
     }
 
@@ -540,18 +570,19 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         formatter.Print( 0, "  ebe name=%s type=%s",
             TO_UTF8( sym->GetRef( &path ) ), TO_UTF8( gseimType ) );
 
-        int pinNumber = 1;
         for( const wxString& nodeName : info->nodes )
         {
             wxString net;
 
             for( SCH_PIN* pin : sym->GetPins( &path ) )
             {
-                if( pin->GetNumber() == wxString::Format( "%d", pinNumber ) )
+                if( pin->GetName() == nodeName )
                 {
                     SCH_CONNECTION* conn = pin->Connection( &path );
+
                     if( conn )
                         net = conn->Name( true );
+
                     break;
                 }
             }
@@ -560,7 +591,6 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
                 net = "0";
 
             formatter.Print( 0, " %s=%s", TO_UTF8( nodeName ), TO_UTF8( net ) );
-            ++pinNumber;
         }
 
         for( const auto& p : params )
@@ -758,18 +788,15 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
                     formatter.Print( 0, "   subckt name=%s type=%s\n", item.refName.c_str(), TO_UTF8( gseimType ) );
 
                     wxString portsLine = "+   ";
-                    int subPinNumber = 1;
 
                     for( const wxString& nodeName : subInfo->nodes )
                     {
-                        wxString net = NormalizeNet(
-                            GetNetForPin( item, std::to_string( subPinNumber ) ), groundNets );
+                        wxString net = NormalizeNet( GetNetForPinName( item, nodeName ), groundNets );
 
                         if( net != "0" )
                             m_outvars.insert( net );
 
                         portsLine += " " + nodeName + "=" + net;
-                        ++subPinNumber;
                     }
 
                     formatter.Print( 0, "%s\n", TO_UTF8( portsLine ) );
@@ -815,11 +842,10 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
 
             std::vector<wxString> tokens;
 
-            int pinNumber = 1;
+            int pinNumber=1;
             for( const wxString& nodeName : info->nodes )
             {
-                wxString net = NormalizeNet(
-                    GetNetForPin( item, std::to_string( pinNumber ) ), groundNets );
+                wxString net = NormalizeNet( GetNetForPin( item, std::to_string( pinNumber ) ), groundNets );
 
                 if( net != "0" )
                     m_outvars.insert( net );
