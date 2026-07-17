@@ -1,5 +1,0 @@
-(version 1)
-(rule physical_clearance
-	(constraint physical_clearance (min 20mm))
-	(condition "A.NetName == '/A'")
-)

@@ -1,5 +1,0 @@
-(version 1)
-
-(rule "DP uncoupled"
-	(constraint diff_pair_uncoupled (max 5mm))
-	(condition "A.inDiffPair('*')"))

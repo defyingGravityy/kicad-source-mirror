@@ -1,5 +1,0 @@
-pytest
-cairosvg
-pytest-image-diff
-pydantic
-numpy

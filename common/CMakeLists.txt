@@ -997,159 +997,6 @@ target_include_directories( common SYSTEM PUBLIC
     $<TARGET_PROPERTY:nanodbc,INTERFACE_INCLUDE_DIRECTORIES>
     )
 
-set( PCB_COMMON_SRCS
-    hash_eda.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_base_frame.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcbexpr_evaluator.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcbexpr_functions.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board_commit.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board_connected_item.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board_design_settings.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/teardrop/teardrop_parameters.cpp     #needed by board_design_settings.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/router/pns_meander.cpp               #needed by board_design_settings.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board_exchange_footprint.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board_text_var_adapter.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/component_classes/component_class.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/component_classes/component_class_assignment_rule.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/component_classes/component_class_cache_proxy.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/component_classes/component_class_manager.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board_item.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_barcode.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_dimension.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_shape.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_group.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_marker.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/footprint.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/footprint_utils.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/footprint_library_adapter.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/fix_board_shape.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/layer_utils.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/netinfo_item.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/netinfo_list.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pad.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pad_utils.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/padstack.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_point.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_target.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_reference_image.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_field.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_table.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_tablecell.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_text.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_textbox.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/project_pcb.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/board_stackup_manager/board_stackup.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_track.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_generator.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/zone.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/zone_utils.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/collectors.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/connectivity/connectivity_algo.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/connectivity/connectivity_items.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/connectivity/connectivity_data.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/connectivity/from_to_cache.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/convert_shape_list_to_polygon.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/drc/drc_engine.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/drc/drc_cache_generator.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/drc/drc_item.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/drc/drc_rule.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/drc/drc_rule_condition.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/drc/drc_rule_parser.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/drc/drc_test_provider.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/footprint_editor_settings.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/generators_mgr.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/kicad_clipboard.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/netlist_reader/kicad_netlist_reader.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/netlist_reader/legacy_netlist_reader.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/netlist_reader/netlist_reader.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_draw_panel_gal.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/netlist_reader/pcb_netlist.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_origin_transforms.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_painter.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_plot_params.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_screen.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_view.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcbnew_settings.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/ratsnest/ratsnest_data.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/ratsnest/ratsnest_view_item.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/sel_layer.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/teardrop/teardrop.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/teardrop/teardrop_parameters.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/teardrop/teardrop_utils.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/zone_settings.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_board_outline.cpp
-
-    # IO files
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/pcb_io.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/pcb_io_mgr.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/kicad_legacy/pcb_io_kicad_legacy.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/kicad_sexpr/pcb_io_kicad_sexpr.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/kicad_sexpr/pcb_io_kicad_sexpr_parser.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/eagle/pcb_io_eagle.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/eagle/eagle_bin_parser.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/pcb_io/geda/pcb_io_geda.cpp
-
-    ${CMAKE_SOURCE_DIR}/pcbnew/tools/pcb_grid_helper.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/tools/pcb_actions.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/tools/pcb_editor_conditions.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/tools/pcb_viewer_tools.cpp
-
-    ${CMAKE_SOURCE_DIR}/pcbnew/length_delay_calculation/length_delay_calculation.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/length_delay_calculation/length_delay_calculation_item.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/length_delay_calculation/tuning_profile_parameters_user_defined.cpp
-
-    widgets/net_selector.cpp
-    widgets/netclass_selector.cpp
-    widgets/area_selector.cpp
-)
-
-set( PCB_COMMON_SRCS
-    ${PCB_COMMON_SRCS}
-    ${CMAKE_SOURCE_DIR}/pcbnew/api/api_pcb_enums.cpp
-    ${CMAKE_SOURCE_DIR}/pcbnew/api/api_pcb_utils.cpp
-)
-
-add_library( pcbcommon STATIC ${PCB_COMMON_SRCS} )
-
-if( KICAD_USE_PCH )
-    target_precompile_headers( pcbcommon
-        PRIVATE
-            <vector>
-            <map>
-            <memory>
-            <unordered_map>
-            <board.h>
-            <footprint.h>
-            <zone.h>
-            <connectivity/connectivity_data.h>
-            <drc/drc_engine.h> )
-endif()
-
-target_compile_definitions(pcbcommon PRIVATE PCBNEW)
-
-target_include_directories( pcbcommon PRIVATE
-    )
-
-target_link_libraries( pcbcommon PUBLIC
-    core
-    common
-    delaunator
-    kimath
-    kiplatform
-    nanoflann
-    zint
-)
-
-if( APPLE OR NOT UNIX )
-    # On Windows/MacOS, the SpaceMouse support is provided by the navlib subdirectory
-    message( STATUS "Including 3Dconnexion SpaceMouse navigation support in pcbcommon" )
-    add_subdirectory( ../pcbnew/navlib ./navlib)
-    target_link_libraries( pcbcommon PUBLIC pcbnew_navlib)
-endif()
-
-add_dependencies( pcbcommon delaunator )
-
 # The lemon grammar for the numeric evaluator
 generate_lemon_grammar(
     kicommon
@@ -1198,15 +1045,6 @@ make_lexer_export(
     kicommon.h
     )
 
-# auto-generate pcb_plot_params_lexer.h and pcb_plot_params_keywords.cpp
-make_lexer(
-    pcbcommon
-    pcb_plot_params.keywords
-    pcb_plot_params_lexer.h
-    pcb_plot_params_keywords.cpp
-    PCBPLOTPARAMS_T
-    )
-
 # auto-generate drc_rules_lexer.h and drc_rules_keywords.cpp
 make_lexer_export(
     kicommon
@@ -1218,15 +1056,6 @@ make_lexer_export(
     kicommon.h
     )
 
-
-# auto-generate pcbnew_sexpr.h and pcbnew_sexpr.cpp
-make_lexer(
-    pcbcommon
-    pcb.keywords
-    pcb_lexer.h
-    pcb_keywords.cpp
-    PCB_KEYS_T
-    )
 
 # auto-generate s-expression library table code.
 make_lexer_export(

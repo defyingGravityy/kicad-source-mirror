@@ -1,8 +1,0 @@
-# Python virtual environments (uv and venv)
-.venv/
-venv/
-env/
-
-# Python distribution
-*.egg-info/
-dist/
