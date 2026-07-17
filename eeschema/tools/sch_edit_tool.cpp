@@ -656,15 +656,6 @@ bool SCH_EDIT_TOOL::Init()
                 }
             };
 
-    // auto isGseimSymbol = []( const SELECTION& sel ) {
-    //     if( sel.Size() != 1 )
-    //         return false;
-    //     SCH_SYMBOL* sym = dynamic_cast<SCH_SYMBOL*>( sel.Front() );
-    //     if( !sym )
-    //         return false;
-    //     return sym->GetField( wxT( "Gseim.Type" ) ) != nullptr;
-    // };
-
     auto isGseimSymbol = []( const SELECTION& sel )
     {
         if( sel.Size() != 1 )
@@ -673,13 +664,6 @@ bool SCH_EDIT_TOOL::Init()
         if( SCH_SYMBOL* sym = dynamic_cast<SCH_SYMBOL*>( sel.Front() ) )
             return sym->GetField( "Gseim.Type" ) != nullptr;
 
-        if( SCH_SHEET* sheet = dynamic_cast<SCH_SHEET*>( sel.Front() ) )
-        {
-            GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
-            wxFileName fn( sheet->GetFileName() );
-            return GSEIM_SUBCKT_DATABASE::Instance().Find( fn.GetName() ) != nullptr;
-        }
-
         return false;
     };
 
@@ -687,12 +671,20 @@ bool SCH_EDIT_TOOL::Init()
     {
         if( sel.Size() != 1 )
             return false;
-        SCH_SHEET* sheet = dynamic_cast<SCH_SHEET*>( sel.Front() );
 
-        if( !sheet )
+        SCH_SYMBOL* sym = dynamic_cast<SCH_SYMBOL*>( sel.Front() );
+
+        if( !sym )
             return false;
 
-        return !sheet->GetFileName().IsEmpty();
+        SCH_FIELD* typeField = sym->GetField( "Gseim.Type" );
+
+        if( !typeField || typeField->GetText().IsEmpty() )
+            return false;
+
+        GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
+
+        return GSEIM_SUBCKT_DATABASE::Instance().Find( typeField->GetText() ) != nullptr;
     };
 
     auto autoplaceCondition =
@@ -3959,11 +3951,6 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
     for( const wxString& v : available )
         availableArr.Add( v );
 
-    // wxString stored;
-    // SCH_FIELD* outVarsField = symbol->GetField( wxT( "Gseim.OutVars" ) );
-    // if( outVarsField )
-    //     stored = outVarsField->GetText();
-
     bool isSubckt = sheet.size() > 1;
     wxString stored = isSubckt ? symbol->GetGseimOutVarsForPath( sheet.Path() )
                                 : ( symbol->GetField( wxT( "Gseim.OutVars" ) )
@@ -4000,23 +3987,6 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
         newStored += available[ chosen[i] ];
     }
 
-    // SCH_COMMIT commit( m_toolMgr );
-    // commit.Modify( symbol, m_frame->GetScreen() );
-
-    // if( outVarsField )
-    // {
-    //     outVarsField->SetText( newStored );
-    // }
-    // else
-    // {
-    //     SCH_FIELD newField( symbol, FIELD_T::USER, wxT( "Gseim.OutVars" ) );
-    //     newField.SetText( newStored );
-    //     newField.SetVisible( false );
-    //     symbol->AddField( newField );
-    // }
-
-    // commit.Push( _( "Set GSEIM Output Variables (ebe)" ) );
-
     SCH_COMMIT commit( m_toolMgr );
     commit.Modify( symbol, m_frame->GetScreen() );
 
@@ -4048,61 +4018,90 @@ int SCH_EDIT_TOOL::SelectGseimOutvars( const TOOL_EVENT& aEvent )
 
 int SCH_EDIT_TOOL::SelectGseimSubcktOutvars( const TOOL_EVENT& aEvent )
 {
-    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SHEET_T } );
+    SCH_SELECTION& selection = m_selectionTool->RequestSelection( { SCH_SYMBOL_T } );
+
     if( selection.Empty() )
         return 0;
 
-    SCH_SHEET* sheet = dynamic_cast<SCH_SHEET*>( selection.Front() );
-    if( !sheet )
+    SCH_SYMBOL* symbol = dynamic_cast<SCH_SYMBOL*>( selection.Front() );
+
+    if( !symbol )
         return 0;
 
-    wxString instanceName = sheet->GetName();
+    SCH_FIELD* typeField = symbol->GetField( "Gseim.Type" );
+
+    if( !typeField )
+        return 0;
+
+    wxString gseimType = typeField->GetText();
+
+    GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
+
+    const GSEIM_COMPONENT_INFO* info =
+        GSEIM_SUBCKT_DATABASE::Instance().Find( gseimType );
+
+    if( !info )
+    {
+        wxMessageBox(
+            wxString::Format( _( "No GSEIM subcircuit found for '%s'." ), gseimType ),
+            _( "GSEIM" ),
+            wxOK | wxICON_WARNING );
+
+        return 0;
+    }
+
+    const SCH_SHEET_PATH& sheet = m_frame->GetCurrentSheet();
+    wxString refName = symbol->GetRef( &sheet );
 
     std::vector<wxString> available;
 
-    for( SCH_SHEET_PIN* pin : sheet->GetPins() )
+    for( const auto& outvar : info->outvars )
     {
-        if( pin->GetShape() != LABEL_FLAG_SHAPE::L_OUTPUT )
-            continue;
-
-        wxString name = pin->GetText();
-
-        if( !name.IsEmpty()
-            && std::find( available.begin(), available.end(), name ) == available.end() )
-        {
-            available.push_back( name );
-        }
+        if( std::find( available.begin(), available.end(), outvar.name ) == available.end() )
+            available.push_back( outvar.name );
     }
 
     if( available.empty() )
     {
-        wxMessageBox( _( "No output-type hierarchical pins found on this subcircuit." ),
-                      _( "GSEIM" ), wxOK | wxICON_INFORMATION );
+        wxMessageBox(
+            _( "No output variables available for this subcircuit." ),
+            _( "GSEIM" ),
+            wxOK | wxICON_INFORMATION );
+
         return 0;
     }
 
     wxArrayString availableArr;
+
     for( const wxString& v : available )
         availableArr.Add( v );
 
-    wxString stored = sheet->GetGseimSubcktOutVars();
+    wxString stored;
+    SCH_FIELD* outVarsField = symbol->GetField( "Gseim.OutVars" );
+
+    if( outVarsField )
+        stored = outVarsField->GetText();
 
     std::unordered_set<wxString> storedSet;
     wxStringTokenizer tok( stored, " " );
+
     while( tok.HasMoreTokens() )
         storedSet.insert( tok.GetNextToken() );
 
-    wxMultiChoiceDialog dlg( m_frame,
-                             wxString::Format( _( "Select output variables for %s:" ), instanceName ),
-                             _( "GSEIM Subcircuit Output Variables" ),
-                             availableArr );
-
     wxArrayInt selections;
+
     for( size_t i = 0; i < available.size(); ++i )
     {
         if( storedSet.count( available[i] ) )
             selections.Add( i );
     }
+
+    wxMultiChoiceDialog dlg(
+        m_frame,
+        wxString::Format( _( "Select output variables for %s:" ), refName ),
+        _( "GSEIM Subcircuit Output Variables" ),
+        availableArr );
+
     dlg.SetSelections( selections );
 
     if( dlg.ShowModal() != wxID_OK )
@@ -4113,14 +4112,26 @@ int SCH_EDIT_TOOL::SelectGseimSubcktOutvars( const TOOL_EVENT& aEvent )
 
     for( size_t i = 0; i < chosen.size(); ++i )
     {
-        if( i > 0 ) newStored += " ";
+        if( i > 0 )
+            newStored += " ";
+
         newStored += available[ chosen[i] ];
     }
 
     SCH_COMMIT commit( m_toolMgr );
-    commit.Modify( sheet, m_frame->GetScreen() );
+    commit.Modify( symbol, m_frame->GetScreen() );
 
-    sheet->SetGseimSubcktOutVars( newStored );
+    if( outVarsField )
+    {
+        outVarsField->SetText( newStored );
+    }
+    else
+    {
+        SCH_FIELD newField( symbol, FIELD_T::USER, "Gseim.OutVars" );
+        newField.SetText( newStored );
+        newField.SetVisible( false );
+        symbol->AddField( newField );
+    }
 
     commit.Push( _( "Set GSEIM Subcircuit Output Variables" ) );
 
@@ -4320,15 +4331,17 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         gseimType = typeField->GetText();
 
         GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
+        GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
+        GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
+
         componentInfo = GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
 
         if( !componentInfo )
         {
-            GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
             xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
 
             if( !xbeInfo )
-                return 0;
+                componentInfo = GSEIM_SUBCKT_DATABASE::Instance().Find( gseimType );
         }
 
         if( !componentInfo && !xbeInfo )
@@ -4345,10 +4358,10 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
         gseimType = fn.GetName();
 
         GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
+        GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
 
-        // Recompute live instead of trusting a possibly-stale exported .sub file
-        static GSEIM_COMPONENT_INFO liveSubcktInfo; // local storage, rebuilt below
-        liveSubcktInfo = GSEIM_COMPONENT_INFO();     // reset
+        static GSEIM_COMPONENT_INFO liveSubcktInfo;
+        liveSubcktInfo = GSEIM_COMPONENT_INFO();
 
         for( SCH_ITEM* item : sheet->GetScreen()->Items().OfType( SCH_SYMBOL_T ) )
         {
@@ -4366,7 +4379,12 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
             if( compType.IsEmpty() || compType == "gnd" )
                 continue;
 
-            const GSEIM_COMPONENT_INFO* info = GSEIM_COMPONENT_DATABASE::Instance().Find( compType );
+            const GSEIM_COMPONENT_INFO* info =
+                GSEIM_COMPONENT_DATABASE::Instance().Find( compType );
+
+            if( !info )
+                info = GSEIM_SUBCKT_DATABASE::Instance().Find( compType );
+
             if( !info )
                 continue;
 
@@ -4376,21 +4394,37 @@ int SCH_EDIT_TOOL::ModifyGseimParameters( const TOOL_EVENT& aEvent )
             {
                 if( info->rparms.count( key ) )
                     liveSubcktInfo.rparms[value] = GSEIM_PARAMETER();
+
                 if( info->iparms.count( key ) )
                     liveSubcktInfo.iparms[value] = GSEIM_PARAMETER();
+
                 if( info->sparms.count( key ) )
                     liveSubcktInfo.sparms[value] = GSEIM_PARAMETER();
+
+                if( info->stparms.count( key ) )
+                    liveSubcktInfo.stparms[value] = GSEIM_PARAMETER();
+
+                if( info->igparms.count( key ) )
+                    liveSubcktInfo.igparms[value] = GSEIM_PARAMETER();
             }
         }
 
-        if( liveSubcktInfo.rparms.empty() && liveSubcktInfo.iparms.empty() && liveSubcktInfo.sparms.empty() )
+        if( liveSubcktInfo.rparms.empty()
+            && liveSubcktInfo.iparms.empty()
+            && liveSubcktInfo.sparms.empty()
+            && liveSubcktInfo.stparms.empty()
+            && liveSubcktInfo.igparms.empty() )
+        {
             return 0;
+        }
 
         subcktInfo = &liveSubcktInfo;
 
         overrides = sheet->GetGseimRparmValues();
+
         const auto& ip = sheet->GetGseimIparmValues();
         overrides.insert( ip.begin(), ip.end() );
+
         const auto& sp = sheet->GetGseimSparmValues();
         overrides.insert( sp.begin(), sp.end() );
     }

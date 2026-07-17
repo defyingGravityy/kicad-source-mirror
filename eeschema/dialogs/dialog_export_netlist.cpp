@@ -51,6 +51,7 @@
 #include <netlist_exporters/netlist_exporter_gseim.h>
 #include <../gseim/gseim_ebe_parser.h>
 #include "../gseim/gseim_component_db.h"
+#include "../gseim/gseim_subckt_db.h"
 #include "../gseim/gseim_param_parser.h"
 #include <reporter.h>
 #include <wx/listbox.h>
@@ -459,15 +460,12 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
 
     SCH_SHEET_LIST hierarchy = aEditFrame->Schematic().Hierarchy();
 
+    GSEIM_SUBCKT_DATABASE::Instance().Load( GetGseimSubPath() );
+
     for( const SCH_SHEET_PATH& sheet : hierarchy )
     {
         bool isSubckt = sheet.size() > 1;
         wxString instanceName = isSubckt ? sheet.Last()->GetName() : wxString();
-
-        // for( SCH_ITEM* item : sheet.LastScreen()->Items().OfType( SCH_SYMBOL_T ) )
-        // {
-        //     SCH_SYMBOL* symbol = static_cast<SCH_SYMBOL*>( item );
-        //     wxString ref = symbol->GetRef( &sheet );
 
         for( SCH_ITEM* item : sheet.LastScreen()->Items().OfType( SCH_SYMBOL_T ) )
         {
@@ -506,6 +504,51 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                 continue;   // subsheet symbols never read Gseim.OutVars/NonElecVars fields
             }
 
+            // Symbol-based subcircuit instance: skip the ebe/xbe heuristic below entirely.
+            // A subckt's outvar names come verbatim from its .sub file's outvar: section
+            // (e.g. "v_in", "v_out") and mean nothing to the ebe/xbe pattern matching.
+            wxString gseimType;
+
+            if( SCH_FIELD* typeField = symbol->GetField( "Gseim.Type" ) )
+                gseimType = typeField->GetText();
+
+            if( !gseimType.IsEmpty() && GSEIM_SUBCKT_DATABASE::Instance().Find( gseimType ) )
+            {
+                SCH_FIELD* varsField = symbol->GetField( "Gseim.OutVars" );
+
+                if( !varsField )
+                    continue;
+
+                wxString stored = varsField->GetText();
+
+                if( stored.IsEmpty() )
+                    continue;
+
+                wxStringTokenizer tok( stored, " " );
+
+                while( tok.HasMoreTokens() )
+                {
+                    wxString var = tok.GetNextToken();
+
+                    if( var.IsEmpty() )
+                        continue;
+
+                    wxString dedupKey = var + "@" + ref;
+
+                    if( seen.count( dedupKey ) )
+                        continue;
+
+                    seen.insert( dedupKey );
+
+                    GSEIM_OUTVAR ov;
+                    ov.name = var;
+                    ov.expr = var + "_of_" + ref;
+                    outvars.push_back( ov );
+                }
+
+                continue;   // don't fall through to the ebe/xbe field loop below
+            }
+
             for( const wxString& fieldName : { wxString( "Gseim.OutVars" ), wxString( "Gseim.NonElecVars" ) } )
             {
                 SCH_FIELD* varsField = symbol->GetField( fieldName );
@@ -539,7 +582,7 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
 
                     if( isSubckt )
                     {
-                        ov.name = var + "_" + instanceName;   // e.g. "v_out_OA1", "v_out_OA2" — unique by default
+                        ov.name = var + "_" + instanceName;
                         ov.expr = var + "_of_" + instanceName;
                         outvars.push_back( ov );
                         continue;
@@ -550,7 +593,7 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                         ov.isAc = true;
                         ov.isMagnitude = true;
 
-                        ov.baseName = var.Mid( 7 );   // remove "mag_of_"
+                        ov.baseName = var.Mid( 7 );
 
                         wxString tmp = ov.baseName;
 
@@ -565,13 +608,9 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                             wxString outparm = tmp.Mid( pos + 1 );
 
                             if( outparm == "S" )
-                            {
                                 ov.expr = "S_of_" + refName;
-                            }
                             else
-                            {
                                 ov.expr = outparm + "_ac_of_" + refName;
-                            }
                         }
                     }
                     else if( var.StartsWith( "phase_of_" ) )
@@ -579,7 +618,7 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                         ov.isAc = true;
                         ov.isPhase = true;
 
-                        ov.baseName = var.Mid( 9 );   // remove "phase_of_"
+                        ov.baseName = var.Mid( 9 );
 
                         wxString tmp = ov.baseName;
 
@@ -594,22 +633,16 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                             wxString outparm = tmp.Mid( pos + 1 );
 
                             if( outparm == "S" )
-                            {
                                 ov.expr = "S_of_" + refName;
-                            }
                             else
-                            {
                                 ov.expr = outparm + "_ac_of_" + refName;
-                            }
                         }
                     }
-                    // Element output (R1_i, R1_v, VM1_v_fb, etc.)
                     else if( var.StartsWith( ref + "_" ) )
                     {
                         wxString outparm = var.Mid( ref.Length() + 1 );
                         ov.expr = outparm + "_of_" + ref;
                     }
-                    // Node voltage (vb, vc, vout, ...)
                     else if( var.StartsWith( "v" ) )
                     {
                         wxString net = var.Mid( 1 );
@@ -627,7 +660,6 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                             ov.expr = "nodev_of_" + net;
                         }
                     }
-                    // XBE output (x1, x2, y, ...)
                     else
                     {
                         ov.expr = "xvar_of_" + var;

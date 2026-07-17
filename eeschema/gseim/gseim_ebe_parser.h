@@ -11,6 +11,12 @@ struct GSEIM_PARAMETER
     std::vector<wxString> options;
 };
 
+struct GSEIM_SUBCKT_OUTVAR
+{
+    wxString name;   // e.g. "v_in"
+    wxString expr;   // e.g. "v_of_Ri"
+};
+
 struct GSEIM_COMPONENT_INFO
 {
     wxString name;
@@ -27,13 +33,15 @@ struct GSEIM_COMPONENT_INFO
 
     std::vector<wxString> outparms;
     std::vector<wxString> outparms_ac;
+
+    std::vector<GSEIM_SUBCKT_OUTVAR> outvars;   // only populated when parsed from a .sub file
 };
 
 using GSEIM_COMPONENT_DB =
-    std::unordered_map<wxString, GSEIM_COMPONENT_INFO>;
+std::unordered_map<wxString, GSEIM_COMPONENT_INFO>;
 
 GSEIM_COMPONENT_INFO ParseEbeFile(
-    const wxString& aFilename );
+const wxString& aFilename );
 
 GSEIM_COMPONENT_DB LoadEbeDatabase(
-    const wxString& aDirectory );
+const wxString& aDirectory );

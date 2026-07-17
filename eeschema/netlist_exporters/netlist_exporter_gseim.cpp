@@ -284,6 +284,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         return false;
 
     GSEIM_COMPONENT_DATABASE::Instance().Load( GetGseimEbePath() );
+    GSEIM_XBE_DATABASE::Instance().Load( GetGseimXbePath() );
 
     SCH_SHEET_LIST sheetList = m_schematic->Hierarchy();
 
@@ -322,6 +323,7 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 
     std::vector<wxString> nodeNames;
     std::set<wxString> auxNodes;
+    std::set<wxString> xVars;
 
     for( SCH_ITEM* item : screen->Items().OfType( SCH_HIER_LABEL_T ) )
     {
@@ -349,10 +351,51 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
             continue;
 
         const GSEIM_COMPONENT_INFO* info =
-            GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
+    GSEIM_COMPONENT_DATABASE::Instance().Find( gseimType );
 
-        if( !info )
-            continue;
+    if( info )
+    {
+        for( const wxString& x : info->xVars ) {
+            xVars.insert( x );
+        }
+
+        int pinNumber = 1;
+
+        for( const wxString& nodeName : info->nodes )
+        {
+            wxString net;
+            for( SCH_PIN* pin : sym->GetPins( &path ) )
+            {
+                if( pin->GetNumber() == wxString::Format( "%d", pinNumber ) )
+                {
+                    SCH_CONNECTION* conn = pin->Connection( &path );
+                    if( conn )
+                        net = conn->Name( true );
+                    break;
+                }
+            }
+
+            if( !groundNets.count( net )
+                && std::find( nodeNames.begin(), nodeNames.end(), net ) == nodeNames.end() )
+            {
+                auxNodes.insert( net );
+            }
+            ++pinNumber;
+        }
+        continue;
+    }
+
+    const GSEIM_XBE_INFO* xbeInfo =
+        GSEIM_XBE_DATABASE::Instance().Find( gseimType );
+
+    if( !xbeInfo )
+        continue;
+
+    for( const wxString& x : xbeInfo->input_vars )
+        xVars.insert( x );
+
+    for( const wxString& x : xbeInfo->output_vars )
+        xVars.insert( x );
 
         int pinNumber = 1;
 
@@ -392,6 +435,13 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
         formatter.Print( 0, " %s", TO_UTF8( n ) );
     formatter.Print( 0, "\n" );
 
+    formatter.Print( 0, "  x_vars:" );
+
+    for( const wxString& x : xVars )
+        formatter.Print( 0, " %s", TO_UTF8( x ) );
+
+    formatter.Print( 0, "\n" );
+
     if( !auxNodes.empty() )
     {
         formatter.Print( 0, "  aux_nodes:" );
@@ -415,10 +465,9 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 
     const auto& iparms = sheet->GetGseimIparmValues();
 
+    formatter.Print( 0, "  iparms:\n" );
     if( !iparms.empty() )
     {
-        formatter.Print( 0, "  iparms:\n" );
-
         for( const auto& [name, value] : iparms )
         {
             if( !value.IsEmpty() )
@@ -432,10 +481,9 @@ bool NETLIST_EXPORTER_GSEIM::ExportSubcircuit( const wxString& aSubcktName,
 
     const auto& sparms = sheet->GetGseimSparmValues();
 
+    formatter.Print( 0, "  sparms:\n" );
     if( !sparms.empty() )
     {
-        formatter.Print( 0, "  sparms:\n" );
-
         for( const auto& [name, value] : sparms )
         {
             if( !value.IsEmpty() )
@@ -700,6 +748,55 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
                 
             if( !info )
             {
+                const GSEIM_COMPONENT_INFO* subInfo = GSEIM_SUBCKT_DATABASE::Instance().Find( gseimType );
+
+                if( subInfo )
+                {
+                    wxString paramText = GetFieldValue( item, "Gseim.Params" );
+                    std::map<wxString, wxString> overrides = ParseGseimParams( paramText );
+
+                    formatter.Print( 0, "   subckt name=%s type=%s\n", item.refName.c_str(), TO_UTF8( gseimType ) );
+
+                    wxString portsLine = "+   ";
+                    int subPinNumber = 1;
+
+                    for( const wxString& nodeName : subInfo->nodes )
+                    {
+                        wxString net = NormalizeNet(
+                            GetNetForPin( item, std::to_string( subPinNumber ) ), groundNets );
+
+                        if( net != "0" )
+                            m_outvars.insert( net );
+
+                        portsLine += " " + nodeName + "=" + net;
+                        ++subPinNumber;
+                    }
+
+                    formatter.Print( 0, "%s\n", TO_UTF8( portsLine ) );
+
+                    auto emitParamLines = [&]( const auto& paramMap )
+                    {
+                        for( const auto& [name, param] : paramMap )
+                        {
+                            wxString value = param.defaultValue;
+                            auto it = overrides.find( name );
+
+                            if( it != overrides.end() )
+                                value = it->second;
+
+                            formatter.Print( 0, "+    %s=%s\n", TO_UTF8( name ), TO_UTF8( value ) );
+                        }
+                    };
+
+                    emitParamLines( subInfo->rparms );
+                    emitParamLines( subInfo->iparms );
+                    emitParamLines( subInfo->sparms );
+                    emitParamLines( subInfo->stparms );
+                    emitParamLines( subInfo->igparms );
+
+                    continue;
+                }
+
                 const GSEIM_XBE_INFO* xbeInfo = GSEIM_XBE_DATABASE::Instance().Find( gseimType );
 
                 if( xbeInfo )

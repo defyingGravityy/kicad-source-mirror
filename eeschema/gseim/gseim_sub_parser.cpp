@@ -21,7 +21,8 @@ enum class PARSE_SECTION
     IPARMS,
     SPARMS,
     STPARMS,
-    IGPARMS
+    IGPARMS,
+    OUTVAR
 };
 
 GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
@@ -86,8 +87,13 @@ GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
             continue;
         }
 
-        if( line.StartsWith( "outvar:" )
-            || line.StartsWith( "ebe " )
+        if( line.StartsWith( "outvar:" ) )
+        {
+            section = PARSE_SECTION::OUTVAR;
+            continue;
+        }
+
+        if( line.StartsWith( "ebe " )
             || line.StartsWith( "aux_nodes:" )
             || line.StartsWith( "C:" )
             || line.StartsWith( "endC" )
@@ -105,6 +111,15 @@ GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
 
             wxString name  = s.BeforeFirst( '=' );
             wxString value = s.AfterFirst( '=' );
+
+            if( section == PARSE_SECTION::OUTVAR )
+            {
+                GSEIM_SUBCKT_OUTVAR ov;
+                ov.name = name;
+                ov.expr = value;
+                info.outvars.push_back( ov );
+                continue;
+            }
 
             GSEIM_PARAMETER param;
             param.defaultValue = value;
@@ -141,6 +156,7 @@ GSEIM_COMPONENT_INFO ParseSubFile( const wxString& aFilename )
 
     return info;
 }
+
 GSEIM_COMPONENT_DB LoadSubDatabase( const wxString& aDirectory )
 {
     GSEIM_COMPONENT_DB db;
