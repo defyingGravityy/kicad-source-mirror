@@ -153,7 +153,23 @@ wxString PATHS::GetDefaultUserProjectsPath()
  * This is done because not all executable are located at the same
  * depth in the build directory.
  */
-static wxString getBuildDirectoryRoot()
+
+ static wxString getPortableKiCadRoot()
+{
+    wxFileName fn( wxStandardPaths::Get().GetExecutablePath() );
+
+    fn.RemoveLastDir();        // Go up from executable directory
+    fn.AppendDir( "share" );
+    fn.AppendDir( "kicad" );
+    fn.Normalize();
+
+    if( fn.DirExists() )
+        return fn.GetPath();
+
+    return wxEmptyString;
+}
+
+ static wxString getBuildDirectoryRoot()
 {
     // We don't have a perfect way to spot a build directory (e.g. when archived as artifacts in
     // CI) but we can assume that the build directory will have a schemas directory that contains
@@ -233,24 +249,30 @@ wxString PATHS::GetStockDataPath( bool aRespectRunFromBuildDir )
 {
     wxString path;
 
+    // Explicit override
+    if( wxGetEnv( wxT( "KICAD_STOCK_DATA_HOME" ), &path ) && !path.IsEmpty() )
+        return path;
+
+    // Portable bundle
+    path = getPortableKiCadRoot();
+
+    if( !path.IsEmpty() )
+        return path;
+
+    // Development build
     if( aRespectRunFromBuildDir && wxGetEnv( wxT( "KICAD_RUN_FROM_BUILD_DIR" ), nullptr ) )
     {
-        // Allow debugging from build dir by placing relevant files/folders in the build root
 #if defined( __WXMAC__ )
         wxFileName fn;
         fn.AssignDir( getOSXBundleRoot() );
-        fn.RemoveLastDir(); // Above the .app bundle
-        fn.RemoveLastDir(); // Above the target subdirectory to build root
+        fn.RemoveLastDir();
+        fn.RemoveLastDir();
         path = fn.GetPath();
 #elif defined( __WXMSW__ )
         path = getWindowsKiCadRoot();
 #else
         path = getBuildDirectoryRoot();
 #endif
-    }
-    else if( wxGetEnv( wxT( "KICAD_STOCK_DATA_HOME" ), &path ) && !path.IsEmpty() )
-    {
-        return path;
     }
     else
     {
@@ -263,6 +285,7 @@ wxString PATHS::GetStockDataPath( bool aRespectRunFromBuildDir )
 #endif
     }
 
+    wxLogMessage( "Stock data path: %s", path );
     return path;
 }
 
