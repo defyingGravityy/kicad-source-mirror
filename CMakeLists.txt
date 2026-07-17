@@ -121,11 +121,15 @@ option( KICAD_BUILD_I18N
 
 option( KICAD_BUILD_QA_TESTS
     "Build software Quality assurance unit tests (default ON)"
-    ON )
+    OFF )
 
 option( KICAD_UPDATE_CHECK
     "Build in update check"
     ON )
+
+option( GSEIM_STANDALONE
+    "Build standalone GSEIM Eeschema"
+    OFF )
 
 cmake_dependent_option( KICAD_WAYLAND
     "Support Wayland features"
@@ -1101,24 +1105,37 @@ list( APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure" )
 # 'CMakeLists.txt' files to process
 #================================================
 
-# Binaries ( CMake targets )
+# Common libraries
 add_subdirectory( api )
 add_subdirectory( resources )
 add_subdirectory( thirdparty )
 add_subdirectory( libs )
 add_subdirectory( common )
-add_subdirectory( 3d-viewer )
-add_subdirectory( eeschema )
-add_subdirectory( gerbview )
-add_subdirectory( pcbnew )
-add_subdirectory( pagelayout_editor )
-add_subdirectory( bitmap2component )
-add_subdirectory( pcb_calculator )
-add_subdirectory( plugins )             # 3D plugins must be built before kicad
-add_subdirectory( cvpcb )               # must be after pcbnew
-add_subdirectory( kicad )               # should follow pcbnew, eeschema, api
-add_subdirectory( tools )
-add_subdirectory( utils )
+
+if( GSEIM_STANDALONE )
+    add_subdirectory(kicad/pcm)
+    add_subdirectory( eeschema )
+
+else()
+
+    add_subdirectory( 3d-viewer )
+    add_subdirectory( eeschema )
+    add_subdirectory( gerbview )
+    add_subdirectory( pcbnew )
+    add_subdirectory( pagelayout_editor )
+    add_subdirectory( bitmap2component )
+    add_subdirectory( pcb_calculator )
+    add_subdirectory( plugins )
+    add_subdirectory( cvpcb )
+    add_subdirectory( kicad )
+    add_subdirectory( tools )
+    add_subdirectory( utils )
+
+endif()
+
+set_target_properties(eeschema PROPERTIES
+    INSTALL_RPATH "$ORIGIN/../lib"
+)
 
 if( KICAD_BUILD_QA_TESTS )
     add_subdirectory( qa )

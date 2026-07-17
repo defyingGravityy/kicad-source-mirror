@@ -285,7 +285,6 @@ wxString PATHS::GetStockDataPath( bool aRespectRunFromBuildDir )
 #endif
     }
 
-    wxLogMessage( "Stock data path: %s", path );
     return path;
 }
 

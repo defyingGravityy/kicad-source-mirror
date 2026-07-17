@@ -209,5 +209,9 @@ elseif( UNIX )
 endif()
 
 add_subdirectory(bitmaps_png)
-add_subdirectory(project_template)
+
+if( NOT GSEIM_STANDALONE )
+    add_subdirectory(project_template)
+endif()
+
 add_subdirectory(gseim)

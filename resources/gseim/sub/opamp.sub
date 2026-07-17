@@ -1,0 +1,28 @@
+begin_subckt name=opamp
+  nodes: out plus minus ground
+  x_vars:
+  aux_nodes: A B C
+  rparms:
++ a_v=1
++ r_in=1
++ r_off_diode=1
++ r_on_diode=1
++ r_out=1
++ v_sat=1
+
+  iparms:
+  sparms:
+  outvar:
++   Ri1_v=v_of_Ri1
++   vout=nodev_of_out
+
+  ebe name=Ri1 type=r p= n= r=r_in
+  ebe name=D1 type=diode_r p= n= r_off=r_off_diode r_on=r_on_diode
+  ebe name=D2 type=diode_r p= n= r_off=r_off_diode r_on=r_on_diode
+  ebe name=R0 type=r p= n= r=r_out
+  ebe name=V2 type=vsrc_dc p=B n=ground vdc=v_sat
+  ebe name=V1 type=vsrc_dc p=ground n=C vdc=v_sat
+  ebe name=VCVS1 type=vcvs p= n= cp= cn= alpha=a_v
+  C:
+  endC
+end_subckt
