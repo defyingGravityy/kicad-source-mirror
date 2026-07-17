@@ -1,5 +1,0 @@
-### Clause
-
-    (condition "<expression>")
-
-<br>

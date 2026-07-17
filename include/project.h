@@ -50,7 +50,9 @@ class SEARCH_STACK;
 class S3D_CACHE;
 class KIWAY;
 class FILENAME_RESOLVER;
+#ifndef GSEIM_STANDALONE
 class FOOTPRINT_LIBRARY_ADAPTER;
+#endif
 class PROJECT_FILE;
 class PROJECT_LOCAL_SETTINGS;
 class LOCKFILE;
@@ -291,7 +293,10 @@ public:
     /**
      * Fetches the footprint library adapter from the PCB editor instance
      */
-    virtual FOOTPRINT_LIBRARY_ADAPTER* FootprintLibAdapter( KIWAY& aKiway );
+    
+    #ifndef GSEIM_STANDALONE
+        virtual FOOTPRINT_LIBRARY_ADAPTER* FootprintLibAdapter( KIWAY& aKiway );
+    #endif
 
     /**
      * Return the table of design block libraries.

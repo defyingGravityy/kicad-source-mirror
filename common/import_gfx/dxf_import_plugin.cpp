@@ -38,7 +38,6 @@
 #include <trigo.h>
 #include <macros.h>
 #include <cmath>    // isnan
-#include <board.h>
 #include "common.h"
 
 

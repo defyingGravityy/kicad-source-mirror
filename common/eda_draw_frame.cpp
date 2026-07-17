@@ -68,7 +68,11 @@
 #include <widgets/kistatusbar.h>
 #include <widgets/msgpanel.h>
 #include <widgets/properties_panel.h>
+
+#ifndef GSEIM_STANDALONE
 #include <widgets/net_inspector_panel.h>
+#endif
+
 #include <widgets/filedlg_hook_new_library.h>
 #include <wx/event.h>
 #include <wx/snglinst.h>
@@ -1241,11 +1245,13 @@ void EDA_DRAW_FRAME::ShowChangedLanguage()
         properties_pane_info.Caption( _( "Properties" ) );
     }
 
+    #ifndef GSEIM_STANDALONE
     if( m_netInspectorPanel )
     {
         wxAuiPaneInfo& net_inspector_panel_info = m_auimgr.GetPane( m_netInspectorPanel );
         net_inspector_panel_info.Caption( _( "Net Inspector" ) );
     }
+    #endif
 }
 
 

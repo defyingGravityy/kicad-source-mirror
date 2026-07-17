@@ -19,13 +19,15 @@
 
 #include <api/api_enums.h>
 
+#ifndef GSEIM_STANDALONE
 #include "pad.h"
+#include <api/board/board.pb.h>
+#include <api/board/board_types.pb.h>
+#endif
 
 #include <import_export.h>
 #include <api/common/types/base_types.pb.h>
 #include <api/common/types/enums.pb.h>
-#include <api/board/board.pb.h>
-#include <api/board/board_types.pb.h>
 #include <api/schematic/schematic_jobs.pb.h>
 #include <api/schematic/schematic_types.pb.h>
 
@@ -162,7 +164,7 @@ types::KiCadObjectType ToProtoEnum( KICAD_T aValue )
     }
 }
 
-
+#ifndef GSEIM_STANDALONE
 template<>
 PCB_LAYER_ID FromProtoEnum( board::types::BoardLayer aValue )
 {
@@ -383,6 +385,7 @@ board::types::BoardLayer ToProtoEnum( PCB_LAYER_ID aValue )
                      "Unhandled case in ToProtoEnum<PCB_LAYER_ID>");
     }
 }
+#endif
 
 
 template<>
@@ -668,7 +671,7 @@ types::ElectricalPinType ToProtoEnum( ELECTRICAL_PINTYPE aValue )
     }
 }
 
-
+#ifndef GSEIM_STANDALONE
 template <>
 PAD_SIM_ELECTRICAL_TYPE FromProtoEnum( board::types::PadSimElectricalType aValue )
 {
@@ -699,6 +702,7 @@ board::types::PadSimElectricalType ToProtoEnum( PAD_SIM_ELECTRICAL_TYPE aValue )
                      "Unhandled case in ToProtoEnum<PAD_SIM_ELECTRICAL_TYPE>" );
     }
 }
+#endif
 
 
 template<>

@@ -41,7 +41,9 @@
 #include <git2.h>
 #include <project.h>
 
+#ifndef GSEIM_STANDALONE
 #include <footprint_library_adapter.h>
+#endif
 
 #include <project/project_file.h>
 #include <trace_helpers.h>
@@ -426,12 +428,13 @@ const wxString PROJECT::AbsolutePath( const wxString& aFileName ) const
     return fn.GetFullPath();
 }
 
-
+#ifndef GSEIM_STANDALONE
 FOOTPRINT_LIBRARY_ADAPTER* PROJECT::FootprintLibAdapter( KIWAY& aKiway )
 {
     KIFACE* kiface = aKiway.KiFACE( KIWAY::FACE_PCB );
     return static_cast<FOOTPRINT_LIBRARY_ADAPTER*>( kiface->IfaceOrAddress( KIFACE_FOOTPRINT_LIBRARY_ADAPTER ) );
 }
+#endif
 
 
 DESIGN_BLOCK_LIBRARY_ADAPTER* PROJECT::DesignBlockLibs()

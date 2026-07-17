@@ -16,7 +16,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <pcbplot.h>
 #include <printout.h>
 #include <settings/app_settings.h>
 

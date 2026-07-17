@@ -34,8 +34,6 @@
 #include <grid_tricks.h>
 #include <dialogs/panel_setup_netclasses.h>
 #include <tool/tool_manager.h>
-#include <pcb_painter.h>
-#include <board_design_settings.h>
 #include <string_utils.h>
 #include <view/view.h>
 #include <widgets/grid_color_swatch_helpers.h>
@@ -581,14 +579,18 @@ bool PANEL_SETUP_NETCLASSES::validateNetclassClearance( int aRow )
 
     std::optional<int> clearance = m_netclassGrid->GetOptionalUnitValue( aRow, GRID_CLEARANCE );
 
-    if( clearance.has_value() && clearance.value() > MAXIMUM_CLEARANCE )
-    {
-        wxString msg = wxString::Format( _( "Clearance was too large.  It has been clipped to %s." ),
-                                         m_frame->StringFromValue( MAXIMUM_CLEARANCE, true ) );
-        PAGED_DIALOG::GetDialog( this )->SetError( msg, this, m_netclassGrid, aRow, GRID_CLEARANCE );
-        m_netclassGrid->SetUnitValue( aRow, GRID_CLEARANCE, MAXIMUM_CLEARANCE );
-        return false;
-    }
+    #ifdef GSEIM_STANDALONE
+        return true;
+    #else 
+        if( clearance.has_value() && clearance.value() > MAXIMUM_CLEARANCE )
+        {
+            wxString msg = wxString::Format( _( "Clearance was too large.  It has been clipped to %s." ),
+                                            m_frame->StringFromValue( MAXIMUM_CLEARANCE, true ) );
+            PAGED_DIALOG::GetDialog( this )->SetError( msg, this, m_netclassGrid, aRow, GRID_CLEARANCE );
+            m_netclassGrid->SetUnitValue( aRow, GRID_CLEARANCE, MAXIMUM_CLEARANCE );
+            return false;
+        }
+    #endif
 
     return true;
 }

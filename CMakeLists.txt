@@ -131,6 +131,10 @@ option( GSEIM_STANDALONE
     "Build standalone GSEIM Eeschema"
     OFF )
 
+if( GSEIM_STANDALONE )
+    add_compile_definitions( GSEIM_STANDALONE )
+endif()
+
 cmake_dependent_option( KICAD_WAYLAND
     "Support Wayland features"
     ON "UNIX_NOT_APPLE"

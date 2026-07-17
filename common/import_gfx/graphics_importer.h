@@ -42,6 +42,7 @@
 class EDA_ITEM;
 class EDA_SHAPE;
 
+
 /**
  * A clone of IMPORTED_STROKE, but with floating-point width.
  */
@@ -84,9 +85,7 @@ public:
 
     GRAPHICS_IMPORTER();
 
-    virtual ~GRAPHICS_IMPORTER()
-    {
-    }
+    virtual ~GRAPHICS_IMPORTER();
 
     /**
      * Set the import plugin used to obtain shapes from a file.
@@ -228,10 +227,7 @@ public:
     /**
      * Empties out the imported shapes list
      */
-    void ClearItems()
-    {
-        m_items.clear();
-    }
+    void ClearItems();
 
     /// Default line thickness (in mm).
     static constexpr unsigned int DEFAULT_LINE_WIDTH_DFX = 1;

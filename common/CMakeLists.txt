@@ -150,23 +150,6 @@ set( KICOMMON_SRCS
     jobs/job_registry.cpp
     jobs/jobs_output_archive.cpp
     jobs/jobs_output_folder.cpp
-    jobs/job_export_pcb_drill.cpp
-    jobs/job_export_pcb_dxf.cpp
-    jobs/job_export_pcb_gerber.cpp
-    jobs/job_export_pcb_gerbers.cpp
-    jobs/job_export_pcb_hpgl.cpp
-    jobs/job_export_pcb_ipc2581.cpp
-    jobs/job_export_pcb_ipcd356.cpp
-    jobs/job_export_pcb_odb.cpp
-    jobs/job_export_pcb_pdf.cpp
-    jobs/job_export_pcb_png.cpp
-    jobs/job_export_pcb_stats.cpp
-    jobs/job_export_pcb_plot.cpp
-    jobs/job_export_pcb_pos.cpp
-    jobs/job_export_pcb_ps.cpp
-    jobs/job_export_pcb_svg.cpp
-    jobs/job_export_pcb_gencad.cpp
-    jobs/job_export_pcb_3d.cpp
     jobs/job_export_sch_bom.cpp
     jobs/job_export_sch_netlist.cpp
     jobs/job_export_sch_plot.cpp
@@ -174,16 +157,12 @@ set( KICOMMON_SRCS
     jobs/job_special_copyfiles.cpp
     jobs/job_special_execute.cpp
     jobs/jobset.cpp
-    jobs/job_fp_export_svg.cpp
+
     jobs/job_fp_upgrade.cpp
     jobs/job_gerber_diff.cpp
     jobs/job_gerber_export_png.cpp
     jobs/job_gerber_info.cpp
-    jobs/job_pcb_import.cpp
-    jobs/job_pcb_render.cpp
-    jobs/job_pcb_drc.cpp
     jobs/job_diff_base.cpp
-    jobs/job_pcb_diff.cpp
     jobs/job_fp_diff.cpp
     jobs/job_sch_diff.cpp
     jobs/job_sym_diff.cpp
@@ -191,7 +170,6 @@ set( KICOMMON_SRCS
     jobs/job_sch_erc.cpp
     jobs/job_sym_export_svg.cpp
     jobs/job_sym_upgrade.cpp
-    jobs/job_pcb_upgrade.cpp
     jobs/job_sch_upgrade.cpp
 
     local_history.cpp
@@ -624,11 +602,7 @@ set( COMMON_WIDGET_SRCS
     widgets/design_block_pane.cpp
     widgets/filter_combobox.cpp
     widgets/font_choice.cpp
-    widgets/footprint_choice.cpp
-    widgets/footprint_diff_widget.cpp
-    widgets/footprint_preview_widget.cpp
     widgets/widget_diff_canvas.cpp
-    widgets/footprint_select_widget.cpp
     widgets/grid_bitmap_toggle.cpp
     widgets/grid_button.cpp
     widgets/grid_checkbox.cpp
@@ -783,7 +757,7 @@ set( COMMON_SRCS
     base_screen.cpp
     bin_mod.cpp
     bitmap_base.cpp
-    board_printout.cpp
+    
     clipboard.cpp
     commit.cpp
     draw_panel_gal.cpp
@@ -877,7 +851,10 @@ set( COMMON_SRCS
     tool/zoom_menu.cpp
     tool/zoom_tool.cpp
 
-    settings/cvpcb_settings.cpp
+    widgets/footprint_choice.cpp
+    widgets/footprint_preview_widget.cpp
+    widgets/footprint_select_widget.cpp
+
 
     properties/color4d_variant.cpp
     properties/eda_angle_variant.cpp

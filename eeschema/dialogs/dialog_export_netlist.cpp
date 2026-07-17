@@ -541,7 +541,7 @@ static std::vector<GSEIM_OUTVAR> GetGseimOutvars( SCH_EDIT_FRAME* aEditFrame )
                     seen.insert( dedupKey );
 
                     GSEIM_OUTVAR ov;
-                    ov.name = var;
+                    ov.name = var + "_" + ref;   // unique per instance, e.g. "v_in_opamp1", "v_in_opamp2"
                     ov.expr = var + "_of_" + ref;
                     outvars.push_back( ov );
                 }

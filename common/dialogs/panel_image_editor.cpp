@@ -25,7 +25,6 @@
 #include <wx/dcclient.h>
 #include <wx/msgdlg.h>
 #include <bitmap_base.h>
-#include <pcb_base_edit_frame.h>
 #include <tool/actions.h>
 #include <confirm.h>
 #include <units_provider.h>

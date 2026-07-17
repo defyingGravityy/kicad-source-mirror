@@ -33,6 +33,8 @@
 
 #include <wx/log.h>
 
+GRAPHICS_IMPORTER::~GRAPHICS_IMPORTER() = default;
+
 GRAPHICS_IMPORTER::GRAPHICS_IMPORTER()
 {
     m_millimeterToIu = 1.0;
@@ -42,6 +44,10 @@ GRAPHICS_IMPORTER::GRAPHICS_IMPORTER()
     m_originalHeight = 0.0;
 }
 
+void GRAPHICS_IMPORTER::ClearItems()
+{
+    m_items.clear();
+}
 
 bool GRAPHICS_IMPORTER::Load( const wxString& aFileName )
 {
