@@ -47,4 +47,5 @@ sudo apt-get update && sudo apt-get install -y \
   shared-mime-info \
   libzint-dev \
   libpoppler-dev \
-  libpoppler-glib-dev
+  libpoppler-glib-dev \
+  

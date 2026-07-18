@@ -1,359 +1,288 @@
-# KiCad GSEIM Integration
+# GSEIM-Eeschema Standalone
 
-Native GSEIM simulation support for **KiCad Eeschema**.
+A lightweight standalone build of KiCad's Eeschema with integrated GSEIM simulation support.
 
-This project extends KiCad by adding a complete export pipeline for the **General Simulation Environment (GSEIM)**, allowing circuits designed in Eeschema to be exported directly as valid GSEIM `.cir` and `.sub` files without manual netlist editing.
+This build removes the PCB editor and other unrelated KiCad applications, leaving only the schematic editor and GSEIM simulation functionality.
 
----
+## Requirements
 
-# Features
+- Linux
+- CMake (>= 3.25 recommended)
+- Ninja
+- C++ compiler with C++20 support (GCC or Clang)
+- wxWidgets
+- All normal KiCad build dependencies required for Eeschema
 
-- Native GSEIM netlist exporter
-- Hierarchical subcircuit export (`.sub`)
-- Automatic `.ebe` component parsing
-- Automatic `.sub` parsing
-- Dynamic parameter system
-- Multiple solve block support
-- AC / DC / Startup / Transient simulations
-- Output variable manager
-- Global parameter editor
-- Hierarchical sheet parameter editor
-- Automatic solver parameter loading from `slvparams.in`
-
----
-
-# Repository Structure
-
-```
-eeschema/
-│
-├── dialogs/
-│   └── dialog_export_netlist.cpp
-│
-├── gseim/
-│   ├── gseim_component_db.*
-│   ├── gseim_ebe_parser.*
-│   ├── gseim_param_parser.*
-│   ├── gseim_sub_parser.*
-│   └── gseim_subckt_db.*
-│
-├── netlist_exporters/
-│   ├── netlist_exporter_gseim.*
-│   └── netlist_generator.cpp
-│
-├── tools/
-│   └── sch_edit_tool.cpp
-│
-├── schematic.*
-└── sch_sheet.*
-```
-
----
-
-# Important Files
-
-## `netlist_exporter_gseim.*`
-
-Main exporter responsible for generating
-
-- `.cir`
-- `.sub`
-
-files from KiCad schematics.
-
----
-
-## `gseim_ebe_parser.*`
-
-Parses GSEIM component definitions (`.ebe`).
-
-Extracts
-
-- nodes
-- rparms
-- iparms
-- sparms
-- stparms
-- output variables
-- AC output variables
-
----
-
-## `gseim_component_db.*`
-
-Loads every `.ebe` file into an in-memory component database used by the exporter and parameter editor.
-
----
-
-## `gseim_sub_parser.*`
-
-Parses generated `.sub` files.
-
-Used to expose subcircuit parameters inside KiCad.
-
----
-
-## `gseim_subckt_db.*`
-
-Database of all available GSEIM subcircuits.
-
----
-
-## `gseim_param_parser.*`
-
-Converts
-
-```
-r=10k c=1u v0=2
-```
-
-into
-
-```cpp
-std::map<wxString, wxString>
-```
-
-and back.
-
----
-
-## `dialog_export_netlist.cpp`
-
-Implements two new export pages
-
-- Export as GSEIM
-- Export as GSEIM Subcircuit
-
-Features include
-
-- Solve block editor
-- Output variable editor
-- Global parameter editor
-- Subcircuit parameter editor
-
----
-
-## `sch_edit_tool.cpp`
-
-Adds
-
-```
-Right Click
-    → Modify GSEIM Parameters
-```
-
-for
-
-- Components
-- Hierarchical sheets
-
----
-
-# Export Pipeline
-
-```
-KiCad schematic
-        │
-        ▼
-Read schematic hierarchy
-        │
-        ▼
-Load .ebe database
-        │
-        ▼
-Load .sub database
-        │
-        ▼
-Collect component parameters
-        │
-        ▼
-Collect hierarchy parameters
-        │
-        ▼
-Generate solve blocks
-        │
-        ▼
-Generate output variables
-        │
-        ▼
-Write .cir / .sub
-```
-
----
-
-# Usage
-
-## 1. Create a GSEIM Component
-
-Assign
-
-```
-Gseim.Type
-```
-
-and
-
-```
-Gseim.Params
-```
-
-fields to a schematic symbol.
-
-Example
-
-```
-Gseim.Type = r
-
-Gseim.Params = r=10k
-```
-
----
-
-## 2. Modify Parameters
-
-Right-click
-
-```
-Component
-    → Modify GSEIM Parameters
-```
-
-or
-
-```
-Hierarchical Sheet
-    → Modify GSEIM Parameters
-```
-
-The dialog is automatically generated from the parsed database.
-
----
-
-## 3. Export a Circuit
-
-```
-File
-    → Export
-        → GSEIM
-```
-
-Configure
-
-- Global parameters
-- Solve blocks
-- Output variables
-
-and export a `.cir` file.
-
----
-
-## 4. Export a Subcircuit
-
-Open the hierarchical schematic.
-
-```
-File
-    → Export
-        → GSEIM Subcircuit
-```
-
-Configure
-
-- Parameter defaults
-- Output variables
-
-and export a reusable `.sub`.
-
----
-
-# Example Output
-
-```text
-begin_circuit
-
-   subckt name=OA1 type=opamp
-+    plus=plus
-+    minus=minus
-+    out=out
-+    ground=0
-+    a_v=1e5
-+    r_in=1e6
-
-   eelement name=R1 type=r p=0 n=minus r=10k
-   eelement name=R2 type=r p=minus n=out r=22.1k
-
-   ref_node=0
-
-end_circuit
-```
-
----
-
-# Supported Simulation Types
-
-- Startup
-- DC
-- Transient
-- AC
-
-Multiple solve blocks can be defined within the same project.
-
----
-
-# Supported Parameter Types
-
-Component Parameters
-
-- Real parameters
-- Integer parameters
-- String parameters
-- Special parameters
-
-Global Parameters
-
-- rparms
-- iparms
-- sparms
-- Embedded C code
-
-Subcircuit Parameters
-
-- rparms
-- iparms
-- sparms
-
----
-
-# Build
-
-Configure and build KiCad normally.
+## Clone
 
 ```bash
-cmake -B build-ninja -G Ninja
+git clone <repository-url>
+cd kicad-source-mirror
+```
+
+## Configure
+
+```bash
+cmake -B build-ninja -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$HOME/Desktop/GSEIM-Eeschema" \
+```
+
+## Build
+
+```bash
 ninja -C build-ninja
 ```
 
-Run Eeschema from the build directory.
+## Install
 
 ```bash
-KICAD_RUN_FROM_BUILD_DIR=1 \
-KICAD_CONFIG_HOME=~/kicad-dev-config \
-./build-ninja/eeschema/eeschema
+ninja -C build-ninja install
 ```
 
+The installation will be placed in:
+
+```text
+$HOME/Desktop/GSEIM-Eeschema
+```
+
+## Run
+
+```bash
+cd "$HOME/Desktop/GSEIM-Eeschema/bin"
+
+./eeschema
+```
+
+or simply
+
+```bash
+$HOME/Desktop/GSEIM-Eeschema/bin/eeschema
+```
+
+## Build Directory
+
+```
+build-ninja/
+```
+
+contains all generated build files and may be safely deleted and regenerated at any time.
+
+## GSEIM Symbol Library — where it lives
+
+The GSEIM symbol library is installed at:
+<install-prefix>/share/kicad/resources/gseim/GSEIM_Library.kicad_sym
+
+For example, with:
+
+```bash
+cmake -B build-ninja -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$HOME/Desktop/GSEIM-Eeschema"
+```
+
+the library table entry points at:
+~/Desktop/GSEIM-Eeschema/share/kicad/resources/gseim/GSEIM_Library.kicad_sym
+
+This is the file KiCad's symbol editor writes to when you create or edit
+GSEIM symbols. It is **not** a separate user-data directory — it's the
+same file that gets installed by `cmake --install`.
+
+### This file is overwritten on reinstall
+
+Any symbols you add live directly inside the install prefix. If you
+re-run `cmake --install build-ninja` (or delete and rebuild the install
+prefix), this file is replaced with the pristine copy from the source
+tree, and anything not committed to source control is lost.
+
+**Before reinstalling, back up your symbols:**
+
+```bash
+cp ~/Desktop/GSEIM-Eeschema/share/kicad/resources/gseim/GSEIM_Library.kicad_sym \
+   ~/gseim_symbols_backup.kicad_sym
+```
+
+**After reinstalling, restore them:**
+
+```bash
+cp ~/gseim_symbols_backup.kicad_sym \
+   ~/Desktop/GSEIM-Eeschema/share/kicad/resources/gseim/GSEIM_Library.kicad_sym
+```
+
+If a symbol is meant to be part of the shipped default set rather than a
+personal/local addition, add it to `resources/gseim/GSEIM_Library.kicad_sym`
+in the source tree and commit it instead of relying on the manual
+backup/restore above.
+
+## Cleaning
+
+To rebuild from scratch:
+
+```bash
+rm -rf build-ninja
+
+cmake -B build-ninja -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$HOME/Desktop/GSEIM-Eeschema" \
+
+ninja -C build-ninja
+ninja -C build-ninja install
+```
+
+## Features
+
+- Standalone Eeschema application
+- Integrated GSEIM simulator
+- GSEIM netlist export
+- Electrical Building Blocks (EBEs)
+- XBE support
+- Multiple solve blocks
+- GSEIM parameter editor
+- Out-variable selection
+
+## Notes
+
+This project builds only the standalone schematic editor. The following KiCad applications are intentionally excluded:
+
+- PCB Editor (Pcbnew)
+- GerbView
+- Bitmap2Component
+- CvPcb
+- PCB Calculator
+- 3D Viewer
+- Page Layout Editor
+- QA tools
+
+
+## GSEIM Source Files
+
+The GSEIM integration consists of the following source files and resources.
+
+### Netlist Export
+
+```
+eeschema/netlist_exporters/
+├── netlist_exporter_gseim.cpp
+└── netlist_exporter_gseim.h
+```
+
+Implements the GSEIM netlist exporter and generates `.cir` files directly from Eeschema schematics.
+
 ---
 
-# Future Work
+### GSEIM Component Database
 
-- Direct GSEIM execution from Eeschema
-- Waveform viewer integration
-- Better validation of simulation parameters
-- Additional GSEIM device support
-- Improved diagnostics and error reporting
+```
+eeschema/gseim/
+├── gseim_component_db.cpp
+├── gseim_component_db.h
+├── gseim_ebe_parser.cpp
+└── gseim_ebe_parser.h
+```
+
+Loads and parses GSEIM Electrical Building Block (EBE) and XBE descriptions.
 
 ---
 
-# Acknowledgements
+### Solver Parameter Database
 
-- KiCad Development Team
-- GSEIM Project
+```
+eeschema/gseim/
+├── gseim_solver_parameter_db.cpp
+└── gseim_solver_parameter_db.h
+```
+
+Loads solver parameters from `slvparams.in` and provides them to the UI.
+
+---
+
+### Subcircuit Database
+
+```
+eeschema/gseim/
+├── gseim_subckt_db.cpp
+└── gseim_subckt_db.h
+```
+
+Scans the GSEIM subcircuit directory and makes available user-defined subcircuits.
+
+---
+
+### User Interface
+
+```
+eeschema/dialogs/
+├── dialog_gseim_parameters.cpp
+└── dialog_gseim_parameters.h
+```
+
+Provides the GSEIM parameter editor for configuring EBE/XBE parameters.
+
+Additional GSEIM controls have been integrated into:
+
+```
+eeschema/dialogs/
+├── dialog_export_netlist.cpp
+├── dialog_export_netlist.h
+├── panel_export_netlist.cpp
+└── panel_export_netlist.h
+```
+
+These provide:
+
+- Solve block configuration
+- Solver parameter editing
+- Output variable selection
+- Netlist export options
+
+---
+
+### Resources
+
+```
+resources/gseim/
+├── bin/
+├── ebe/
+├── xbe/
+├── subckt/
+├── slvparams.in
+├── GSEIM_Library.kicad_sym
+└── ...
+```
+
+Contains:
+
+- EBE,XBE,Subcircuit models
+- Solver parameter definitions
+- GSEIM component library
+- Executables and runtime resources
+
+
+---
+
+### Additional files
+
+```
+eeschema/tools/
+├── sch_edit_tool.cpp
+├── sch_edit_tool.h
+├── sch_actions.cpp
+├── sch_actions.h
+```
+
+Contains Functions for:
+
+- Modify ebe/xbe/subcircuit parameters
+- Select ebe/xbe/subcircuit Output variables
+- Run simulation program
+- Run plotting program
+
+---
+
+### Standalone Build
+
+```
+CMakeLists.txt
+common/CMakeLists.txt
+eeschema/CMakeLists.txt
+```

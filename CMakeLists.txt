@@ -129,7 +129,7 @@ option( KICAD_UPDATE_CHECK
 
 option( GSEIM_STANDALONE
     "Build standalone GSEIM Eeschema"
-    OFF )
+    ON )
 
 if( GSEIM_STANDALONE )
     add_compile_definitions( GSEIM_STANDALONE )

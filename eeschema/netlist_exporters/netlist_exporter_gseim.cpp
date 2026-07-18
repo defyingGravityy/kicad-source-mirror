@@ -756,27 +756,43 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
         wxString subcktType   = fn.GetName();
 
         formatter.Print( 0, "   subckt name=%s type=%s\n", TO_UTF8( instanceName ), TO_UTF8( subcktType ) );
-
-        for( SCH_SHEET_PIN* pin : sheet->GetPins() )
         {
-            wxString portName = pin->GetText();
-            wxString netName;
+            wxString line = "+   ";
+            for( SCH_SHEET_PIN* pin : sheet->GetPins() )
+            {
+                wxString portName = pin->GetText();
+                wxString netName;
+                SCH_CONNECTION* conn = pin->Connection( &rootPath );
 
-            SCH_CONNECTION* conn = pin->Connection( &rootPath );
+                if( conn )
+                    netName = NormalizeNet( conn->Name( true ), groundNets );
 
-            if( conn )
-                netName = NormalizeNet( conn->Name( true ), groundNets );
+                wxString token = " " + portName + "=" + netName;
+                if( line.Length() + token.Length() > 80 )
+                {
+                    formatter.Print( 0, "%s\n", TO_UTF8( line ) );
+                    line = "+   " + token;
+                }
+                else
+                {
+                    line += token;
+                }
+            }
 
-            formatter.Print( 0, "+    %s=%s\n", TO_UTF8( portName ), TO_UTF8( netName ) );
-        }
-
-        for( const auto& [name, value] : params )
-        {
-            formatter.Print(
-                0,
-                "+    %s=%s\n",
-                TO_UTF8( name ),
-                TO_UTF8( value ) );
+            for( const auto& [name, value] : params )
+            {
+                wxString token = " " + name + "=" + value;
+                if( line.Length() + token.Length() > 80 )
+                {
+                    formatter.Print( 0, "%s\n", TO_UTF8( line ) );
+                    line = "+   " + token;
+                }
+                else
+                {
+                    line += token;
+                }
+            }
+            formatter.Print( 0, "%s\n", TO_UTF8( line ) );
         }
     }
 
@@ -806,19 +822,31 @@ bool NETLIST_EXPORTER_GSEIM::WriteNetlist( const wxString& aOutFileName, unsigne
 
                     formatter.Print( 0, "   subckt name=%s type=%s\n", item.refName.c_str(), TO_UTF8( gseimType ) );
 
-                    wxString portsLine = "+   ";
-
-                    for( const wxString& nodeName : subInfo->nodes )
                     {
-                        wxString net = NormalizeNet( GetNetForPinName( item, nodeName ), groundNets );
+                        wxString line = "+   ";
 
-                        if( net != "0" )
-                            m_outvars.insert( net );
+                        for( const wxString& nodeName : subInfo->nodes )
+                        {
+                            wxString net = NormalizeNet( GetNetForPinName( item, nodeName ), groundNets );
 
-                        portsLine += " " + nodeName + "=" + net;
+                            if( net != "0" )
+                                m_outvars.insert( net );
+
+                            wxString token = " " + nodeName + "=" + net;
+
+                            if( line.Length() + token.Length() > 80 )
+                            {
+                                formatter.Print( 0, "%s\n", TO_UTF8( line ) );
+                                line = "+   " + token;
+                            }
+                            else
+                            {
+                                line += token;
+                            }
+                        }
+
+                        formatter.Print( 0, "%s\n", TO_UTF8( line ) );
                     }
-
-                    formatter.Print( 0, "%s\n", TO_UTF8( portsLine ) );
 
                     auto emitParamLines = [&]( const auto& paramMap )
                     {
