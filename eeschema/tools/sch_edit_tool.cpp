@@ -4703,13 +4703,16 @@ int SCH_EDIT_TOOL::RunGseimSimulation( const TOOL_EVENT& )
     }
 
     wxExecuteEnv env;
-    env.cwd = exe.GetPath();
+    env.cwd = GetGseimResourcePath();
 
-    wxString command = wxString::Format( "\"%s\" \"%s\"", exe.GetFullPath(), circuitFile.GetFullPath() );
+    wxString command = wxString::Format(
+        "\"%s\" \"%s\"",
+        exe.GetFullPath(),
+        circuitFile.GetFullPath() );
 
     wxArrayString output;
     wxArrayString errors;
-
+    
     long result = wxExecute( command, output, errors, wxEXEC_SYNC, &env );
 
     for( const wxString& line : output )

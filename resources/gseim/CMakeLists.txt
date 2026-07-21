@@ -19,19 +19,30 @@ file(COPY
     xbe
     sub
     bin
+    gseim_aux
     DESTINATION ${GSEIM_BUILD_DIR}
 )
 
+# Install data directories
 install(
     DIRECTORY
         ebe
         xbe
         sub
-        bin
+        gseim_aux
     DESTINATION ${KICAD_DATA}/resources/gseim
-    USE_SOURCE_PERMISSIONS 
+    USE_SOURCE_PERMISSIONS
 )
 
+# Install the entire bin directory (run_gseim + gseim_plotter)
+install(
+    DIRECTORY
+        bin/
+    DESTINATION ${KICAD_DATA}/resources/gseim
+    USE_SOURCE_PERMISSIONS
+)
+
+# Install standalone files
 install(
     FILES
         slvparms.in

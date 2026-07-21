@@ -25,7 +25,10 @@ cd kicad-source-mirror
 ```bash
 cmake -B build-ninja -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX="$HOME/Desktop/GSEIM-Eeschema" \
+    -DCMAKE_INSTALL_PREFIX="$PWD" \
+    -DDEFAULT_INSTALL_PATH="$PWD" \
+    -DKICAD_DATA="$PWD/share/kicad" \
+    -DKICAD_LIBRARY_DATA="$PWD/share/kicad" \
 ```
 
 ## Build
@@ -43,13 +46,13 @@ ninja -C build-ninja install
 The installation will be placed in:
 
 ```text
-$HOME/Desktop/GSEIM-Eeschema
+the current working directory
 ```
 
 ## Run
 
 ```bash
-cd "$HOME/Desktop/GSEIM-Eeschema/bin"
+cd "$PWD/bin"
 
 ./eeschema
 ```
