@@ -1,0 +1,28 @@
+xbe name=const evaluate=yes allow_elex=yes allow_ssw=yes allow_dc=yes
++ allow_ac=yes allow_ssf=yes allow_sss=yes
+# y = k
+Jacobian: constant
+input_vars:
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  k=0
++  k_scale=1
++  k_mag=1
++  k_phase_deg=0
++  k_phase_rad=0
+stparms:
+igparms:
+outparms: y k
+outparms_ac: y_ac
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=1
+f_ac_1: y
+C:
+endC
+endxbe

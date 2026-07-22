@@ -1,0 +1,23 @@
+xbe name=min_max_3 evaluate=yes
+# y_min = min(x1,x2,x3)
+# y_max = max(x1,x2,x3)
+Jacobian: variable
+input_vars: x1 x2 x3
+output_vars: y_min y_max
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: x1 x2 x3 y_min y_max
+outparms_ac:
+n_f= 0
+n_g= 2
+g_1: y_min
+g_2: y_max
+n_f_ac=0
+C:
+endC
+endxbe

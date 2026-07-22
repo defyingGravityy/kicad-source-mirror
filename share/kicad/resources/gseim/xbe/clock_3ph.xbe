@@ -1,0 +1,61 @@
+xbe name=clock_3ph evaluate=yes limit_tstep=yes allow_ssw=yes allow_sss=yes
+Jacobian: constant
+input_vars:
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  index1=1
++  flag_frequency=1
++  flag_period=0
+sparms:
+rparms:
++  x_low=0
++  x_high=1.0
++  frequency=1k
++  T=1m
++  D=0.5
++  alpha=0
++  dt=0.1u
++  T1=1
++  T2=1
++  t0=0
++  dt1=0.01
++  dt2=0.01
++  L0=0
++  L1=0
++  L2=0
++  tk1=0
++  tk2=0
++  tk3=0
++  tk4=0
++  tk5=0
++  slope1=0
++  slope2=0
++  epsl=0
+stparms:
+igparms:
+outparms: y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+#
+# specify
+# index1, x_low, x_high, T (or frequency), D (duty cycle), dt
+# (all other parms are computed)
+#
+# index1 can be 1,2,..,6, corresponding to 0, 60, 120,.. deg phase shift
+# Note: alpha gives an additional phase shift.
+#
+# used to generate clock pulses in 3-ph circuits.
+
+# T1: first interval
+# T2: second
+# dt1: transition time at the beginning of the t1 interval
+# dt2: transition time at the beginning of the t2 interval
+
+n_f_ac=0
+C:
+endC
+endxbe

@@ -1,0 +1,44 @@
+ebe name=vcvs allow_elex=yes
+Jacobian: constant
+nodes: p n cp cn
+state_vars:
+aux_vars: cur_p
+aux_vars_ac:
+aux_vars_startup: cur_p_s
+elex_aux_vars:
+el3_aux_vars: cur_p_1
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms: alpha=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac:
+n_f=5
+f_1: cur_p
+f_2: cur_p
+f_3:
+f_4:
+f_5: v(p) v(n) v(cp) v(cn)
+n_g=0
+n_h=5
+h_1: cur_p_s
+h_2: cur_p_s
+h_3:
+h_4:
+h_5: v(p) v(n) v(cp) v(cn)
+n_f_ac=0
+n_ef=0
+n_eg=5
+eg_1: cur_p_1
+eg_2: cur_p_1
+eg_3:
+eg_4:
+eg_5: v(p) v(n) v(cp) v(cn)
+C:
+endC
+endebe

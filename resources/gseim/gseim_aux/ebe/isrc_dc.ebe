@@ -1,0 +1,37 @@
+ebe name=isrc_dc allow_elex=yes
++ el3_rhs_src=yes
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms: idc=0
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac:
+n_f=2
+f_1:
+f_2:
+n_g=0
+n_h=2
+h_1:
+h_2:
+n_f_ac=0
+n_ef=1
+ef_1: rhs_src cur(p)
+n_eg=2
+eg_1:
+eg_2:
+C:
+endC
+endebe

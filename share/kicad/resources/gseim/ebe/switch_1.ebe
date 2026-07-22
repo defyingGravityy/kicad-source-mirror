@@ -1,0 +1,47 @@
+ebe name=switch_1 x_inputs=yes allow_elex=yes
++ allow_sse=yes
+Jacobian: pwl
+nodes: p n 
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars: vsw isw
+el3_aux_vars:
+el3_state_vars:
+x_vars: x
+iparms: debug_state=0 last_jac=0
+sparms:
+rparms:
++  elex_v_on=0
++  v_on=0
++  r_on=1m
++  r_off=1M
++  x_high=1.0
++  elex_r_on=0
++  el3_r_on=0.1m
++  el3_r_off=10M
++  el3_g_on=0
++  el3_g_off=0
+stparms:
+igparms:
+n_sw_states: 2
+sw_type: fixed
+outparms: i v gate pwr
+outparms_ac:
+n_f=2
+f_1: v(p) v(n)
+f_2: v(p) v(n)
+n_g=0
+n_h=2
+h_1: v(p) v(n)
+h_2: v(p) v(n)
+n_f_ac=0
+n_ef=1
+ef_1: vsw isw
+n_eg=2
+eg_1: v(p) v(n)
+eg_2: v(p) v(n)
+C:
+endC
+endebe

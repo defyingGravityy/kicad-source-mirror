@@ -1,0 +1,29 @@
+xbe name=sampler_1 evaluate=yes limit_tstep=yes save_history=yes allow_ssw=no
++ allow_sss=no compute_time_parms=yes
+#
+# sample and hold
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms: index=0
+sparms:
+rparms:
++  T=10u
++  t0=0
++  v_previous=0
++  dt=1u
++  epsl1=0
++  epsl2=0
+stparms: y_st=0
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

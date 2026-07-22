@@ -1,0 +1,42 @@
+ebe name=r allow_elex=yes
++  allow_sse=yes allow_ac=yes
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms:
++  r=1.0
++  k_scale=1
++  g=0
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr r
+outparms_ac: i_ac v_ac S
+n_f=2
+f_1: v(p) v(n)
+f_2: v(p) v(n)
+n_g=0
+n_h=2
+h_1: v(p) v(n)
+h_2: v(p) v(n)
+n_f_ac=2
+f_ac_1: v(p) v(n)
+f_ac_2: v(p) v(n)
+n_ef=1
+ef_1: cur(p) v(p) v(n)
+n_eg=2
+eg_1: v(p) v(n)
+eg_2: v(p) v(n)
+C:
+endC
+endebe

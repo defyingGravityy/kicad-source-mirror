@@ -1,0 +1,25 @@
+xbe name=cmpr_simple_2_1 evaluate=yes elex_cmpr=yes
++  el3_cmpr=yes
+# if x1 > x2, y = high, else low
+# (reverse if flag_inverting=1)
+Jacobian: variable
+input_vars: x1 x2
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms: flag_invert=0
+sparms:
+rparms:
++  y_low=0
++  y_high=1
+stparms:
+igparms:
+outparms: x1 x2 y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

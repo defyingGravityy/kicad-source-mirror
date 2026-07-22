@@ -1,0 +1,416 @@
+begin_file
+  begin_parm
+    keyword: algorithm_trns
+    options:
++     forward_euler
++     RK4
++     RKF45
++     BS23
++     modified_euler
++     Heun
++     backward_euler
++     backward_euler_auto
++     backward_euler_const
++     trz
++     trz_auto
++     trz_const
+    default: backward_euler
+  end_parm
+  begin_parm
+    keyword: algorithm_startup
+    options:
++     explicit
++     implicit
+    default: explicit
+  end_parm
+  begin_parm
+    keyword: itmax_trns
+    options: none
+    default: 1000000
+  end_parm
+  begin_parm
+    keyword: itmax_stepred
+    options: none
+    default: 20
+  end_parm
+  begin_parm
+    keyword: write_time
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: write_trns_progress
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: write_ss_progress
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: write_ac_progress
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: write_iter_n
+    options: none
+    default: 1000
+  end_parm
+  begin_parm
+    keyword: t_start
+    options: none
+    default: 0
+  end_parm
+  begin_parm
+    keyword: t_end
+    options: none
+    default: 0
+  end_parm
+  begin_parm
+    keyword: delt_small
+    options: none
+    default: 1.0e-12
+  end_parm
+  begin_parm
+    keyword: delt
+    options: none
+    default: none
+  end_parm
+  begin_parm
+    keyword: delt_min
+    options: none
+    default: none
+  end_parm
+  begin_parm
+    keyword: delt_max
+    options: none
+    default: none
+  end_parm
+  begin_parm
+    keyword: t_startup
+    options: none
+    default: 0.0
+  end_parm
+  begin_parm
+    keyword: t_dc
+    options: none
+    default: 0.0
+  end_parm
+  begin_parm
+    keyword: rkf45_tolr_abs
+    options: none
+    default: 1.0e-5
+  end_parm
+  begin_parm
+    keyword: rkf45_tolr_abs_min
+    options: none
+    default: 1.0e-10
+  end_parm
+  begin_parm
+    keyword: rkf45_tolr_rel
+    options: none
+    default: 1.0e-5
+  end_parm
+  begin_parm
+    keyword: rkf45_abs_auto
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: rkf45_fctr_min
+    options: none
+    default: 0.8
+  end_parm
+  begin_parm
+    keyword: rkf45_fctr_max
+    options: none
+    default: 1.1
+  end_parm
+  begin_parm
+    keyword: bs23_tolr_abs
+    options: none
+    default: 1.0e-5
+  end_parm
+  begin_parm
+    keyword: bs23_tolr_abs_min
+    options: none
+    default: 1.0e-10
+  end_parm
+  begin_parm
+    keyword: bs23_tolr_rel
+    options: none
+    default: 1.0e-5
+  end_parm
+  begin_parm
+    keyword: bs23_abs_auto
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: bs23_fctr_min
+    options: none
+    default: 0.8
+  end_parm
+  begin_parm
+    keyword: bs23_fctr_max
+    options: none
+    default: 1.1
+  end_parm
+  begin_parm
+    keyword: gauss_epsln
+    options: none
+    default: 1.0e-40
+  end_parm
+  begin_parm
+    keyword: zero_piv
+    options: none
+    default: 1.0e-40
+  end_parm
+  begin_parm
+    keyword: factor_step_increase
+    options: none
+    default: 1.5
+  end_parm
+  begin_parm
+    keyword: factor_step_decrease
+    options: none
+    default: 0.6
+  end_parm
+  begin_parm
+    keyword: limit_tstep_increase
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: factor_step_increase_abs
+    options: none
+    default: 2.0
+  end_parm
+  begin_parm
+    keyword: nr_itermax0
+    options: none
+    default: 500
+  end_parm
+  begin_parm
+    keyword: nr_dmp0
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_dmp_itermax0
+    options: none
+    default: 50
+  end_parm
+  begin_parm
+    keyword: nr_dmp_k0
+    options: none
+    default: 0.2
+  end_parm
+  begin_parm
+    keyword: nr_itermax
+    options: none
+    default: 500
+  end_parm
+  begin_parm
+    keyword: nr_dmp
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_dmp_itermax
+    options: none
+    default: 50
+  end_parm
+  begin_parm
+    keyword: nr_dmp_k
+    options: none
+    default: 0.2
+  end_parm
+  begin_parm
+    keyword: nr_check_rhs2
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_check_spice
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_check_delx_volt
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_check_delx_all
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_write_rhs2
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_write_rhsinf
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_write_delx_volt
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: nr_eps_rhs
+    options: none
+    default: 1.0e-6
+  end_parm
+  begin_parm
+    keyword: nr_eps_volt
+    options: none
+    default: 1.0e-4
+  end_parm
+  begin_parm
+    keyword: nr_eps_delx_all
+    options: none
+    default: 1.0e-4
+  end_parm
+  begin_parm
+    keyword: nr_spice_vntol
+    options: none
+    default: 1.0e-4
+  end_parm
+  begin_parm
+    keyword: nr_spice_abstol
+    options: none
+    default: 1.0e-6
+  end_parm
+  begin_parm
+    keyword: nr_spice_reltol
+    options: none
+    default: 1.0e-3
+  end_parm
+  begin_parm
+    keyword: ss_nr_itermax
+    options: none
+    default: 50
+  end_parm
+  begin_parm
+    keyword: ss_nr_dmp_itermax
+    options: none
+    default: 10
+  end_parm
+  begin_parm
+    keyword: ss_nr_dmp
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: ss_nr_dmp_k
+    options: none
+    default: 0.6
+  end_parm
+  begin_parm
+    keyword: ss_period
+    options: none
+    default: none
+  end_parm
+  begin_parm
+    keyword: ss_frequency
+    options: none
+    default: none
+  end_parm
+  begin_parm
+    keyword: ss_period_max
+    options: none
+    default: none
+  end_parm
+  begin_parm
+    keyword: ss_period_mult_compute
+    options: none
+    default: 2
+  end_parm
+  begin_parm
+    keyword: ss_period_mult_plot
+    options: none
+    default: 2
+  end_parm
+  begin_parm
+    keyword: ss_ndiv
+    options: none
+    default: 200
+  end_parm
+  begin_parm
+    keyword: ss_nr_eps_rhs
+    options: none
+    default: 1.0e-10
+  end_parm
+  begin_parm
+    keyword: ss_known_period
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: ss_reset_tstart
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: ss_rewind
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: ss_period_float
+    options: yes no
+    default: no
+  end_parm
+  begin_parm
+    keyword: ss_track_var
+    options: none
+    default: none
+  end_parm
+  begin_parm
+    keyword: ss_track_period_factor
+    options: none
+    default: 1.2
+  end_parm
+  begin_parm
+    keyword: ss_delta_small
+    options: none
+    default: 1.0e-9
+  end_parm
+  begin_parm
+    keyword: ss_delta_k
+    options: none
+    default: 1.0e-2
+  end_parm
+  begin_parm
+    keyword: ss_startup_init_always
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: ss_trns_init_always
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: ss_skip_startup
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: ss_skip_first_startup
+    options: yes no
+    default: yes
+  end_parm
+  begin_parm
+    keyword: vary_parm_init_always
+    options: yes no
+    default: yes
+  end_parm
+end_file

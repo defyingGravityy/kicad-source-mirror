@@ -1,0 +1,25 @@
+xbe name=abc_to_dq0_2 evaluate=yes allow_elex=yes
++ allow_ssf=yes
+Jacobian: variable
+input_vars: xa xb xc theta
+output_vars: xd xq x0
+aux_vars: c s
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: xa xb xc xd xq x0
+outparms_ac:
+n_f= 0
+n_g= 5
+g_1: xd xa xb xc c s
+g_2: xq xa xb xc c s
+g_3: x0 xa xb xc
+g_4: c theta
+g_5: s theta
+n_f_ac=0
+C:
+endC
+endxbe

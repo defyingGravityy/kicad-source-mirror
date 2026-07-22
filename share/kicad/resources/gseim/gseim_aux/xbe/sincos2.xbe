@@ -1,0 +1,24 @@
+xbe name=sincos2 evaluate=yes allow_elex=yes
+# sin x, cos x, sin 2x, cos 2x
+Jacobian: variable
+input_vars: x
+output_vars: s c s2 c2
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: x s c s2 c2
+outparms_ac:
+n_f= 0
+n_g= 4
+g_1: x s
+g_2: x c
+g_3: x s2
+g_4: x c2
+n_f_ac=0
+C:
+endC
+endxbe

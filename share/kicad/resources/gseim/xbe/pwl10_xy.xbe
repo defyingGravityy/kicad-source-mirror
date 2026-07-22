@@ -1,0 +1,25 @@
+xbe name=pwl10_xy evaluate=yes
+# y vs x described in a piecewise linear form
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms: n=2
+sparms:
+rparms:
++  x1=1 x2=1 x3=1 x4=1 x5=1
++  x6=1 x7=1 x8=1 x9=1 x10=1
++  y1=1 y2=1 y3=1 y4=1 y5=1
++  y6=1 y7=1 y8=1 y9=1 y10=1
+stparms:
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

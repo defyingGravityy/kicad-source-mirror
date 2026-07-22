@@ -1,0 +1,30 @@
+xbe name=sop_6_6 evaluate=yes allow_elex=yes
+# y as a sum-of-products form of x1,x2,x3,x4,x5,x6.
+# y = k1*term1 + k2*term2 + ... (max N=6 terms)
+Jacobian: variable
+input_vars: x1 x2 x3 x4 x5 x6
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  k11=0  k12=0  k13=0  k14=0  k15=0  k16=0
++  k21=0  k22=0  k23=0  k24=0  k25=0  k26=0
++  k31=0  k32=0  k33=0  k34=0  k35=0  k36=0
++  k41=0  k42=0  k43=0  k44=0  k45=0  k46=0
++  k51=0  k52=0  k53=0  k54=0  k55=0  k56=0
++  k61=0  k62=0  k63=0  k64=0  k65=0  k66=0
+sparms:
+rparms:
++  k1=0  k2=0  k3=0  k4=0  k5=0  k6=0
++  k0=0
+stparms:
+igparms:
+outparms: x1 x2 x3 x4 x5 x6 y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: x1 x2 x3 x4 x5 x6 y
+n_f_ac=0
+C:
+endC
+endxbe

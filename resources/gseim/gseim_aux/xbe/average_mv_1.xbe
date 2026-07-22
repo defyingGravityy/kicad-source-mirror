@@ -1,0 +1,35 @@
+xbe name=average_mv_1 evaluate=yes limit_tstep=yes save_history=yes allow_ssw=no
++ allow_sss=no
+#
+# compute average value of x between active edges of clk.
+#
+Jacobian: variable
+input_vars: clk x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  active_pos_edge=1
++  active_neg_edge=0
+sparms:
+rparms:
++  clk_high=1
++  dt=0.1u
++  clk_cross=0
++  clk_prev=0
++  t_lapsed=0
++  x_sum=0
++  t_prev=0
++  x_prev=0
++  y0=0
+stparms: x_avg_st=0
+igparms:
+outparms: clk x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

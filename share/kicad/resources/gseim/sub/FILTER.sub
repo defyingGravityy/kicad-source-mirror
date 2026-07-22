@@ -1,0 +1,9 @@
+begin_subckt name=FILTER
+
+  nodes: OUT IN
+
+  ebe name=C1 type=c p=OUT n=0
+  ebe name=R2 type=r p=OUT n=IN
+
+end_subckt
+

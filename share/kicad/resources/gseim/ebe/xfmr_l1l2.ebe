@@ -1,0 +1,50 @@
+ebe name=xfmr_l1l2
+#
+# l1,l2,m model (m is computed)
+# leakage inductances and winding resistances are not included
+#
+Jacobian: constant
+nodes: p_p  s_p  p_n  s_n
+state_vars:
+aux_vars: i1  i2  i1d  i2d
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms: Np=1 Ns=1
+sparms:
+rparms:
++  l1=1m
++  l2=1m
++  k=1
++  m=0
+stparms:
++  i10=0 i20=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: ip is vp vs
+outparms_ac:
+n_f=8
+f_1: i1
+f_2: i2
+f_3: i1
+f_4: i2
+f_5: d_dt(i1) i1d
+f_6: d_dt(i2) i2d
+f_7: v(p_p) v(p_n) i1d i2d
+f_8: v(s_p) v(s_n) i1d i2d
+n_g=0
+n_h=4
+h_1:
+h_2:
+h_3:
+h_4:
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

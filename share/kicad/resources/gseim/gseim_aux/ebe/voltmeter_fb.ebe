@@ -1,0 +1,49 @@
+ebe name=voltmeter_fb x_outputs=yes allow_elex=yes elex_voltmeter=yes
++ allow_sss=yes
++ allow_sse=yes
++ allow_ac=yes
+# ideal voltmeter with feedback
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: v_fb
+iparms:
+sparms:
+rparms: k_scale=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: v_fb
+outparms_ac: v_fb_ac
+n_f=3
+f_1:
+f_2:
+f_3: v_fb v(p) v(n)
+n_g=0
+n_h=3
+h_1:
+h_2:
+h_3: v_fb v(p) v(n)
+#n_ef=2
+#ef_1: cur(p)
+#ef_2: v_fb v(p) v(n)
+n_f_ac=3
+f_ac_1:
+f_ac_2:
+f_ac_3: v_fb v(p) v(n)
+n_ef=1
+ef_1: v_fb v(p) v(n)
+n_eg=3
+eg_1:
+eg_2:
+eg_3: v_fb v(p) v(n)
+C:
+endC
+endebe

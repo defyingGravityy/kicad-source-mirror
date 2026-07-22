@@ -1,0 +1,73 @@
+ebe name=xfmr_level0_1ph_1_2 allow_elex=yes
+#
+# one primary winding, two secondary windings
+# (No magnetizing inductance)
+#
+Jacobian: constant
+# Note: the order of nodes is related to the GUI symbol for this ebe.
+nodes: s1_n  s2_p  p_p  s1_p  p_n  s2_n
+state_vars:
+aux_vars: cur_p_p  cur_s1_p  cur_s2_p
+aux_vars_ac:
+aux_vars_startup: cur_p_p_s  cur_s1_p_s  cur_s2_p_s
+elex_aux_vars: Vp Vs1 Vs2
+el3_aux_vars: cur_p_p_1  cur_s1_p_1  cur_s2_p_1
+el3_state_vars:
+x_vars:
+iparms: Np=1 Ns1=2 Ns2=2
+sparms:
+rparms:
++  p_turns=1
++  s1_turns=1
++  s2_turns=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: ip is1 is2 vp vs1 vs2
+outparms_ac:
+n_f=9
+f_1: cur_s1_p
+f_2: cur_s2_p
+f_3: cur_p_p
+f_4: cur_s1_p
+f_5: cur_p_p
+f_6: cur_s2_p
+f_7: v(p_p) v(p_n) v(s1_p) v(s1_n)
+f_8: v(p_p) v(p_n) v(s2_p) v(s2_n)
+f_9: cur_p_p cur_s1_p cur_s2_p
+n_g=0
+n_h=9
+h_1: cur_s1_p_s
+h_2: cur_s2_p_s
+h_3: cur_p_p_s
+h_4: cur_s1_p_s
+h_5: cur_p_p_s
+h_6: cur_s2_p_s
+h_7: v(p_p) v(p_n) v(s1_p) v(s1_n)
+h_8: v(p_p) v(p_n) v(s2_p) v(s2_n)
+h_9: cur_p_p_s cur_s1_p_s cur_s2_p_s
+n_f_ac=0
+n_ef= 9
+ef_1: Vp v(p_p) v(p_n)
+ef_2: Vs1 v(s1_p) v(s1_n)
+ef_3: Vs2 v(s2_p) v(s2_n)
+ef_4: Vp Vs1
+ef_5: Vp Vs2
+ef_6: cur(p_p) cur(s1_p) cur(s2_p)
+ef_7: cur(p_p) cur(p_n)
+ef_8: cur(s1_p) cur(s1_n)
+ef_9: cur(s2_p) cur(s2_n)
+n_eg=9
+eg_1: cur_s1_p_1
+eg_2: cur_s2_p_1
+eg_3: cur_p_p_1
+eg_4: cur_s1_p_1
+eg_5: cur_p_p_1
+eg_6: cur_s2_p_1
+eg_7: v(p_p) v(p_n) v(s1_p) v(s1_n)
+eg_8: v(p_p) v(p_n) v(s2_p) v(s2_n)
+eg_9: cur_p_p_1 cur_s1_p_1 cur_s2_p_1
+C:
+endC
+endebe

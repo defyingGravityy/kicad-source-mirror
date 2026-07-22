@@ -1,0 +1,44 @@
+ebe name=cccs allow_elex=yes
+Jacobian: constant
+nodes: p n cp cn
+state_vars:
+aux_vars: cur_p_c
+aux_vars_ac:
+aux_vars_startup: cur_p_c_s
+elex_aux_vars:
+el3_aux_vars: cur_p_c_1
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms: beta=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i_c i v pwr
+outparms_ac:
+n_f=5
+f_1: cur_p_c
+f_2: cur_p_c
+f_3: cur_p_c
+f_4: cur_p_c
+f_5: v(cp) v(cn) cur_p_c
+n_g=0
+n_h=5
+h_1: cur_p_c_s
+h_2: cur_p_c_s
+h_3: cur_p_c_s
+h_4: cur_p_c_s
+h_5: v(cp) v(cn) cur_p_c_s
+n_f_ac=0
+n_ef=0
+n_eg=5
+eg_1: cur_p_c_1
+eg_2: cur_p_c_1
+eg_3: cur_p_c_1
+eg_4: cur_p_c_1
+eg_5: v(cp) v(cn) cur_p_c_1
+C:
+endC
+endebe

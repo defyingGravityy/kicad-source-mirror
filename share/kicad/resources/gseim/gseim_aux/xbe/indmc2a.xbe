@@ -1,0 +1,60 @@
+xbe name=indmc2a integrate=yes
++  allow_elex=yes elex_need_oldvars=yes
+
+# induction motor model
+# (same as indmc1.xbe; this one is to be used along with
+# indmc2b.xbe)
+
+Jacobian: variable
+input_vars: vqs vds tl
+output_vars: wrm
++  psids psidr psiqs psiqr
+aux_vars:
+aux_vars_ac:
+iparms:
++  poles=4
+sparms:
+rparms:
++  rs=0.435
++  lls=0.002
++  lm=0.0693
++  llr=0.002
++  rr=0.816
++  j=0.089
++  ls=0
++  lr=0
++  le=0
++  l1=0
++  l2=0
++  l3=0
++  x1=0
++  x2=0
+stparms:
++  psids0=0
++  psiqs0=0
++  psidr0=0
++  psiqr0=0
++  wrm0=0
+igparms:
+outparms:
++  wrm
++  tem
++  vds
++  vqs
+outparms_ac:
+n_f= 5
+f_1: d_dt(psids)
+f_2: d_dt(psiqs)
+f_3: d_dt(psidr)
+f_4: d_dt(psiqr)
+f_5: d_dt(wrm)
+n_g= 5
+g_1: vds psids psidr
+g_2: vqs psiqs psiqr
+g_3: wrm psiqr psids psidr
+g_4: wrm psidr psiqs psiqr
+g_5: tl psids psidr psiqs psiqr
+n_f_ac=0
+C:
+endC
+endxbe

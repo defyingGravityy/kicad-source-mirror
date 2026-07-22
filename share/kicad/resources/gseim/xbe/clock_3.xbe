@@ -1,0 +1,46 @@
+xbe name=clock_3 evaluate=yes limit_tstep=yes allow_ssw=yes allow_elex=yes
++  elex_limit_tstep=yes
++  el3_limit_tstep=yes
+Jacobian: constant
+input_vars:
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms: indx=1
+sparms:
+rparms:
++  alpha=10
++  beta=0
++  T=0.02
++  y_high=1
++  delta1=0.01
++  delta2=0.01
++  elex_dt=1.0e-10
++  T1=0
++  T2=0
++  t0=0
++  L1=0
++  L2=0
++  L0=0
++  tk1=0
++  tk2=0
++  tk3=0
++  tk4=0
++  tk5=0
++  slope1=0
++  slope2=0
++  epsl=0
+stparms:
+igparms:
+outparms: y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+# inputs: alpha,beta,indx,T,y_high,delta1,delta2
+# L1 is the level in the first interval, L2 in the second, they
+# are computed, depending on indx.
+n_f_ac=0
+C:
+endC
+endxbe

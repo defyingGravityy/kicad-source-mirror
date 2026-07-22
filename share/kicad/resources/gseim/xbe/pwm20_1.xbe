@@ -1,0 +1,43 @@
+xbe name=pwm20_1 evaluate=yes limit_tstep=yes save_history=yes allow_ssw=no
+#
+# generate PWM signals using angle values (in degrees)
+#
+Jacobian: variable
+input_vars:
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  ndata=2
++  index_last=0
++  level_0minus=0
+sparms:
+rparms:
++  t_1=0   t_2=0   t_3=0   t_4=0   t_5=0
++  t_6=0   t_7=0   t_8=0   t_9=0   t_10=0
++  t_11=0  t_12=0  t_13=0  t_14=0  t_15=0
++  t_16=0  t_17=0  t_18=0  t_19=0  t_20=0
++  theta_1=0   theta_2=0   theta_3=0   theta_4=0   theta_5=0
++  theta_6=0   theta_7=0   theta_8=0   theta_9=0   theta_10=0
++  theta_11=0  theta_12=0  theta_13=0  theta_14=0  theta_15=0
++  theta_16=0  theta_17=0  theta_18=0  theta_19=0  theta_20=0
++  frequency=1
++  y_low=0
++  y_high=1
++  theta_delay=0.0
++  t_delay=0
++  t_period=0
++  epsl1=0
++  epsl2=0
++  epsl3=0
+stparms:
+igparms:
+outparms: y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

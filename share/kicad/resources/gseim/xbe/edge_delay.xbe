@@ -1,0 +1,45 @@
+xbe name=edge_delay evaluate=yes limit_tstep=yes save_history=yes allow_ssw=no
+#
+# shift input signal by the given delay. The input signal is assumed
+# to be x_high or x_low (like clock signals)
+#
+# the total delay is n_delay*(theta_delay)+theta_delay_1, converted to time
+#
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  n_delay=1
++  flag_frequency=1
++  flag_period=0
++  flag_zero_delay=0
+sparms:
+# Note: frequency (or T) is used only to convert theta_delay
+# to t_delay. The input signal is not required to be periodic.
+rparms:
++  x_low=0
++  x_high=1
++  frequency=0
++  T=0
++  theta_delay=0.0
++  theta_delay_1=0.0
++  t_delay=0
++  x_last=0.0
++  t_low_to_high=0
++  t_high_to_low=0
++  x_cross=0
++  epsl2=0
++  epsl3=0
+stparms:
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

@@ -1,0 +1,20 @@
+xbe name=atan2_rad evaluate=yes
+Jacobian: variable
+input_vars: x y
+output_vars: theta
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: x y theta
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: theta
+n_f_ac=0
+C:
+endC
+endxbe

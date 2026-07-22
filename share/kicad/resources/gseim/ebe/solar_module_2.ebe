@@ -1,0 +1,69 @@
+ebe name=solar_module_2
+#
+#
+Jacobian: variable
+nodes: p n
+state_vars:
+aux_vars: i_solar
+aux_vars_ac:
+aux_vars_startup: i_solar_s
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+# Nc         number of cells in series (only series is allowed, not parallel)
+# t_C        ambient temperature in deg C
+# g_rad      irradiation in W/m2
+# t_C_ref    ref temperature in deg C
+# g_rad_ref  ref irradiation in W/m2
+# Voc_ref    Voc at t_C_ref
+# Isc_ref    Isc at t_C_ref
+# Vm_ref     Vm at t_C_ref, max power point being (Vm, Im)
+# Im_ref     Im at t_C_ref
+# coef_Isc   % change in Isc with temperature (e.g., 0.05 %/degC)
+# coef_Voc   % change in Voc with temperature (e.g., -0.32 %/degC)
+# Eg         energy gap
+#
+rparms:
++  Nc=1
++  t_C=25
++  t_C_ref=25
++  g_rad=1000
++  g_rad_ref=1000
++  Voc_ref=0.8
++  Isc_ref=1.0
++  Vm_ref=0.6
++  Im_ref=0.8
++  coef_Isc=0.05
++  coef_Voc=-0.32
++  cur_max=1000
++  Eg=1.11
++  Vt=0
++  eta=0
++  Iph=0
++  I0=0
++  Rs=0
++  k_crit=0
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v p
+outparms_ac:
+n_f=3
+f_1: i_solar v(p) v(n)
+f_2: i_solar v(p) v(n)
+f_3: v(p) v(n) i_solar
+n_g=0
+n_h=3
+h_1: i_solar_s v(p) v(n)
+h_2: i_solar_s v(p) v(n)
+h_3: v(p) v(n) i_solar_s
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

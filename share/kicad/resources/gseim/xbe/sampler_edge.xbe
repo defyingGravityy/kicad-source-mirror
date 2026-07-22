@@ -1,0 +1,32 @@
+xbe name=sampler_edge evaluate=yes limit_tstep=no save_history=yes allow_ssw=no
+#
+# when an active edge is detected at clock, sample input x and make it available
+# as output y.
+#
+Jacobian: variable
+input_vars: clock x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  active_pos_edge=1
++  active_neg_edge=0
++  flag_active_edge=0
+sparms:
+rparms:
++  clock_low=0
++  clock_high=1
++  clock_prev=0
++  clock_cross=0
++  x_previous=0
+stparms:
+igparms:
+outparms: clock x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

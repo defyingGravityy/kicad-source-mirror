@@ -1,0 +1,35 @@
+xbe name=pole_complex_order_2 integrate=yes
++  allow_elex=yes elex_need_oldvars=yes
+#
+#     --                                                --
+#     |        (a + jb)                (a - jb)          |
+# y = |----------------------- + ----------------------- | * x
+#     |(s-(alpha + j*beta))**2   (s-(alpha - j*beta))**2 |
+#     |_                                                _|
+
+Jacobian: constant
+input_vars: x
+output_vars: y
+aux_vars: z1 z2 z3
+aux_vars_ac:
+iparms:
+sparms:
+rparms: a=1 b=1 alpha=1 beta=1
+stparms: y_st=0 z1_st=0 z2_st=0 z3_st=0
+igparms:
+outparms:
+outparms_ac:
+n_f= 4
+f_1: d_dt(y)
+f_2: d_dt(z1)
+f_3: d_dt(z2)
+f_4: d_dt(z3)
+n_g= 4
+g_1: y z1 z2
+g_2: y z1 z3
+g_3: x z2 z3
+g_4: x z2 z3
+n_f_ac=0
+C:
+endC
+endxbe

@@ -1,0 +1,44 @@
+ebe name=isrc_ac allow_ac=yes
+# f_hz in Hz, phi_deg in deg
+# Im is amplitude in Amps
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms:
++   Im=1 
++   f_hz=1
++   phi_deg=0
++   t0=0
++   omega=0
++   phi_rad=0
++   idc=0
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac: i_ac v_ac S
+n_f=2
+f_1:
+f_2:
+n_g=0
+n_h=2
+h_1:
+h_2:
+n_f_ac=2
+f_ac_1:
+f_ac_2:
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

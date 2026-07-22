@@ -1,0 +1,26 @@
+xbe name=cmpr_band_1_1 evaluate=yes allow_elex=yes elex_cmpr=yes
++  el3_cmpr=yes
+# if x_low < x < x_high, y = y_high; else y_low
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  x_low=0
++  x_high=1
++  y_low=0
++  y_high=1
+stparms:
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

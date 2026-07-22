@@ -1,0 +1,39 @@
+ebe name=thyristor save_history=yes x_inputs=yes allow_elex=no
+Jacobian: variable
+nodes: anode cathode
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: g_in
+iparms: flag_on=0 flag1=0
+sparms:
+rparms:
++  elex_v_on=0
++  v_on=0
++  r_on=1m
++  r_off=10M
++  x_high=1
++  xhb2=0
+stparms: l_closed_st=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac:
+n_f=2
+f_1: v(anode) v(cathode)
+f_2: v(anode) v(cathode)
+n_g=0
+n_h=2
+h_1: v(anode) v(cathode)
+h_2: v(anode) v(cathode)
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

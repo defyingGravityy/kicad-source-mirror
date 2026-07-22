@@ -1,0 +1,53 @@
+ebe name=ccvs allow_elex=yes
+#
+# two voltage sources
+# - controlling side
+# - output side
+# - We will denote the controlling side with _c, the output side with _o
+#
+Jacobian: constant
+nodes: p n cp cn
+state_vars:
+aux_vars: cur_p_c cur_p_o
+aux_vars_ac:
+aux_vars_startup: cur_p_c_s cur_p_o_s
+elex_aux_vars:
+el3_aux_vars: cur_p_c_1 cur_p_o_1
+el3_state_vars:
+x_vars:
+iparms:
+sparms:
+rparms: rm=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i_c i v pwr
+outparms_ac:
+n_f=6
+f_1: cur_p_o
+f_2: cur_p_o
+f_3: cur_p_c
+f_4: cur_p_c
+f_5: v(cp) v(cn)
+f_6: v(p) v(n) cur_p_c
+n_g=0
+n_h=6
+h_1: cur_p_o_s
+h_2: cur_p_o_s
+h_3: cur_p_c_s
+h_4: cur_p_c_s
+h_5: v(cp) v(cn)
+h_6: v(p) v(n) cur_p_c_s
+n_f_ac=0
+n_ef=0
+n_eg=6
+eg_1: cur_p_o_1
+eg_2: cur_p_o_1
+eg_3: cur_p_c_1
+eg_4: cur_p_c_1
+eg_5: v(cp) v(cn)
+eg_6: v(p) v(n) cur_p_c_1
+C:
+endC
+endebe

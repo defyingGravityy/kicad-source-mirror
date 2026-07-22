@@ -1,0 +1,50 @@
+ebe name=xfmr_level2_1ph
+#
+# two-winding transformer
+# n1, n2, lm model
+#
+Jacobian: constant
+nodes: p_p  s_p  p_n  s_n 
+state_vars:
+aux_vars: cur_p_p  cur_s_p  im
+aux_vars_ac:
+aux_vars_startup: cur_p_p_s  cur_s_p_s  im_s
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars:
+iparms: Np=1 Ns=1
+sparms:
+rparms:
++  p_turns=1
++  s_turns=1
++  lm=15m
+stparms: im0=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: ip is vp vs
+outparms_ac:
+n_f=7
+f_1: cur_p_p
+f_2: cur_s_p
+f_3: cur_p_p
+f_4: cur_s_p
+f_5: v(p_p) v(p_n) v(s_p) v(s_n)
+f_6: cur_p_p cur_s_p im
+f_7: d_dt(im) v(p_p) v(p_n)
+n_g=0
+n_h=7
+h_1: cur_p_p_s
+h_2: cur_s_p_s
+h_3: cur_p_p_s
+h_4: cur_s_p_s
+h_5: v(p_p) v(p_n) v(s_p) v(s_n)
+h_6: cur_p_p_s cur_s_p_s im_s
+h_7: im_s
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

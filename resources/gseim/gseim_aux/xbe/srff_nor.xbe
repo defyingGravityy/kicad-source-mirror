@@ -1,0 +1,28 @@
+xbe name=srff_nor evaluate=yes save_history=yes allow_ssw=no
+#
+# SR flip-flop (cross-coupled NOR gates)
+# Assume zero gate delay.
+#
+Jacobian: variable
+input_vars: s r
+output_vars: q qbar
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  x_high=1
++  x_cross=0
++  q_prev=0
+stparms: q_st=0
+igparms:
+outparms: s r q
+outparms_ac:
+n_f= 0
+n_g= 2
+g_1: q
+g_2: qbar
+n_f_ac=0
+C:
+endC
+endxbe

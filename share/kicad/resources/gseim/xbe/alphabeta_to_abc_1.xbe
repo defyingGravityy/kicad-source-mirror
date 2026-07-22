@@ -1,0 +1,22 @@
+xbe name=alphabeta_to_abc_1 evaluate=yes
+Jacobian: constant
+input_vars: alpha beta
+output_vars: a b c
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: a b c alpha beta
+outparms_ac:
+n_f= 0
+n_g= 3
+g_1: a alpha
+g_2: b alpha beta
+g_3: c alpha beta
+n_f_ac=0
+C:
+endC
+endxbe

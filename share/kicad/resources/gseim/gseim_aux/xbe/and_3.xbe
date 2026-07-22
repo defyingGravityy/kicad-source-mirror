@@ -1,0 +1,20 @@
+xbe name=and_3 evaluate=yes allow_elex=yes
+Jacobian: variable
+input_vars: x1 x2 x3
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms: y_high=1 hb2=0
+stparms:
+igparms:
+outparms: x1 x2 x3 y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

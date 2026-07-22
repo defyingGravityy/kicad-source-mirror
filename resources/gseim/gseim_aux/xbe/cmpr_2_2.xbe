@@ -1,0 +1,44 @@
+xbe name=cmpr_2_2 evaluate=yes limit_tstep=yes save_history=yes allow_elex=yes
++ elex_limit_tstep=yes elex_save_history=yes elex_cmpr=yes
++ el3_limit_tstep=yes el3_save_history=yes el3_cmpr=yes
++ allow_ssw=yes ss_rewind=yes
++ allow_sss=yes
+# if x1 > x2, y1 = high, else low
+# (reverse if flag_inverting=1)
+# y2 = not(y1)
+Jacobian: variable
+input_vars: x1 x2
+output_vars: y1 y2
+aux_vars:
+aux_vars_ac:
+iparms:
++  flag_invert=0
++  flag_quad=0
+sparms:
+rparms:
++  y_low=0
++  y_high=1
++  x1_1=0
++  x1_2=0
++  x2_1=0
++  x2_2=0
++  t_1=0
++  t_2=0
++  epsl=1.0e-6
++  delt_min=1.0e-6
++  delt_nrml=0.001
++  elex_delt_min=1.0e-6
++  elex_delt_nrml=0.001
+#  k1=0.9
+stparms:
+igparms:
+outparms: x1 x2 y1 y2
+outparms_ac:
+n_f= 0
+n_g= 2
+g_1: y1
+g_2: y2
+n_f_ac=0
+C:
+endC
+endxbe

@@ -1,0 +1,440 @@
+60012 execve("./run_gseim", ["./run_gseim", "/home/arsalan/Projects/kicad-pro"...], 0x7ffd01e1f9a0 /* 85 vars */) = 0
+60012 brk(NULL)                         = 0x36f7e000
+60012 brk(0x36f7ed80)                   = 0x36f7ed80
+60012 arch_prctl(ARCH_SET_FS, 0x36f7e400) = 0
+60012 set_tid_address(0x36f7e6d0)       = 60012
+60012 set_robust_list(0x36f7e6e0, 24)   = 0
+60012 rseq({cpu_id_start=0, cpu_id=0, rseq_cs=NULL, flags=0, node_id=0, mm_cid=0, slice_ctrl={request=0, granted=0, __reserved=0}, __reserved=0}, 32, 0, 0x53053053) = 0
+60012 prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+60012 readlinkat(AT_FDCWD, "/proc/self/exe", "/home/arsalan/Projects/kicad-sou"..., 4096) = 72
+60012 getrandom("\xdc\x62\x1e\xc9\xfa\x20\x02\x05", 8, GRND_NONBLOCK) = 8
+60012 brk(NULL)                         = 0x36f7ed80
+60012 brk(0x36f9fd80)                   = 0x36f9fd80
+60012 brk(0x36fa0000)                   = 0x36fa0000
+60012 mprotect(0x71a000, 49152, PROT_READ) = 0
+60012 futex(0x7290bc, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+60012 openat(AT_FDCWD, "/home/arsalan/Projects/kicad-project/file3/r1-r2-circuit-with-filter.cir", O_RDONLY) = 3
+60012 openat(AT_FDCWD, "/home/arsalan/Projects/kicad-project/file3/r1-r2-circuit-with-filter.cir", O_RDONLY) = 4
+60012 lseek(4, 0, SEEK_CUR)             = 0
+60012 read(4, "title: R1-R2 circuit with filter"..., 8191) = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 34, SEEK_SET)            = 34
+60012 lseek(4, 0, SEEK_CUR)             = 34
+60012 read(4, "begin_circuit\n   eelement name=V"..., 8191) = 916
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 48, SEEK_SET)            = 48
+60012 lseek(4, 0, SEEK_CUR)             = 48
+60012 read(4, "   eelement name=V2 type=voltmet"..., 8191) = 902
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 102, SEEK_SET)           = 102
+60012 lseek(4, 0, SEEK_CUR)             = 102
+60012 read(4, "   eelement name=r2 type=r p=a n"..., 8191) = 848
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 142, SEEK_SET)           = 142
+60012 lseek(4, 0, SEEK_CUR)             = 142
+60012 read(4, "   xelement type=pole_real_order"..., 8191) = 808
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 215, SEEK_SET)           = 215
+60012 lseek(4, 0, SEEK_CUR)             = 215
+60012 read(4, "   eelement name=V1 type=vsrc_ac"..., 8191) = 735
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 268, SEEK_SET)           = 268
+60012 lseek(4, 0, SEEK_CUR)             = 268
+60012 read(4, "   eelement name=r1 type=r p=c n"..., 8191) = 682
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 308, SEEK_SET)           = 308
+60012 lseek(4, 0, SEEK_CUR)             = 308
+60012 read(4, "   ref_node=a\n   outvar:\n+    x1"..., 8191) = 642
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 322, SEEK_SET)           = 322
+60012 lseek(4, 0, SEEK_CUR)             = 322
+60012 read(4, "   outvar:\n+    x1=xvar_of_x1\n+ "..., 8191) = 628
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 448, SEEK_SET)           = 448
+60012 lseek(4, 0, SEEK_CUR)             = 448
+60012 read(4, "end_circuit\n\nbegin_solve\n   solv"..., 8191) = 502
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 461, SEEK_SET)           = 461
+60012 lseek(4, 0, SEEK_CUR)             = 461
+60012 read(4, "begin_solve\n   solve_type=sss\n  "..., 8191) = 489
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 473, SEEK_SET)           = 473
+60012 lseek(4, 0, SEEK_CUR)             = 473
+60012 read(4, "   solve_type=sss\n   initial_sol"..., 8191) = 477
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 491, SEEK_SET)           = 491
+60012 lseek(4, 0, SEEK_CUR)             = 491
+60012 read(4, "   initial_sol=initialize\n   met"..., 8191) = 459
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 517, SEEK_SET)           = 517
+60012 lseek(4, 0, SEEK_CUR)             = 517
+60012 read(4, "   method: algorithm_trns=trz\n  "..., 8191) = 433
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 547, SEEK_SET)           = 547
+60012 lseek(4, 0, SEEK_CUR)             = 547
+60012 read(4, "   method: delt=0.01m\n   method:"..., 8191) = 403
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 569, SEEK_SET)           = 569
+60012 lseek(4, 0, SEEK_CUR)             = 569
+60012 read(4, "   method: ss_delta_k=0.1\n   met"..., 8191) = 381
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 595, SEEK_SET)           = 595
+60012 lseek(4, 0, SEEK_CUR)             = 595
+60012 read(4, "   method: ss_period=1m\n   metho"..., 8191) = 355
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 619, SEEK_SET)           = 619
+60012 lseek(4, 0, SEEK_CUR)             = 619
+60012 read(4, "   method: ss_period_mult_comput"..., 8191) = 331
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 655, SEEK_SET)           = 655
+60012 lseek(4, 0, SEEK_CUR)             = 655
+60012 read(4, "   method: ss_period_mult_plot=2"..., 8191) = 295
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 688, SEEK_SET)           = 688
+60012 lseek(4, 0, SEEK_CUR)             = 688
+60012 read(4, "   method: ss_skip_startup=yes\n "..., 8191) = 262
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 719, SEEK_SET)           = 719
+60012 lseek(4, 0, SEEK_CUR)             = 719
+60012 read(4, "   method: ss_startup_init_alway"..., 8191) = 231
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 757, SEEK_SET)           = 757
+60012 lseek(4, 0, SEEK_CUR)             = 757
+60012 read(4, "   method: t_start=0\n\n   begin_o"..., 8191) = 193
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 779, SEEK_SET)           = 779
+60012 lseek(4, 0, SEEK_CUR)             = 779
+60012 read(4, "   begin_output\n      filename=/"..., 8191) = 171
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 795, SEEK_SET)           = 795
+60012 lseek(4, 0, SEEK_CUR)             = 795
+60012 read(4, "      filename=/home/arsalan/Pro"..., 8191) = 155
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 862, SEEK_SET)           = 862
+60012 lseek(4, 0, SEEK_CUR)             = 862
+60012 read(4, "      variables:\n+         x1\n+ "..., 8191) = 88
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 918, SEEK_SET)           = 918
+60012 lseek(4, 0, SEEK_CUR)             = 918
+60012 read(4, "   end_output\nend_solve\n\nend_cf\n", 8191) = 32
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 932, SEEK_SET)           = 932
+60012 lseek(4, 0, SEEK_CUR)             = 932
+60012 read(4, "end_solve\n\nend_cf\n", 8191) = 18
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 lseek(4, 943, SEEK_SET)           = 943
+60012 lseek(4, 0, SEEK_CUR)             = 943
+60012 read(4, "end_cf\n", 8191)         = 7
+60012 lseek(4, 0, SEEK_CUR)             = 950
+60012 read(4, "", 8191)                 = 0
+60012 close(4)                          = 0
+60012 lseek(3, 0, SEEK_CUR)             = 0
+60012 read(3, "title: R1-R2 circuit with filter"..., 8191) = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 34, SEEK_SET)            = 34
+60012 lseek(3, 0, SEEK_CUR)             = 34
+60012 read(3, "begin_circuit\n   eelement name=V"..., 8191) = 916
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 48, SEEK_SET)            = 48
+60012 lseek(3, 0, SEEK_CUR)             = 48
+60012 read(3, "   eelement name=V2 type=voltmet"..., 8191) = 902
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 102, SEEK_SET)           = 102
+60012 lseek(3, 0, SEEK_CUR)             = 102
+60012 read(3, "   eelement name=r2 type=r p=a n"..., 8191) = 848
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 142, SEEK_SET)           = 142
+60012 lseek(3, 0, SEEK_CUR)             = 142
+60012 read(3, "   xelement type=pole_real_order"..., 8191) = 808
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 215, SEEK_SET)           = 215
+60012 lseek(3, 0, SEEK_CUR)             = 215
+60012 read(3, "   eelement name=V1 type=vsrc_ac"..., 8191) = 735
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 268, SEEK_SET)           = 268
+60012 lseek(3, 0, SEEK_CUR)             = 268
+60012 read(3, "   eelement name=r1 type=r p=c n"..., 8191) = 682
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 308, SEEK_SET)           = 308
+60012 lseek(3, 0, SEEK_CUR)             = 308
+60012 read(3, "   ref_node=a\n   outvar:\n+    x1"..., 8191) = 642
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 322, SEEK_SET)           = 322
+60012 lseek(3, 0, SEEK_CUR)             = 322
+60012 read(3, "   outvar:\n+    x1=xvar_of_x1\n+ "..., 8191) = 628
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 448, SEEK_SET)           = 448
+60012 lseek(3, 0, SEEK_CUR)             = 448
+60012 read(3, "end_circuit\n\nbegin_solve\n   solv"..., 8191) = 502
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 461, SEEK_SET)           = 461
+60012 lseek(3, 0, SEEK_CUR)             = 461
+60012 read(3, "begin_solve\n   solve_type=sss\n  "..., 8191) = 489
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 473, SEEK_SET)           = 473
+60012 lseek(3, 0, SEEK_CUR)             = 473
+60012 read(3, "   solve_type=sss\n   initial_sol"..., 8191) = 477
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 491, SEEK_SET)           = 491
+60012 lseek(3, 0, SEEK_CUR)             = 491
+60012 read(3, "   initial_sol=initialize\n   met"..., 8191) = 459
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 517, SEEK_SET)           = 517
+60012 lseek(3, 0, SEEK_CUR)             = 517
+60012 read(3, "   method: algorithm_trns=trz\n  "..., 8191) = 433
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 547, SEEK_SET)           = 547
+60012 lseek(3, 0, SEEK_CUR)             = 547
+60012 read(3, "   method: delt=0.01m\n   method:"..., 8191) = 403
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 569, SEEK_SET)           = 569
+60012 lseek(3, 0, SEEK_CUR)             = 569
+60012 read(3, "   method: ss_delta_k=0.1\n   met"..., 8191) = 381
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 595, SEEK_SET)           = 595
+60012 lseek(3, 0, SEEK_CUR)             = 595
+60012 read(3, "   method: ss_period=1m\n   metho"..., 8191) = 355
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 619, SEEK_SET)           = 619
+60012 lseek(3, 0, SEEK_CUR)             = 619
+60012 read(3, "   method: ss_period_mult_comput"..., 8191) = 331
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 655, SEEK_SET)           = 655
+60012 lseek(3, 0, SEEK_CUR)             = 655
+60012 read(3, "   method: ss_period_mult_plot=2"..., 8191) = 295
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 688, SEEK_SET)           = 688
+60012 lseek(3, 0, SEEK_CUR)             = 688
+60012 read(3, "   method: ss_skip_startup=yes\n "..., 8191) = 262
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 719, SEEK_SET)           = 719
+60012 lseek(3, 0, SEEK_CUR)             = 719
+60012 read(3, "   method: ss_startup_init_alway"..., 8191) = 231
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 757, SEEK_SET)           = 757
+60012 lseek(3, 0, SEEK_CUR)             = 757
+60012 read(3, "   method: t_start=0\n\n   begin_o"..., 8191) = 193
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 779, SEEK_SET)           = 779
+60012 lseek(3, 0, SEEK_CUR)             = 779
+60012 read(3, "   begin_output\n      filename=/"..., 8191) = 171
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 795, SEEK_SET)           = 795
+60012 lseek(3, 0, SEEK_CUR)             = 795
+60012 read(3, "      filename=/home/arsalan/Pro"..., 8191) = 155
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 862, SEEK_SET)           = 862
+60012 lseek(3, 0, SEEK_CUR)             = 862
+60012 read(3, "      variables:\n+         x1\n+ "..., 8191) = 88
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 918, SEEK_SET)           = 918
+60012 lseek(3, 0, SEEK_CUR)             = 918
+60012 read(3, "   end_output\nend_solve\n\nend_cf\n", 8191) = 32
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 932, SEEK_SET)           = 932
+60012 lseek(3, 0, SEEK_CUR)             = 932
+60012 read(3, "end_solve\n\nend_cf\n", 8191) = 18
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 943, SEEK_SET)           = 943
+60012 lseek(3, 0, SEEK_CUR)             = 943
+60012 read(3, "end_cf\n", 8191)         = 7
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 read(3, "", 8191)                 = 0
+60012 close(3)                          = 0
+60012 openat(AT_FDCWD, "/home/arsalan/Projects/kicad-project/file3/r1-r2-circuit-with-filter.cir", O_RDONLY) = 3
+60012 lseek(3, 0, SEEK_CUR)             = 0
+60012 read(3, "title: R1-R2 circuit with filter"..., 8191) = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 34, SEEK_SET)            = 34
+60012 lseek(3, 0, SEEK_CUR)             = 34
+60012 read(3, "begin_circuit\n   eelement name=V"..., 8191) = 916
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 48, SEEK_SET)            = 48
+60012 lseek(3, 0, SEEK_CUR)             = 48
+60012 read(3, "   eelement name=V2 type=voltmet"..., 8191) = 902
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 102, SEEK_SET)           = 102
+60012 lseek(3, 0, SEEK_CUR)             = 102
+60012 read(3, "   eelement name=r2 type=r p=a n"..., 8191) = 848
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 142, SEEK_SET)           = 142
+60012 lseek(3, 0, SEEK_CUR)             = 142
+60012 read(3, "   xelement type=pole_real_order"..., 8191) = 808
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 215, SEEK_SET)           = 215
+60012 lseek(3, 0, SEEK_CUR)             = 215
+60012 read(3, "   eelement name=V1 type=vsrc_ac"..., 8191) = 735
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 268, SEEK_SET)           = 268
+60012 lseek(3, 0, SEEK_CUR)             = 268
+60012 read(3, "   eelement name=r1 type=r p=c n"..., 8191) = 682
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 308, SEEK_SET)           = 308
+60012 lseek(3, 0, SEEK_CUR)             = 308
+60012 read(3, "   ref_node=a\n   outvar:\n+    x1"..., 8191) = 642
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 322, SEEK_SET)           = 322
+60012 lseek(3, 0, SEEK_CUR)             = 322
+60012 read(3, "   outvar:\n+    x1=xvar_of_x1\n+ "..., 8191) = 628
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 448, SEEK_SET)           = 448
+60012 lseek(3, 0, SEEK_CUR)             = 448
+60012 read(3, "end_circuit\n\nbegin_solve\n   solv"..., 8191) = 502
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 461, SEEK_SET)           = 461
+60012 lseek(3, 0, SEEK_CUR)             = 461
+60012 read(3, "begin_solve\n   solve_type=sss\n  "..., 8191) = 489
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 473, SEEK_SET)           = 473
+60012 lseek(3, 0, SEEK_CUR)             = 473
+60012 read(3, "   solve_type=sss\n   initial_sol"..., 8191) = 477
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 491, SEEK_SET)           = 491
+60012 lseek(3, 0, SEEK_CUR)             = 491
+60012 read(3, "   initial_sol=initialize\n   met"..., 8191) = 459
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 517, SEEK_SET)           = 517
+60012 lseek(3, 0, SEEK_CUR)             = 517
+60012 read(3, "   method: algorithm_trns=trz\n  "..., 8191) = 433
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 547, SEEK_SET)           = 547
+60012 lseek(3, 0, SEEK_CUR)             = 547
+60012 read(3, "   method: delt=0.01m\n   method:"..., 8191) = 403
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 569, SEEK_SET)           = 569
+60012 lseek(3, 0, SEEK_CUR)             = 569
+60012 read(3, "   method: ss_delta_k=0.1\n   met"..., 8191) = 381
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 595, SEEK_SET)           = 595
+60012 lseek(3, 0, SEEK_CUR)             = 595
+60012 read(3, "   method: ss_period=1m\n   metho"..., 8191) = 355
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 619, SEEK_SET)           = 619
+60012 lseek(3, 0, SEEK_CUR)             = 619
+60012 read(3, "   method: ss_period_mult_comput"..., 8191) = 331
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 655, SEEK_SET)           = 655
+60012 lseek(3, 0, SEEK_CUR)             = 655
+60012 read(3, "   method: ss_period_mult_plot=2"..., 8191) = 295
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 688, SEEK_SET)           = 688
+60012 lseek(3, 0, SEEK_CUR)             = 688
+60012 read(3, "   method: ss_skip_startup=yes\n "..., 8191) = 262
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 719, SEEK_SET)           = 719
+60012 lseek(3, 0, SEEK_CUR)             = 719
+60012 read(3, "   method: ss_startup_init_alway"..., 8191) = 231
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 757, SEEK_SET)           = 757
+60012 lseek(3, 0, SEEK_CUR)             = 757
+60012 read(3, "   method: t_start=0\n\n   begin_o"..., 8191) = 193
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 779, SEEK_SET)           = 779
+60012 lseek(3, 0, SEEK_CUR)             = 779
+60012 read(3, "   begin_output\n      filename=/"..., 8191) = 171
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 795, SEEK_SET)           = 795
+60012 lseek(3, 0, SEEK_CUR)             = 795
+60012 read(3, "      filename=/home/arsalan/Pro"..., 8191) = 155
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 862, SEEK_SET)           = 862
+60012 lseek(3, 0, SEEK_CUR)             = 862
+60012 read(3, "      variables:\n+         x1\n+ "..., 8191) = 88
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 918, SEEK_SET)           = 918
+60012 lseek(3, 0, SEEK_CUR)             = 918
+60012 read(3, "   end_output\nend_solve\n\nend_cf\n", 8191) = 32
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 932, SEEK_SET)           = 932
+60012 lseek(3, 0, SEEK_CUR)             = 932
+60012 read(3, "end_solve\n\nend_cf\n", 8191) = 18
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 943, SEEK_SET)           = 943
+60012 close(3)                          = 0
+60012 openat(AT_FDCWD, "/home/arsalan/Projects/kicad-project/file3/r1-r2-circuit-with-filter.cir", O_RDONLY) = 3
+60012 lseek(3, 0, SEEK_CUR)             = 0
+60012 read(3, "title: R1-R2 circuit with filter"..., 8191) = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 34, SEEK_SET)            = 34
+60012 lseek(3, 0, SEEK_CUR)             = 34
+60012 read(3, "begin_circuit\n   eelement name=V"..., 8191) = 916
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 48, SEEK_SET)            = 48
+60012 lseek(3, 0, SEEK_CUR)             = 48
+60012 read(3, "   eelement name=V2 type=voltmet"..., 8191) = 902
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 102, SEEK_SET)           = 102
+60012 lseek(3, 0, SEEK_CUR)             = 102
+60012 read(3, "   eelement name=r2 type=r p=a n"..., 8191) = 848
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 142, SEEK_SET)           = 142
+60012 lseek(3, 0, SEEK_CUR)             = 142
+60012 read(3, "   xelement type=pole_real_order"..., 8191) = 808
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 215, SEEK_SET)           = 215
+60012 lseek(3, 0, SEEK_CUR)             = 215
+60012 read(3, "   eelement name=V1 type=vsrc_ac"..., 8191) = 735
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 268, SEEK_SET)           = 268
+60012 lseek(3, 0, SEEK_CUR)             = 268
+60012 read(3, "   eelement name=r1 type=r p=c n"..., 8191) = 682
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 308, SEEK_SET)           = 308
+60012 lseek(3, 0, SEEK_CUR)             = 308
+60012 read(3, "   ref_node=a\n   outvar:\n+    x1"..., 8191) = 642
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 322, SEEK_SET)           = 322
+60012 lseek(3, 0, SEEK_CUR)             = 322
+60012 read(3, "   outvar:\n+    x1=xvar_of_x1\n+ "..., 8191) = 628
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 0, SEEK_CUR)             = 950
+60012 lseek(3, 448, SEEK_SET)           = 448
+60012 close(3)                          = 0
+60012 openat(AT_FDCWD, "gseim_aux/xbe.aux", O_RDONLY) = -1 ENOENT (No such file or directory)
+60012 --- SIGINT {si_signo=SIGINT, si_code=SI_KERNEL} ---
+60012 +++ killed by SIGINT +++

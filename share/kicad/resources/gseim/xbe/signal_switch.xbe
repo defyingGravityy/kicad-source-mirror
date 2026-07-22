@@ -1,0 +1,23 @@
+xbe name=signal_switch evaluate=yes
+# if s is high, y = x1; else x2
+Jacobian: variable
+input_vars: s x1 x2
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  s_high=1
++  s_cross=0
+stparms:
+igparms:
+outparms: s x1 x2 y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

@@ -1,0 +1,23 @@
+xbe name=alphabeta_to_dq_1 evaluate=yes
+Jacobian: variable
+input_vars: alpha beta theta
+output_vars: xd xq
+aux_vars: c s
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: xd xq alpha beta
+outparms_ac:
+n_f= 0
+n_g= 4
+g_1: xd alpha beta c s 
+g_2: xq alpha beta c s 
+g_3: c theta
+g_4: s theta
+n_f_ac=0
+C:
+endC
+endxbe

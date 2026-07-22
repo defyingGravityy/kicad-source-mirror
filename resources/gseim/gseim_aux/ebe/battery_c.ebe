@@ -1,0 +1,40 @@
+ebe name=battery_c x_inputs=yes
+Jacobian: variable
+nodes: p n
+state_vars: qp qm
+aux_vars:
+aux_vars_ac:
+aux_vars_startup: cur_p
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: soc
+iparms:
+sparms:
+rparms:
++  a0=700
++  b0=-700
++  b1=20
++  c=0 
+stparms: v0=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v
+outparms_ac:
+n_f=2
+f_1: d_dt(qp)
+f_2: d_dt(qm)
+n_g=2
+g_1: qp v(p) v(n) soc
+g_2: qm v(p) v(n) soc
+n_h=3
+h_1: cur_p 
+h_2: cur_p 
+h_3: v(p) v(n)
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

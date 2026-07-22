@@ -1,0 +1,23 @@
+xbe name=abc_to_dq_2 evaluate=yes
+Jacobian: variable
+input_vars: a b c cost sint
+output_vars: d q
+aux_vars: alpha beta
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: a b c d q
+outparms_ac:
+n_f= 0
+n_g= 4
+g_1: alpha a
+g_2: beta b c 
+g_3: q cost sint alpha beta
+g_4: d cost sint alpha beta
+n_f_ac=0
+C:
+endC
+endxbe

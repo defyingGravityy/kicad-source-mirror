@@ -1,0 +1,65 @@
+ebe name=xfmr_level0_1ph allow_elex=yes
+#
+# two-winding transformer
+# n1,n2 model
+# (No magnetizing inductance)
+#
+Jacobian: constant
+# Note: the order of nodes is related to the GUI symbol for this ebe.
+nodes: p_p  s_p  p_n  s_n
+state_vars:
+aux_vars: cur_p_p  cur_s_p
+aux_vars_ac:
+aux_vars_startup: cur_p_p_s  cur_s_p_s
+elex_aux_vars: Vp Vs
+el3_aux_vars: cur_p_p_1  cur_s_p_1
+el3_state_vars:
+x_vars:
+iparms: Np=1 Ns=1
+sparms:
+rparms:
++  p_turns=1
++  s_turns=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: ip is vp vs
+outparms_ac:
+n_f=6
+f_1: cur_p_p
+f_2: cur_s_p
+f_3: cur_p_p
+f_4: cur_s_p
+f_5: v(p_p) v(p_n) v(s_p) v(s_n)
+f_6: cur_p_p cur_s_p
+n_g=0
+n_h=6
+h_1: cur_p_p_s
+h_2: cur_s_p_s
+h_3: cur_p_p_s
+h_4: cur_s_p_s
+h_5: v(p_p) v(p_n) v(s_p) v(s_n)
+h_6: cur_p_p_s cur_s_p_s
+#
+# cur_p_p: current entering the p terminal of the primary
+# cur_s_p: current entering the p terminal of the secondary
+#
+n_f_ac=0
+n_ef=6
+ef_1: Vp v(p_p) v(p_n)
+ef_2: Vs v(s_p) v(s_n)
+ef_3: Vp Vs
+ef_4: cur(p_p) cur(s_p)
+ef_5: cur(p_p) cur(p_n)
+ef_6: cur(s_p) cur(s_n)
+n_eg=6
+eg_1: cur_p_p_1
+eg_2: cur_s_p_1
+eg_3: cur_p_p_1
+eg_4: cur_s_p_1
+eg_5: v(p_p) v(p_n) v(s_p) v(s_n)
+eg_6: cur_p_p_1 cur_s_p_1
+C:
+endC
+endebe

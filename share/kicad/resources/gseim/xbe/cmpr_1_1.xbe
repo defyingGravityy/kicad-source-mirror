@@ -1,0 +1,36 @@
+xbe name=cmpr_1_1 evaluate=yes limit_tstep=yes save_history=yes elex_cmpr=yes
++  allow_ssw=yes ssw_rewind=yes
++  el3_cmpr=yes
+# if x > x0, y = high, else low
+# (reverse if flag_inverting=1)
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
++  flag_invert=0
++  flag_quad=0
+sparms:
+rparms:
++  x0=0
++  y_low=0
++  y_high=1
++  x_1=0
++  x_2=0
++  t_1=0
++  t_2=0
++  epsl=1.0e-6
++  delt_min=1.0e-6
++  delt_nrml=0.001
+stparms:
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

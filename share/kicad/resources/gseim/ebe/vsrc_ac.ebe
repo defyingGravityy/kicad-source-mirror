@@ -1,0 +1,55 @@
+ebe name=vsrc_ac allow_elex=yes elex_vsrc=yes allow_sss=yes allow_ssw=yes
++  el3_vsrc=yes el3_rhs_src=yes
++  allow_sse=yes allow_ac=yes
+# ac voltage source
+# f_hz in Hz, phi_deg in deg
+# a is amplitude in volts
+Jacobian: constant
+nodes: p n
+state_vars:
+aux_vars: cur_p
+aux_vars_ac: cur_p_ac
+aux_vars_startup: cur_p_s
+elex_aux_vars:
+el3_aux_vars: cur_p_2
+el3_state_vars:
+x_vars:
+iparms:
++   flag_cos=0
+sparms:
+rparms:
++   a=1
++   f_hz=1
++   phi_deg=0
++   t0=0
++   omega=0
++   phi_rad=0
++   vdc=0
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac: v_ac i_ac S
+n_f=3
+f_1: cur_p
+f_2: cur_p
+f_3: v(p) v(n)
+n_g=0
+n_h=3
+h_1: cur_p_s
+h_2: cur_p_s
+h_3: v(p) v(n)
+n_f_ac=3
+f_ac_1: cur_p_ac
+f_ac_2: cur_p_ac
+f_ac_3: v(p) v(n)
+n_ef=1
+ef_1: rhs_src v(p) v(n)
+n_eg=3
+eg_1: cur_p_2
+eg_2: cur_p_2
+eg_3: v(p) v(n)
+C:
+endC
+endebe

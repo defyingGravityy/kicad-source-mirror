@@ -1,0 +1,47 @@
+ebe name=solar_module_1 x_inputs=yes
+#
+#
+# Reference:
+#   Modelling Photovoltaic Systems Using PSpice
+#   by L. Castañer and S. Silvestre
+#
+Jacobian: variable
+nodes: p n
+state_vars:
+aux_vars:
+aux_vars_ac:
+aux_vars_startup:
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: g ta
+iparms:
+sparms:
+rparms:
++  ns=1
++  vocmr=1
++  iscmr=1
++  coef_iscm=0
++  coef_vocm=0
++  noct=20
++  tr=25
++  pmaxr=1
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v p p_net
+outparms_ac:
+n_f=2
+f_1: v(p) v(n) g ta
+f_2: v(p) v(n) g ta
+n_g=0
+n_h=2
+h_1: v(p) v(n) g ta
+h_2: v(p) v(n) g ta
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe

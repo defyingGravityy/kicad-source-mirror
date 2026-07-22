@@ -1,0 +1,20 @@
+xbe name=sin evaluate=yes
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: x y
+n_f_ac=0
+C:
+endC
+endxbe

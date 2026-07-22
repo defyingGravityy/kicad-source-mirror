@@ -1,0 +1,23 @@
+xbe name=abc_to_dq evaluate=yes allow_elex=yes
++  allow_ssw=yes allow_ssf=yes
+# convert van,vbn,vcn to vqs,vds
+Jacobian: constant
+input_vars: van vbn vcn
+output_vars: vqs vds
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
+stparms:
+igparms:
+outparms: van vbn vcn vqs vds
+outparms_ac:
+n_f= 0
+n_g= 2
+g_1: vqs van vbn vcn
+g_2: vds vbn vcn
+n_f_ac=0
+C:
+endC
+endxbe

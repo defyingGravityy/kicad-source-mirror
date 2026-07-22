@@ -1,0 +1,24 @@
+xbe name=div evaluate=yes allow_elex=yes
+# y = k*x1/x2
+# (if abs(x2) < delta, then x2 is treated to be equal to delta)
+Jacobian: variable
+input_vars: x1 x2
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms:
++  k=1
++  delta=1.0e-6
+stparms:
+igparms:
+outparms: x1 x2 y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: x1 x2 y
+n_f_ac=0
+C:
+endC
+endxbe

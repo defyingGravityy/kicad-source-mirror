@@ -1,0 +1,49 @@
+ebe name=c allow_elex=yes elex_need_oldvars=yes
++  el3_need_oldvars=yes el3_rhs_ddt=yes
++  allow_sse=yes allow_ac=yes
+Jacobian: constant
+nodes: p n
+state_vars: qp qm
+aux_vars:
+aux_vars_ac:
+aux_vars_startup: cur_p
+elex_aux_vars: VC VCd
+el3_aux_vars: IC3 VC3 VCd3
+el3_state_vars: VC3s
+x_vars:
+iparms:
+sparms:
+rparms:
++  c=1.0
++  k_scale=1
++  rs=1.0e-4
+stparms: v0=0
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v pwr
+outparms_ac: i_ac v_ac S
+n_f=2
+f_1: d_dt(qp)
+f_2: d_dt(qm)
+n_g=2
+g_1: qp v(p) v(n)
+g_2: qm v(p) v(n)
+n_h=3
+h_1: cur_p 
+h_2: cur_p 
+h_3: v(p) v(n)
+n_f_ac=2
+f_ac_1: v(p) v(n)
+f_ac_2: v(p) v(n)
+n_ef=2
+ef_1: rhs_ddt VC
+ef_2: VCd cur(p)
+n_eg=4
+eg_1: IC3
+eg_2: IC3
+eg_3: IC3 VCd3
+eg_4: v(p) v(n) VC3
+C:
+endC
+endebe

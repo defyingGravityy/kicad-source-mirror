@@ -1,0 +1,22 @@
+# treat this like a limiter; the same logic should work
+xbe name=modulo_twopi evaluate=yes allow_elex=yes
+# limit x to (x1,x2)
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms: x1=0 x2=0
+stparms:
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

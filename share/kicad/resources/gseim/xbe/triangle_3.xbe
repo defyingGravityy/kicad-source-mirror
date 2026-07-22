@@ -1,0 +1,35 @@
+xbe name=triangle_3 evaluate=yes limit_tstep=yes allow_elex=yes
++  elex_limit_tstep=yes
++  allow_sss=yes allow_ssw=yes ss_rewind=yes
+# triangle source (symmetric, with frequency, L1, L2, t0 specified)
+Jacobian: constant
+input_vars:
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+# L1 is the level at the beginning of the first interval
+rparms:
++  frequency=1
++  L1=-1
++  L2=1
++  t0=0
++  elex_dt=1.0e-10
++  slope1=0
++  slope2=0
++  epsl=0
++  T1=0
++  T2=0
++  T=0
+stparms:
+igparms:
+outparms: y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: y
+n_f_ac=0
+C:
+endC
+endxbe

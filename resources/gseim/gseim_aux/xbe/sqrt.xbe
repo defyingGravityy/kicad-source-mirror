@@ -1,0 +1,21 @@
+xbe name=sqrt evaluate=yes
+# y = sqrt(x)
+Jacobian: variable
+input_vars: x
+output_vars: y
+aux_vars:
+aux_vars_ac:
+iparms:
+sparms:
+rparms: delta=1e-20
+stparms:
+igparms:
+outparms: x y
+outparms_ac:
+n_f= 0
+n_g= 1
+g_1: x y
+n_f_ac=0
+C:
+endC
+endxbe

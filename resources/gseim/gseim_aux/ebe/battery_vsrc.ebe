@@ -1,0 +1,47 @@
+ebe name=battery_vsrc x_inputs=yes
+# voltage source element for battery modeling
+# Reference:
+#   Chen and Rincon-Mora,
+#   "Accurate Electrical Battery Model Capable of Predicting Runtime
+#   and I-V Performance,"
+#   IEEE Transactions on energy conversion, vol. 21, June 2006.
+Jacobian: variable
+nodes: p n
+state_vars:
+aux_vars: cur_p
+aux_vars_ac:
+aux_vars_startup: cur_p_s
+elex_aux_vars:
+el3_aux_vars:
+el3_state_vars:
+x_vars: soc
+iparms:
+sparms:
+rparms:
++  a0=3.7
++  a1=0.2
++  a2=-0.1
++  a3=0.3
++  b0=-1
++  b1=35
+stparms:
+igparms:
+n_sw_states: 0
+sw_type: none
+outparms: i v
+outparms_ac:
+n_f=3
+f_1: cur_p
+f_2: cur_p
+f_3: v(p) v(n) soc
+n_g=0
+n_h=3
+h_1: cur_p_s
+h_2: cur_p_s
+h_3: v(p) v(n) soc
+n_f_ac=0
+n_ef=0
+n_eg=0
+C:
+endC
+endebe
