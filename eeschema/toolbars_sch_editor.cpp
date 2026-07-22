@@ -213,8 +213,8 @@ std::optional<TOOLBAR_CONFIGURATION> SCH_EDIT_TOOLBAR_SETTINGS::DefaultToolbarCo
               .AppendAction( SCH_ACTIONS::editSymbolFields )
               .AppendAction( SCH_ACTIONS::generateBOM );
 
-        config.AppendSeparator()
-              .AppendAction( SCH_ACTIONS::showPcbNew );
+        // config.AppendSeparator()
+            //   .AppendAction( SCH_ACTIONS::showPcbNew );
 
         config.AppendControl( SCH_ACTION_TOOLBAR_CONTROLS::currentVariant );
 

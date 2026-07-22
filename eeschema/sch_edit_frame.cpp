@@ -1515,59 +1515,68 @@ void SCH_EDIT_FRAME::ProjectChanged()
 }
 
 
+// void SCH_EDIT_FRAME::OnOpenPcbnew()
+// {
+//     // Use the project's board, not the active sheet's name, which may belong to another project.
+//     wxString projectName = Prj().GetProjectFullName();
+
+//     wxFileName kicad_board =
+//             projectName.IsEmpty() ? Prj().AbsolutePath( Schematic().GetFileName() ) : wxFileName( projectName );
+
+//     if( kicad_board.IsOk() && !kicad_board.GetName().IsEmpty() )
+//     {
+//         kicad_board.SetExt( FILEEXT::PcbFileExtension );
+//         wxFileName legacy_board( kicad_board );
+//         legacy_board.SetExt( FILEEXT::LegacyPcbFileExtension );
+//         wxFileName& boardfn = legacy_board;
+
+//         if( !legacy_board.FileExists() || kicad_board.FileExists() )
+//             boardfn = kicad_board;
+
+//         if( Kiface().IsSingle() )
+//         {
+//             ExecuteFile( PCBNEW_EXE, boardfn.GetFullPath() );
+//         }
+//         else
+//         {
+//             wxEventBlocker blocker(this);
+//             KIWAY_PLAYER* frame = Kiway().Player( FRAME_PCB_EDITOR, false );
+
+//             if( !frame )
+//             {
+//                 frame = Kiway().Player( FRAME_PCB_EDITOR, true );
+
+//                 // frame can be null if Cvpcb cannot be run. No need to show a warning
+//                 // Kiway() generates the error messages
+//                 if( !frame )
+//                     return;
+
+//                 frame->OpenProjectFiles( std::vector<wxString>( 1, boardfn.GetFullPath() ) );
+//             }
+
+//             if( !frame->IsVisible() )
+//                 frame->Show( true );
+
+//             // On Windows, Raise() does not bring the window on screen, when iconized
+//             if( frame->IsIconized() )
+//                 frame->Iconize( false );
+
+//             frame->Raise();
+//         }
+//     }
+//     else
+//     {
+//         ExecuteFile( PCBNEW_EXE );
+//     }
+// }
+
 void SCH_EDIT_FRAME::OnOpenPcbnew()
 {
-    // Use the project's board, not the active sheet's name, which may belong to another project.
-    wxString projectName = Prj().GetProjectFullName();
-
-    wxFileName kicad_board =
-            projectName.IsEmpty() ? Prj().AbsolutePath( Schematic().GetFileName() ) : wxFileName( projectName );
-
-    if( kicad_board.IsOk() && !kicad_board.GetName().IsEmpty() )
-    {
-        kicad_board.SetExt( FILEEXT::PcbFileExtension );
-        wxFileName legacy_board( kicad_board );
-        legacy_board.SetExt( FILEEXT::LegacyPcbFileExtension );
-        wxFileName& boardfn = legacy_board;
-
-        if( !legacy_board.FileExists() || kicad_board.FileExists() )
-            boardfn = kicad_board;
-
-        if( Kiface().IsSingle() )
-        {
-            ExecuteFile( PCBNEW_EXE, boardfn.GetFullPath() );
-        }
-        else
-        {
-            wxEventBlocker blocker(this);
-            KIWAY_PLAYER* frame = Kiway().Player( FRAME_PCB_EDITOR, false );
-
-            if( !frame )
-            {
-                frame = Kiway().Player( FRAME_PCB_EDITOR, true );
-
-                // frame can be null if Cvpcb cannot be run. No need to show a warning
-                // Kiway() generates the error messages
-                if( !frame )
-                    return;
-
-                frame->OpenProjectFiles( std::vector<wxString>( 1, boardfn.GetFullPath() ) );
-            }
-
-            if( !frame->IsVisible() )
-                frame->Show( true );
-
-            // On Windows, Raise() does not bring the window on screen, when iconized
-            if( frame->IsIconized() )
-                frame->Iconize( false );
-
-            frame->Raise();
-        }
-    }
-    else
-    {
-        ExecuteFile( PCBNEW_EXE );
-    }
+    wxMessageBox(
+        _( "PCB Editor is not available in this application." ),
+        _( "Not Supported" ),
+        wxOK | wxICON_INFORMATION,
+        this );
 }
 
 
