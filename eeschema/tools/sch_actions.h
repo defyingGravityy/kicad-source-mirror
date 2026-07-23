@@ -136,7 +136,7 @@ public:
     static TOOL_ACTION properties;
     static TOOL_ACTION editReference;
     static TOOL_ACTION editValue;
-    static TOOL_ACTION editFootprint;
+    // static TOOL_ACTION editFootprint;
 
     static TOOL_ACTION selectGseimOutvars;
     static TOOL_ACTION modifyGseimParameters;
@@ -175,7 +175,7 @@ public:
     static TOOL_ACTION updateSymbols;
     static TOOL_ACTION changeSymbol;
     static TOOL_ACTION updateSymbol;
-    static TOOL_ACTION assignFootprints;
+    // static TOOL_ACTION assignFootprints;
     static TOOL_ACTION assignNetclass;
     static TOOL_ACTION findNetInInspector;
     static TOOL_ACTION schematicSetup;
@@ -196,7 +196,7 @@ public:
     static TOOL_ACTION editWithLibEdit;
     static TOOL_ACTION editLibSymbolWithLibEdit;
     static TOOL_ACTION showPcbNew;
-    static TOOL_ACTION importFPAssignments;
+    // static TOOL_ACTION importFPAssignments;
     static TOOL_ACTION exportNetlist;
     static TOOL_ACTION generateBOM;
     static TOOL_ACTION generateBOMLegacy;

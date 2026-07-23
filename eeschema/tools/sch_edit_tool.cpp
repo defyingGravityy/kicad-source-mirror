@@ -843,7 +843,7 @@ bool SCH_EDIT_TOOL::Init()
 
                 menu->AddItem( SCH_ACTIONS::editReference,    S_C::SingleSymbol, 200 );
                 menu->AddItem( SCH_ACTIONS::editValue,        S_C::SingleSymbol, 200 );
-                menu->AddItem( SCH_ACTIONS::editFootprint,    S_C::SingleSymbol, 200 );
+                // menu->AddItem( SCH_ACTIONS::editFootprint,    S_C::SingleSymbol, 200 );
 
                 return menu;
             };
@@ -2480,8 +2480,7 @@ int SCH_EDIT_TOOL::EditField( const TOOL_EVENT& aEvent )
         SCH_FIELD* field = static_cast<SCH_FIELD*>( item );
 
         if( ( aEvent.IsAction( &SCH_ACTIONS::editReference ) && field->GetId() != FIELD_T::REFERENCE )
-         || ( aEvent.IsAction( &SCH_ACTIONS::editValue )     && field->GetId() != FIELD_T::VALUE     )
-         || ( aEvent.IsAction( &SCH_ACTIONS::editFootprint ) && field->GetId() != FIELD_T::FOOTPRINT ) )
+         || ( aEvent.IsAction( &SCH_ACTIONS::editValue )     && field->GetId() != FIELD_T::VALUE     ) )
         {
             item = field->GetParentSymbol();
 
@@ -2507,11 +2506,6 @@ int SCH_EDIT_TOOL::EditField( const TOOL_EVENT& aEvent )
         {
             editFieldText( symbol->GetField( FIELD_T::VALUE ) );
         }
-        else if( aEvent.IsAction( &SCH_ACTIONS::editFootprint ) )
-        {
-            if( !symbol->IsPower() )
-                editFieldText( symbol->GetField( FIELD_T::FOOTPRINT ) );
-        }
     }
     else if( item->Type() == SCH_FIELD_T )
     {
@@ -2535,11 +2529,6 @@ int SCH_EDIT_TOOL::EditField( const TOOL_EVENT& aEvent )
             else if( aEvent.IsAction( &SCH_ACTIONS::editValue ) )
             {
                 editFieldText( symbol->GetField( FIELD_T::VALUE ) );
-            }
-            else if( aEvent.IsAction( &SCH_ACTIONS::editFootprint ) )
-            {
-                if( !symbol->IsPower() )
-                    editFieldText( symbol->GetField( FIELD_T::FOOTPRINT ) );
             }
         }
     }
@@ -3716,9 +3705,7 @@ int SCH_EDIT_TOOL::SetAttribute( const TOOL_EVENT& aEvent )
 
 wxString SCH_EDIT_TOOL::FixERCErrorMenuText( const std::shared_ptr<RC_ITEM>& aERCItem )
 {
-    if( aERCItem->GetErrorCode() == ERCE_SIMULATION_MODEL
-        || aERCItem->GetErrorCode() == ERCE_FOOTPRINT_FILTERS
-        || aERCItem->GetErrorCode() == ERCE_FOOTPRINT_LINK_ISSUES )
+    if( aERCItem->GetErrorCode() == ERCE_SIMULATION_MODEL)
     {
         return _( "Edit Symbol Properties..." );
     }
@@ -3750,9 +3737,7 @@ void SCH_EDIT_TOOL::FixERCError( const std::shared_ptr<RC_ITEM>& aERCItem )
 
     wxCHECK( frame, /* void */ );
 
-    if( aERCItem->GetErrorCode() == ERCE_SIMULATION_MODEL
-        || aERCItem->GetErrorCode() == ERCE_FOOTPRINT_FILTERS
-        || aERCItem->GetErrorCode() == ERCE_FOOTPRINT_LINK_ISSUES )
+    if( aERCItem->GetErrorCode() == ERCE_SIMULATION_MODEL)
     {
         if( EDA_ITEM* item = frame->ResolveItem( aERCItem->GetMainItemID() ) )
             EditProperties( item );
@@ -4785,7 +4770,7 @@ void SCH_EDIT_TOOL::setTransitions()
     Go( &SCH_EDIT_TOOL::RunGseimPlotter,    SCH_ACTIONS::runGseimPlotter.MakeEvent() );    // <-- new 
 
     Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editValue.MakeEvent() );
-    Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editFootprint.MakeEvent() );
+    // Go( &SCH_EDIT_TOOL::EditField,          SCH_ACTIONS::editFootprint.MakeEvent() );
     Go( &SCH_EDIT_TOOL::AutoplaceFields,    SCH_ACTIONS::autoplaceFields.MakeEvent() );
     Go( &SCH_EDIT_TOOL::ChangeSymbols,      SCH_ACTIONS::changeSymbols.MakeEvent() );
     Go( &SCH_EDIT_TOOL::ChangeSymbols,      SCH_ACTIONS::updateSymbols.MakeEvent() );

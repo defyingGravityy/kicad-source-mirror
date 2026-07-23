@@ -200,8 +200,8 @@ std::optional<TOOLBAR_CONFIGURATION> SCH_EDIT_TOOLBAR_SETTINGS::DefaultToolbarCo
 
         config.AppendSeparator()
               .AppendAction( ACTIONS::showSymbolEditor )
-              .AppendAction( ACTIONS::showSymbolBrowser )
-              .AppendAction( ACTIONS::showFootprintEditor );
+              .AppendAction( ACTIONS::showSymbolBrowser );
+              
 
         config.AppendSeparator()
               .AppendAction( SCH_ACTIONS::annotate )
@@ -209,7 +209,6 @@ std::optional<TOOLBAR_CONFIGURATION> SCH_EDIT_TOOLBAR_SETTINGS::DefaultToolbarCo
               .AppendAction( SCH_ACTIONS::showSimulator )
               .AppendAction( SCH_ACTIONS::runGseimSimulation )
               .AppendAction( SCH_ACTIONS::runGseimPlotter )   
-              .AppendAction( SCH_ACTIONS::assignFootprints )
               .AppendAction( SCH_ACTIONS::editSymbolFields )
               .AppendAction( SCH_ACTIONS::generateBOM );
 

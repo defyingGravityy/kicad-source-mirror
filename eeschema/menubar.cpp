@@ -104,7 +104,7 @@ void SCH_EDIT_FRAME::doReCreateMenuBar()
     submenuImport->SetIcon( BITMAPS::import );
 
     submenuImport->Add( SCH_ACTIONS::importNonKicadSchematic, ACTION_MENU::NORMAL, _( "Non-KiCad Schematic..." ) );
-    submenuImport->Add( SCH_ACTIONS::importFPAssignments, ACTION_MENU::NORMAL, _( "Footprint Assignments..." ) );
+    // submenuImport->Add( SCH_ACTIONS::importFPAssignments, ACTION_MENU::NORMAL, _( "Footprint Assignments..." ) );
     submenuImport->Add( SCH_ACTIONS::importGraphics, ACTION_MENU::NORMAL, _( "Graphics..." ) );
 
     fileMenu->Add( submenuImport );
@@ -307,7 +307,7 @@ void SCH_EDIT_FRAME::doReCreateMenuBar()
     //
     ACTION_MENU* toolsMenu = new ACTION_MENU( false, selTool );
 
-    toolsMenu->Add( ACTIONS::updatePcbFromSchematic )->Enable( !Kiface().IsSingle() );
+    // toolsMenu->Add( ACTIONS::updatePcbFromSchematic )->Enable( !Kiface().IsSingle() );
     // toolsMenu->Add( SCH_ACTIONS::showPcbNew );
 
     if( !Kiface().IsSingle() )
@@ -332,12 +332,12 @@ void SCH_EDIT_FRAME::doReCreateMenuBar()
     toolsMenu->Add( SCH_ACTIONS::incrementAnnotations );
 
     toolsMenu->AppendSeparator();
-    toolsMenu->Add( SCH_ACTIONS::assignFootprints );
+    // toolsMenu->Add( SCH_ACTIONS::assignFootprints );
     toolsMenu->Add( SCH_ACTIONS::generateBOM );
     toolsMenu->Add( SCH_ACTIONS::generateBOMLegacy );
 
     toolsMenu->AppendSeparator();
-    toolsMenu->Add( ACTIONS::updateSchematicFromPcb )->Enable( !Kiface().IsSingle() );
+    // toolsMenu->Add( ACTIONS::updateSchematicFromPcb )->Enable( !Kiface().IsSingle() );
 
     toolsMenu->AppendSeparator();
     toolsMenu->Add( SCH_ACTIONS::createNetChain );

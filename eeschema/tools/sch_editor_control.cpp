@@ -3967,8 +3967,8 @@ void SCH_EDITOR_CONTROL::setTransitions()
 
     Go( &SCH_EDITOR_CONTROL::EditWithSymbolEditor,    SCH_ACTIONS::editWithLibEdit.MakeEvent() );
     Go( &SCH_EDITOR_CONTROL::EditWithSymbolEditor,    SCH_ACTIONS::editLibSymbolWithLibEdit.MakeEvent() );
-    Go( &SCH_EDITOR_CONTROL::ShowCvpcb,               SCH_ACTIONS::assignFootprints.MakeEvent() );
-    Go( &SCH_EDITOR_CONTROL::ImportFPAssignments,     SCH_ACTIONS::importFPAssignments.MakeEvent() );
+    // Go( &SCH_EDITOR_CONTROL::ShowCvpcb,               SCH_ACTIONS::assignFootprints.MakeEvent() );
+    // Go( &SCH_EDITOR_CONTROL::ImportFPAssignments,     SCH_ACTIONS::importFPAssignments.MakeEvent() );
     Go( &SCH_EDITOR_CONTROL::ImportNonKicadSchematic, SCH_ACTIONS::importNonKicadSchematic.MakeEvent() );
     Go( &SCH_EDITOR_CONTROL::Annotate,                SCH_ACTIONS::annotate.MakeEvent() );
     Go( &SCH_EDITOR_CONTROL::IncrementAnnotations,    SCH_ACTIONS::incrementAnnotations.MakeEvent() );

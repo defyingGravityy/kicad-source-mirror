@@ -651,7 +651,7 @@ int SCH_DRAWING_TOOLS::PlaceSymbol( const TOOL_EVENT& aEvent )
         }
         else if( symbol
                  && ( evt->IsAction( &SCH_ACTIONS::properties ) || evt->IsAction( &SCH_ACTIONS::editReference )
-                      || evt->IsAction( &SCH_ACTIONS::editValue ) || evt->IsAction( &SCH_ACTIONS::editFootprint )
+                      || evt->IsAction( &SCH_ACTIONS::editValue )
                       || evt->IsAction( &SCH_ACTIONS::autoplaceFields ) || evt->IsAction( &SCH_ACTIONS::cycleBodyStyle )
                       || evt->IsAction( &SCH_ACTIONS::setExcludeFromBOM )
                       || evt->IsAction( &SCH_ACTIONS::setExcludeFromBoard )

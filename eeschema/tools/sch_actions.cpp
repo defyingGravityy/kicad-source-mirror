@@ -928,13 +928,13 @@ TOOL_ACTION SCH_ACTIONS::editValue( TOOL_ACTION_ARGS()
         .FriendlyName( _( "Edit Value..." ) )
         .Icon( BITMAPS::edit_comp_value ) );
 
-TOOL_ACTION SCH_ACTIONS::editFootprint( TOOL_ACTION_ARGS()
-        .Name( "eeschema.InteractiveEdit.editFootprint" )
-        .Scope( AS_GLOBAL )
-        .DefaultHotkey( 'F' )
-        .LegacyHotkeyName( "Edit Symbol Footprint" )
-        .FriendlyName( _( "Edit Footprint..." ) )
-        .Icon( BITMAPS::edit_comp_footprint ) );
+// TOOL_ACTION SCH_ACTIONS::editFootprint( TOOL_ACTION_ARGS()
+//         .Name( "eeschema.InteractiveEdit.editFootprint" )
+//         .Scope( AS_GLOBAL )
+//         .DefaultHotkey( 'F' )
+//         .LegacyHotkeyName( "Edit Symbol Footprint" )
+//         .FriendlyName( _( "Edit Footprint..." ) )
+//         .Icon( BITMAPS::edit_comp_footprint ) );
 
 TOOL_ACTION SCH_ACTIONS::selectGseimOutvars( TOOL_ACTION_ARGS()
         .Name( "eeschema.InteractiveEdit.selectGseimOutvars" )
@@ -1289,19 +1289,19 @@ TOOL_ACTION SCH_ACTIONS::editSymbolLibraryLinks( TOOL_ACTION_ARGS()
         .Tooltip( _( "Edit a table of links between schematic and library symbols" ) )
         .Icon( BITMAPS::edit_cmp_symb_links ) );
 
-TOOL_ACTION SCH_ACTIONS::assignFootprints( TOOL_ACTION_ARGS()
-        .Name( "eeschema.EditorControl.assignFootprints" )
-        .Scope( AS_GLOBAL )
-        .FriendlyName( _( "Assign Footprints..." ) )
-        .Tooltip( _( "Run footprint assignment tool" ) )
-        .Icon( BITMAPS::icon_cvpcb_24 ) );
+// TOOL_ACTION SCH_ACTIONS::assignFootprints( TOOL_ACTION_ARGS()
+//         .Name( "eeschema.EditorControl.assignFootprints" )
+//         .Scope( AS_GLOBAL )
+//         .FriendlyName( _( "Assign Footprints..." ) )
+//         .Tooltip( _( "Run footprint assignment tool" ) )
+//         .Icon( BITMAPS::icon_cvpcb_24 ) );
 
-TOOL_ACTION SCH_ACTIONS::importFPAssignments( TOOL_ACTION_ARGS()
-        .Name( "eeschema.EditorControl.importFPAssignments" )
-        .Scope( AS_GLOBAL )
-        .FriendlyName( _( "Import Footprint Assignments..." ) )
-        .Tooltip( _( "Import symbol footprint assignments from .cmp file created by board editor" ) )
-        .Icon( BITMAPS::import_footprint_names ) );
+// TOOL_ACTION SCH_ACTIONS::importFPAssignments( TOOL_ACTION_ARGS()
+//         .Name( "eeschema.EditorControl.importFPAssignments" )
+//         .Scope( AS_GLOBAL )
+//         .FriendlyName( _( "Import Footprint Assignments..." ) )
+//         .Tooltip( _( "Import symbol footprint assignments from .cmp file created by board editor" ) )
+//         .Icon( BITMAPS::import_footprint_names ) );
 
 TOOL_ACTION SCH_ACTIONS::annotate( TOOL_ACTION_ARGS()
         .Name( "eeschema.EditorControl.annotate" )

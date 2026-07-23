@@ -21,6 +21,9 @@
 #  or you may write to the Free Software Foundation, Inc.,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #
+set(CMAKE_INSTALL_RPATH "$ORIGIN" "$ORIGIN/../lib")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 if( MSVC )
 # CMake 3.28.1 or higher required for MSVC ARM builds for armasm64.exe support

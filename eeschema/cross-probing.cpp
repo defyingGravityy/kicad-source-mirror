@@ -1068,16 +1068,16 @@ void SCH_EDIT_FRAME::KiwayMailIn( KIWAY_MAIL_EVENT& mail )
         break;
     }
 
-    case MAIL_ASSIGN_FOOTPRINTS:
-        try
-        {
-            SCH_EDITOR_CONTROL* controlTool = m_toolManager->GetTool<SCH_EDITOR_CONTROL>();
-            controlTool->AssignFootprints( payload );
-        }
-        catch( const IO_ERROR& )
-        {
-        }
-        break;
+    // case MAIL_ASSIGN_FOOTPRINTS:
+    //     try
+    //     {
+    //         SCH_EDITOR_CONTROL* controlTool = m_toolManager->GetTool<SCH_EDITOR_CONTROL>();
+    //         controlTool->AssignFootprints( payload );
+    //     }
+    //     catch( const IO_ERROR& )
+    //     {
+    //     }
+    //     break;
 
     case MAIL_SCH_REFRESH:
     {
