@@ -1078,13 +1078,13 @@ endif()
 #================================================
 # Add the doxygen target
 #================================================
-find_package( Doxygen )
+# find_package( Doxygen )
 
-add_subdirectory( doxygen )
+# add_subdirectory( doxygen )
 
-# Generate config.h.
-configure_file( ${PROJECT_SOURCE_DIR}/cmake/config.h.cmake
-    ${CMAKE_BINARY_DIR}/config.h )
+# # Generate config.h.
+# configure_file( ${PROJECT_SOURCE_DIR}/cmake/config.h.cmake
+#     ${CMAKE_BINARY_DIR}/config.h )
 
 
 #================================================
@@ -1135,8 +1135,8 @@ else()
     add_subdirectory( plugins )
     add_subdirectory( cvpcb )
     add_subdirectory( kicad )
-    add_subdirectory( tools )
-    add_subdirectory( utils )
+    # add_subdirectory( tools )
+    # add_subdirectory( utils )
 
 endif()
 
@@ -1144,19 +1144,19 @@ set_target_properties(eeschema PROPERTIES
     INSTALL_RPATH "$ORIGIN/../lib"
 )
 
-if( KICAD_BUILD_QA_TESTS )
-    add_subdirectory( qa )
-endif()
+# if( KICAD_BUILD_QA_TESTS )
+#     add_subdirectory( qa )
+# endif()
 
-# Demos
-if( KICAD_INSTALL_DEMOS )
-    add_subdirectory( demos )
-endif ( KICAD_INSTALL_DEMOS )
+# # Demos
+# if( KICAD_INSTALL_DEMOS )
+#     add_subdirectory( demos )
+# endif ( KICAD_INSTALL_DEMOS )
 
 # I18n Translations
-if( KICAD_BUILD_I18N )
-    add_subdirectory( translation )
-endif()
+# if( KICAD_BUILD_I18N )
+#     add_subdirectory( translation )
+# endif()
 
 if( APPLE )
     set( KICAD_OSX_CODESIGN ON

@@ -3,6 +3,7 @@
 boost_root
 /Build*
 /build*
+lib
 /build-ninja*
 /cmake-build-*
 texteval/
@@ -35,6 +36,7 @@ install_manifest.txt
 doxygen/out
 *.bak
 *.pyc
+thirdparty/fmt/support/.gradle
 common/pcb_plot_params_keywords.cpp
 include/pcb_plot_params_lexer.h
 pcbnew/specctra_import_export/specctra_keywords.cpp
